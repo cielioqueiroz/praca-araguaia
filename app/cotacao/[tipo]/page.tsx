@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase/public';
 import { supabaseRepo } from '@/lib/supabase/repo';
@@ -28,7 +29,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <a href="/" className="text-sm text-neutral-500 hover:underline">← Voltar</a>
+      <Link href="/" className="text-sm text-neutral-500 hover:underline">← Voltar</Link>
       <h1 className="mt-2 text-2xl font-bold text-neutral-900">{titulo}</h1>
 
       <div className="mt-6 max-w-sm">

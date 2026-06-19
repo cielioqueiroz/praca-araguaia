@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { CardCotacao } from '@/components/CardCotacao';
 
@@ -23,7 +24,7 @@ export default async function Home() {
           <p className="text-neutral-500">Ainda sem cotação — rode a coleta (/api/coletar).</p>
         )}
         {data?.map((c) => (
-          <a key={c.tipo} href={`/cotacao/${c.tipo}`} className="block transition hover:opacity-90">
+          <Link key={c.tipo} href={`/cotacao/${c.tipo}`} className="block transition hover:opacity-90">
             <CardCotacao
               titulo={TITULOS[c.tipo] ?? c.tipo}
               valor={Number(c.valor)}
@@ -32,7 +33,7 @@ export default async function Home() {
               dataReferencia={c.data_referencia}
               desatualizado={Date.now() - new Date(c.data_referencia).getTime() > DOIS_DIAS_MS}
             />
-          </a>
+          </Link>
         ))}
       </section>
     </main>
