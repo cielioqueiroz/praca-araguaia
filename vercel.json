@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/coletar", "schedule": "0 11 * * *" }
+  ]
+}
