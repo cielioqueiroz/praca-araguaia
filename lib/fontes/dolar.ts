@@ -65,8 +65,15 @@ export async function buscarDolarBcb(fetchImpl: typeof fetch = fetch): Promise<C
   };
 }
 
-const urlBcbSerie = (dias: number) =>
-  `https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/${dias}?formato=json`;
+// O endpoint `ultimos/N` do BCB só aceita N pequeno (N grande → 400); usamos o
+// intervalo de datas (dd/MM/yyyy em UTC), que devolve a série diária do período.
+function urlBcbSerie(dias: number): string {
+  const fmt = (d: Date) =>
+    `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
+  const fim = new Date();
+  const inicio = new Date(fim.getTime() - dias * 24 * 60 * 60 * 1000);
+  return `https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados?formato=json&dataInicial=${fmt(inicio)}&dataFinal=${fmt(fim)}`;
+}
 
 // Série histórica do dólar (PTAX diária) no BCB, para o backfill do gráfico.
 export async function buscarHistoricoDolarBcb(
