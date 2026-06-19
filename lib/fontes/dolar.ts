@@ -1,4 +1,4 @@
-import type { Cotacao } from '@/types/cotacao';
+import type { Cotacao, PontoHistorico } from '@/types/cotacao';
 
 // O Brasil não usa horário de verão desde 2019, então o offset é fixo em -03:00.
 // Sem isso, datas sem offset seriam interpretadas como hora local do runtime
@@ -63,6 +63,35 @@ export async function buscarDolarBcb(fetchImpl: typeof fetch = fetch): Promise<C
     fonte: 'bcb',
     dataReferencia: new Date(`${yyyy}-${mm}-${dd}T00:00:00${OFFSET_BRT}`).toISOString(),
   };
+}
+
+const urlBcbSerie = (dias: number) =>
+  `https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/${dias}?formato=json`;
+
+// Série histórica do dólar (PTAX diária) no BCB, para o backfill do gráfico.
+export async function buscarHistoricoDolarBcb(
+  dias = 90,
+  fetchImpl: typeof fetch = fetch,
+): Promise<PontoHistorico[]> {
+  const res = await fetchImpl(urlBcbSerie(dias));
+  if (!res.ok) throw new Error(`BCB respondeu ${res.status}`);
+
+  const body = (await res.json()) as Array<{ data?: string; valor?: string }>;
+  if (!Array.isArray(body) || body.length === 0) {
+    throw new Error('Resposta do BCB inválida: série vazia');
+  }
+
+  return body.map((item) => {
+    const valor = Number(item?.valor);
+    const [dd, mm, yyyy] = (item?.data ?? '').split('/');
+    if (!Number.isFinite(valor) || valor <= 0) {
+      throw new Error('Resposta do BCB inválida: valor ausente ou não positivo');
+    }
+    if (!dd || !mm || !yyyy) {
+      throw new Error('Resposta do BCB inválida: data em formato inesperado');
+    }
+    return { data: new Date(`${yyyy}-${mm}-${dd}T00:00:00${OFFSET_BRT}`).toISOString(), valor };
+  });
 }
 
 // Tenta a AwesomeAPI (tempo real) e, se falhar (ex.: 429 em IP de datacenter da
