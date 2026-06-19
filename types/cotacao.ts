@@ -14,3 +14,12 @@ export interface CotacaoRepo {
   /** Faz upsert em cotacoes e insert em cotacoes_historico. */
   salvar(cotacao: Cotacao, variacaoPct: number | null): Promise<void>;
 }
+
+export type PontoHistorico = { data: string; valor: number }; // data ISO 8601, ordem asc
+
+export interface HistoricoRepo {
+  /** Insere pontos em lote, ignorando duplicados (tipo, data_referencia). */
+  salvarHistoricoEmLote(pontos: PontoHistorico[]): Promise<void>;
+  /** Pontos com data_referencia >= `desde` (ISO), ordem ascendente. */
+  historicoRecente(tipo: string, desde: string): Promise<PontoHistorico[]>;
+}
