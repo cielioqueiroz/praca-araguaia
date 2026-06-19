@@ -1,15 +1,18 @@
 import type { Cotacao } from '@/types/cotacao';
 
-const URL = 'https://economia.awesomeapi.com.br/last/USD-BRL';
-
-// A AwesomeAPI devolve create_date no horário de Brasília (BRT), sem offset.
 // O Brasil não usa horário de verão desde 2019, então o offset é fixo em -03:00.
-// Sem isso, `new Date('...T09:00:00')` seria interpretado como hora local do
-// runtime (UTC na Vercel), deslocando o timestamp em 3h.
+// Sem isso, datas sem offset seriam interpretadas como hora local do runtime
+// (UTC na Vercel), deslocando o timestamp em 3h.
 const OFFSET_BRT = '-03:00';
 
-export async function buscarDolar(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
-  const res = await fetchImpl(URL);
+const URL_AWESOME = 'https://economia.awesomeapi.com.br/last/USD-BRL';
+// SGS série 1 = dólar comercial (venda), valor diário (dias úteis) do BCB.
+const URL_BCB =
+  'https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados/ultimos/1?formato=json';
+
+// Fonte primária: AwesomeAPI (tempo real). A create_date vem em BRT, sem offset.
+export async function buscarDolarAwesome(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
+  const res = await fetchImpl(URL_AWESOME);
   if (!res.ok) throw new Error(`AwesomeAPI respondeu ${res.status}`);
 
   const body = (await res.json()) as { USDBRL?: { bid?: string; create_date?: string } };
@@ -33,4 +36,48 @@ export async function buscarDolar(fetchImpl: typeof fetch = fetch): Promise<Cota
     fonte: 'awesomeapi',
     dataReferencia: new Date(raw.create_date.replace(' ', 'T') + OFFSET_BRT).toISOString(),
   };
+}
+
+// Fonte de fallback: BCB (PTAX diária). Resposta: [{ data: 'dd/MM/yyyy', valor: '5.1382' }].
+// Sem hora — usamos o início do dia em BRT como referência.
+export async function buscarDolarBcb(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
+  const res = await fetchImpl(URL_BCB);
+  if (!res.ok) throw new Error(`BCB respondeu ${res.status}`);
+
+  const body = (await res.json()) as Array<{ data?: string; valor?: string }>;
+  const item = Array.isArray(body) ? body[body.length - 1] : undefined;
+  const valor = Number(item?.valor);
+
+  if (!item || !Number.isFinite(valor) || valor <= 0) {
+    throw new Error('Resposta do BCB inválida: valor ausente ou não positivo');
+  }
+  const [dd, mm, yyyy] = (item.data ?? '').split('/');
+  if (!dd || !mm || !yyyy) {
+    throw new Error('Resposta do BCB inválida: data ausente ou em formato inesperado');
+  }
+
+  return {
+    tipo: 'dolar',
+    valor,
+    unidade: 'R$',
+    fonte: 'bcb',
+    dataReferencia: new Date(`${yyyy}-${mm}-${dd}T00:00:00${OFFSET_BRT}`).toISOString(),
+  };
+}
+
+// Tenta a AwesomeAPI (tempo real) e, se falhar (ex.: 429 em IP de datacenter da
+// Vercel), cai para o BCB. Mantém a coleta resiliente em produção.
+export async function buscarDolar(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
+  try {
+    return await buscarDolarAwesome(fetchImpl);
+  } catch (erroAwesome) {
+    try {
+      return await buscarDolarBcb(fetchImpl);
+    } catch (erroBcb) {
+      throw new Error(
+        `Falha ao buscar dólar — AwesomeAPI: ${(erroAwesome as Error).message}; ` +
+          `BCB: ${(erroBcb as Error).message}`,
+      );
+    }
+  }
 }
