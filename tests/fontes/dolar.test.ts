@@ -92,6 +92,6 @@ describe('buscarDolar (fallback)', () => {
       awesomeapi: { ok: false, status: 429, body: {} },
       'bcb.gov.br': { ok: false, status: 500, body: {} },
     });
-    await expect(buscarDolar(f)).rejects.toThrow(/AwesomeAPI.*BCB/s);
+    await expect(buscarDolar(f)).rejects.toThrow(/AwesomeAPI.*BCB/);
   });
 });

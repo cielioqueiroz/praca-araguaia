@@ -1,0 +1,55 @@
+import { notFound } from 'next/navigation';
+import { createPublicClient } from '@/lib/supabase/public';
+import { supabaseRepo } from '@/lib/supabase/repo';
+import { CardCotacao } from '@/components/CardCotacao';
+import { GraficoCotacao } from '@/components/GraficoCotacao';
+
+export const dynamic = 'force-dynamic';
+
+const TITULOS: Record<string, string> = { dolar: 'Dólar' };
+const DOIS_DIAS_MS = 48 * 60 * 60 * 1000;
+const JANELA_DIAS = 90;
+
+export default async function DetalheCotacao({ params }: { params: Promise<{ tipo: string }> }) {
+  const { tipo } = await params;
+  const supabase = createPublicClient();
+
+  const { data: atual } = await supabase
+    .from('cotacoes')
+    .select('tipo, valor, unidade, variacao_pct, data_referencia')
+    .eq('tipo', tipo)
+    .maybeSingle();
+
+  if (!atual) notFound();
+
+  const desde = new Date(Date.now() - JANELA_DIAS * 24 * 60 * 60 * 1000).toISOString();
+  const pontos = await supabaseRepo(supabase).historicoRecente(tipo, desde);
+  const titulo = TITULOS[tipo] ?? tipo;
+
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <a href="/" className="text-sm text-neutral-500 hover:underline">← Voltar</a>
+      <h1 className="mt-2 text-2xl font-bold text-neutral-900">{titulo}</h1>
+
+      <div className="mt-6 max-w-sm">
+        <CardCotacao
+          titulo={titulo}
+          valor={Number(atual.valor)}
+          unidade={atual.unidade}
+          variacaoPct={atual.variacao_pct === null ? null : Number(atual.variacao_pct)}
+          dataReferencia={atual.data_referencia}
+          desatualizado={Date.now() - new Date(atual.data_referencia).getTime() > DOIS_DIAS_MS}
+        />
+      </div>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-neutral-500">Tendência</h2>
+        {pontos.length === 0 ? (
+          <p className="text-neutral-500">Sem histórico ainda.</p>
+        ) : (
+          <GraficoCotacao pontos={pontos} />
+        )}
+      </section>
+    </main>
+  );
+}

@@ -23,15 +23,16 @@ export default async function Home() {
           <p className="text-neutral-500">Ainda sem cotação — rode a coleta (/api/coletar).</p>
         )}
         {data?.map((c) => (
-          <CardCotacao
-            key={c.tipo}
-            titulo={TITULOS[c.tipo] ?? c.tipo}
-            valor={Number(c.valor)}
-            unidade={c.unidade}
-            variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
-            dataReferencia={c.data_referencia}
-            desatualizado={Date.now() - new Date(c.data_referencia).getTime() > DOIS_DIAS_MS}
-          />
+          <a key={c.tipo} href={`/cotacao/${c.tipo}`} className="block transition hover:opacity-90">
+            <CardCotacao
+              titulo={TITULOS[c.tipo] ?? c.tipo}
+              valor={Number(c.valor)}
+              unidade={c.unidade}
+              variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
+              dataReferencia={c.data_referencia}
+              desatualizado={Date.now() - new Date(c.data_referencia).getTime() > DOIS_DIAS_MS}
+            />
+          </a>
         ))}
       </section>
     </main>
