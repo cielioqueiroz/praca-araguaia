@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Praça Araguaia — Cotações',
   description: 'Cotações diárias para o produtor rural do Araguaia.',
 };
