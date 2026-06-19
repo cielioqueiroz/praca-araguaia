@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Cotacao, CotacaoRepo } from '@/types/cotacao';
+import type { Cotacao, CotacaoRepo, HistoricoRepo, PontoHistorico } from '@/types/cotacao';
 
-export function supabaseRepo(client: SupabaseClient): CotacaoRepo {
+export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRepo {
   return {
     async ultimoValor(tipo) {
       const { data, error } = await client
@@ -37,6 +37,31 @@ export function supabaseRepo(client: SupabaseClient): CotacaoRepo {
         data_referencia: cotacao.dataReferencia,
       });
       if (ins.error) throw new Error(ins.error.message);
+    },
+
+    async salvarHistoricoEmLote(pontos: PontoHistorico[]) {
+      if (pontos.length === 0) return;
+      const linhas = pontos.map((p) => ({
+        tipo: 'dolar',
+        valor: p.valor,
+        fonte: 'bcb',
+        data_referencia: p.data,
+      }));
+      const { error } = await client
+        .from('cotacoes_historico')
+        .upsert(linhas, { onConflict: 'tipo,data_referencia', ignoreDuplicates: true });
+      if (error) throw new Error(error.message);
+    },
+
+    async historicoRecente(tipo: string, desde: string): Promise<PontoHistorico[]> {
+      const { data, error } = await client
+        .from('cotacoes_historico')
+        .select('valor, data_referencia')
+        .eq('tipo', tipo)
+        .gte('data_referencia', desde)
+        .order('data_referencia', { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => ({ data: r.data_referencia as string, valor: Number(r.valor) }));
     },
   };
 }
