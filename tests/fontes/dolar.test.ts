@@ -16,7 +16,8 @@ describe('buscarDolar', () => {
     expect(c.valor).toBeCloseTo(5.4321);
     expect(c.unidade).toBe('R$');
     expect(c.fonte).toBe('awesomeapi');
-    expect(typeof c.dataReferencia).toBe('string');
+    // create_date vem em BRT (-03:00): 09:00 BRT == 12:00 UTC, independente do TZ do runtime.
+    expect(c.dataReferencia).toBe('2026-06-19T12:00:00.000Z');
   });
 
   it('rejeita valor zero ou negativo', async () => {
