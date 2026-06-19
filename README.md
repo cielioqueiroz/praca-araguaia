@@ -1,6 +1,15 @@
-# Praça Araguaia
+# Praça Araguaia 🌾
 
 > Fonte diária de informação do produtor rural da região do Araguaia (sul do PA / nordeste do MT): cotações que importam, atualizadas todo dia.
+
+<p>
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-38BDF8?logo=tailwindcss&logoColor=white">
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
+  <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron-000000?logo=vercel&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-21_passando-brightgreen?logo=vitest&logoColor=white">
+</p>
 
 Este repositório começa pela **fatia vertical fina** da plataforma — a cotação do dólar, ponta a ponta — provando a arquitetura **coleta → banco → painel** antes de investir nos subsistemas maiores (boi, soja, Termômetro da Praça, boletim, marketplace).
 
