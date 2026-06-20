@@ -30,12 +30,18 @@ export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRep
       );
       if (up.error) throw new Error(up.error.message);
 
-      const ins = await client.from('cotacoes_historico').insert({
-        tipo: cotacao.tipo,
-        valor: cotacao.valor,
-        fonte: cotacao.fonte,
-        data_referencia: cotacao.dataReferencia,
-      });
+      // upsert (não insert) para ser idempotente por dia: fontes com data sem
+      // hora (BCB/Frankfurter) repetem a mesma data_referencia, e o ponto do dia
+      // pode já existir pelo backfill — ignoramos a duplicata em vez de falhar.
+      const ins = await client.from('cotacoes_historico').upsert(
+        {
+          tipo: cotacao.tipo,
+          valor: cotacao.valor,
+          fonte: cotacao.fonte,
+          data_referencia: cotacao.dataReferencia,
+        },
+        { onConflict: 'tipo,data_referencia', ignoreDuplicates: true },
+      );
       if (ins.error) throw new Error(ins.error.message);
     },
 

@@ -38,18 +38,21 @@ describe('supabaseRepo.ultimoValor', () => {
 });
 
 describe('supabaseRepo.salvar', () => {
-  it('faz upsert em cotacoes e insert em historico', async () => {
-    const upsert = vi.fn().mockResolvedValue({ error: null });
-    const insert = vi.fn().mockResolvedValue({ error: null });
+  it('faz upsert em cotacoes e upsert idempotente no historico', async () => {
+    const upsertCotacoes = vi.fn().mockResolvedValue({ error: null });
+    const upsertHistorico = vi.fn().mockResolvedValue({ error: null });
     const client = {
       from: vi.fn((table: string) =>
-        table === 'cotacoes' ? { upsert } : { insert },
+        table === 'cotacoes' ? { upsert: upsertCotacoes } : { upsert: upsertHistorico },
       ),
     } as any;
     const repo = supabaseRepo(client);
     await repo.salvar(cotacao, 10);
-    expect(upsert).toHaveBeenCalledOnce();
-    expect(insert).toHaveBeenCalledOnce();
+    expect(upsertCotacoes).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'dolar' }), { onConflict: 'tipo' });
+    expect(upsertHistorico).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo: 'dolar', data_referencia: cotacao.dataReferencia }),
+      { onConflict: 'tipo,data_referencia', ignoreDuplicates: true },
+    );
   });
 
   it('lança se o upsert retornar erro', async () => {
