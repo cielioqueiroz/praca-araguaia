@@ -7,7 +7,7 @@ import { GraficoCotacao } from '@/components/GraficoCotacao';
 
 export const dynamic = 'force-dynamic';
 
-const TITULOS: Record<string, string> = { dolar: 'Dólar' };
+const TITULOS: Record<string, string> = { dolar: 'Dólar', euro: 'Euro', ouro: 'Ouro' };
 const DOIS_DIAS_MS = 48 * 60 * 60 * 1000;
 const JANELA_DIAS = 90;
 

@@ -4,7 +4,7 @@ import { CardCotacao } from '@/components/CardCotacao';
 
 export const dynamic = 'force-dynamic';
 
-const TITULOS: Record<string, string> = { dolar: 'Dólar' };
+const TITULOS: Record<string, string> = { dolar: 'Dólar', euro: 'Euro', ouro: 'Ouro' };
 const DOIS_DIAS_MS = 48 * 60 * 60 * 1000;
 
 export default async function Home() {
@@ -15,8 +15,8 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-2xl font-bold text-neutral-900">Praça Araguaia — Cotações</h1>
-      <p className="mt-1 text-sm text-neutral-500">Fonte de referência diária do produtor.</p>
+      <h1 className="text-2xl font-bold text-neutral-900">agro_app</h1>
+      <p className="mt-1 text-sm text-neutral-500">Cotações de referência diárias para o produtor.</p>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
         {error && <p className="text-red-600">Erro ao carregar cotações.</p>}
