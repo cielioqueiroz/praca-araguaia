@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: 'Praça Araguaia — Cotações',
-  description: 'Cotações diárias para o produtor rural do Araguaia.',
+  title: 'agro_app',
+  description: 'Cotações agropecuárias diárias para o produtor rural do Araguaia.',
 };
 
 export default function RootLayout({
