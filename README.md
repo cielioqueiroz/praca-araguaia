@@ -8,12 +8,13 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-21_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-63_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
-Este repositório começa pela **fatia vertical fina** da plataforma — a cotação do dólar, ponta a ponta — provando a arquitetura **coleta → banco → painel** antes de investir nos subsistemas maiores (boi, soja, Termômetro da Praça, boletim, marketplace).
+Plataforma de **cotações agropecuárias** da região do Araguaia. No ar com **dólar, euro e ouro** (painel + gráficos), construída em fatias verticais finas sobre a arquitetura **coleta → banco → painel**.
 
-📄 Conceito completo do produto: [`conceito-praca-araguaia.md`](conceito-praca-araguaia.md)
+- 🟢 **Estado atual e ponto de retomada:** [`ESTADO-DO-PROJETO.md`](ESTADO-DO-PROJETO.md)
+- 📄 Conceito completo do produto: [`conceito-praca-araguaia.md`](conceito-praca-araguaia.md)
 
 ---
 

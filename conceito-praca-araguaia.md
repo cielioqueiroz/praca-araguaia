@@ -1,6 +1,8 @@
 # Praça Araguaia — Documento de Conceito
 
 > Nome de trabalho provisório. Plataforma hiperlocal de cotações e mercado agropecuário para a região do Araguaia (sul do PA / nordeste do MT).
+>
+> 🟢 **Para o estado atual da implementação e o ponto de retomada, veja [`ESTADO-DO-PROJETO.md`](ESTADO-DO-PROJETO.md).** Este documento é a visão/conceito original.
 
 ---
 
