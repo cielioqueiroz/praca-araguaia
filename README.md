@@ -184,8 +184,9 @@ RLS ativa desde o início: `SELECT` liberado para `anon`; `INSERT/UPDATE/DELETE`
 ## Roadmap
 
 - [x] Painel de cotações + coleta diária do dólar (fatia 1)
-- [x] Gráfico de tendência em `/cotacao/dolar` (toggle 7/30/90, backfill do BCB via `/api/backfill`)
-- [ ] Novas fontes: boi gordo, soja, milho, câmbio, ouro
+- [x] Gráfico de tendência em `/cotacao/[tipo]` (toggle 7/30/90, backfill via `/api/backfill`)
+- [x] Novas fontes: euro (Frankfurter) e ouro (gold-api × USD-BRL) — coleta/backfill multi-fonte
+- [ ] Commodities: boi gordo, soja, milho (fonte a definir)
 - [ ] Termômetro da Praça (reporte anônimo + moderação + média semanal)
 - [ ] Boletim diário em card (Satori) para Instagram/WhatsApp
 - [ ] Previsão de chuva por município
