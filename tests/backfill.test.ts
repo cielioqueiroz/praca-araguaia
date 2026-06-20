@@ -12,26 +12,26 @@ function repoMock(): HistoricoRepo {
 }
 
 describe('backfillHistorico', () => {
-  it('grava todos os pontos e retorna a contagem', async () => {
+  it('grava os pontos com tipo/fonte e retorna a contagem', async () => {
     const repo = repoMock();
-    const r = await backfillHistorico(async () => pontos, repo);
-    expect(repo.salvarHistoricoEmLote).toHaveBeenCalledWith(pontos);
-    expect(r).toEqual({ pontos: 2 });
+    const r = await backfillHistorico('euro', 'frankfurter', async () => pontos, repo);
+    expect(repo.salvarHistoricoEmLote).toHaveBeenCalledWith('euro', 'frankfurter', pontos);
+    expect(r).toEqual({ tipo: 'euro', pontos: 2 });
   });
 
   it('não grava se a fonte falhar', async () => {
     const repo = repoMock();
     await expect(
-      backfillHistorico(async () => {
-        throw new Error('bcb fora');
+      backfillHistorico('dolar', 'bcb', async () => {
+        throw new Error('fonte fora');
       }, repo),
-    ).rejects.toThrow('bcb fora');
+    ).rejects.toThrow('fonte fora');
     expect(repo.salvarHistoricoEmLote).not.toHaveBeenCalled();
   });
 
   it('propaga erro de escrita', async () => {
     const repo = repoMock();
     (repo.salvarHistoricoEmLote as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('db fora'));
-    await expect(backfillHistorico(async () => pontos, repo)).rejects.toThrow('db fora');
+    await expect(backfillHistorico('dolar', 'bcb', async () => pontos, repo)).rejects.toThrow('db fora');
   });
 });

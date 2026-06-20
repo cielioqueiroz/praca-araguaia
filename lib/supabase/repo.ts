@@ -39,12 +39,12 @@ export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRep
       if (ins.error) throw new Error(ins.error.message);
     },
 
-    async salvarHistoricoEmLote(pontos: PontoHistorico[]) {
+    async salvarHistoricoEmLote(tipo: string, fonte: string, pontos: PontoHistorico[]) {
       if (pontos.length === 0) return;
       const linhas = pontos.map((p) => ({
-        tipo: 'dolar',
+        tipo,
         valor: p.valor,
-        fonte: 'bcb',
+        fonte,
         data_referencia: p.data,
       }));
       const { error } = await client

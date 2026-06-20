@@ -18,8 +18,8 @@ export interface CotacaoRepo {
 export type PontoHistorico = { data: string; valor: number }; // data ISO 8601, ordem asc
 
 export interface HistoricoRepo {
-  /** Insere pontos em lote, ignorando duplicados (tipo, data_referencia). */
-  salvarHistoricoEmLote(pontos: PontoHistorico[]): Promise<void>;
+  /** Insere pontos em lote para o tipo/fonte, ignorando duplicados (tipo, data_referencia). */
+  salvarHistoricoEmLote(tipo: string, fonte: string, pontos: PontoHistorico[]): Promise<void>;
   /** Pontos com data_referencia >= `desde` (ISO), ordem ascendente. */
   historicoRecente(tipo: string, desde: string): Promise<PontoHistorico[]>;
 }

@@ -1,5 +1,5 @@
-import { buscarHistoricoDolarBcb } from '@/lib/fontes/dolar';
 import { backfillHistorico } from '@/lib/backfill';
+import { FONTES_HISTORICO } from '@/lib/fontes/registry';
 import { createServerClient } from '@/lib/supabase/server';
 import { supabaseRepo } from '@/lib/supabase/repo';
 
@@ -10,12 +10,20 @@ export async function GET(req: Request): Promise<Response> {
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('unauthorized', { status: 401 });
   }
-  try {
-    const repo = supabaseRepo(createServerClient());
-    const resultado = await backfillHistorico(() => buscarHistoricoDolarBcb(90), repo);
-    return Response.json(resultado);
-  } catch (e) {
-    console.error('falha no backfill', e);
-    return new Response('erro no backfill', { status: 502 });
+
+  const repo = supabaseRepo(createServerClient());
+  const resultados: Array<{ tipo: string; pontos: number }> = [];
+  const erros: Array<{ tipo: string; erro: string }> = [];
+
+  for (const f of FONTES_HISTORICO) {
+    try {
+      resultados.push(await backfillHistorico(f.tipo, f.fonte, f.buscar, repo));
+    } catch (e) {
+      console.error(`backfill ${f.tipo} falhou`, e);
+      erros.push({ tipo: f.tipo, erro: (e as Error).message });
+    }
   }
+
+  const status = resultados.length === 0 ? 502 : 200;
+  return Response.json({ resultados, erros }, { status });
 }

@@ -8,14 +8,14 @@ const pontos: PontoHistorico[] = [
 ];
 
 describe('salvarHistoricoEmLote', () => {
-  it('faz upsert ignorando duplicados', async () => {
+  it('faz upsert com o tipo/fonte informados, ignorando duplicados', async () => {
     const upsert = vi.fn().mockResolvedValue({ error: null });
     const client = { from: vi.fn().mockReturnValue({ upsert }) } as any;
-    await supabaseRepo(client).salvarHistoricoEmLote(pontos);
+    await supabaseRepo(client).salvarHistoricoEmLote('euro', 'frankfurter', pontos);
     expect(client.from).toHaveBeenCalledWith('cotacoes_historico');
     expect(upsert).toHaveBeenCalledWith(
       expect.arrayContaining([
-        expect.objectContaining({ tipo: 'dolar', valor: 5.1, fonte: 'bcb', data_referencia: pontos[0].data }),
+        expect.objectContaining({ tipo: 'euro', valor: 5.1, fonte: 'frankfurter', data_referencia: pontos[0].data }),
       ]),
       { onConflict: 'tipo,data_referencia', ignoreDuplicates: true },
     );
@@ -24,7 +24,7 @@ describe('salvarHistoricoEmLote', () => {
   it('não chama o banco com lista vazia', async () => {
     const upsert = vi.fn();
     const client = { from: vi.fn().mockReturnValue({ upsert }) } as any;
-    await supabaseRepo(client).salvarHistoricoEmLote([]);
+    await supabaseRepo(client).salvarHistoricoEmLote('dolar', 'bcb', []);
     expect(upsert).not.toHaveBeenCalled();
   });
 
@@ -32,7 +32,7 @@ describe('salvarHistoricoEmLote', () => {
     const client = {
       from: vi.fn().mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: { message: 'boom' } }) }),
     } as any;
-    await expect(supabaseRepo(client).salvarHistoricoEmLote(pontos)).rejects.toThrow('boom');
+    await expect(supabaseRepo(client).salvarHistoricoEmLote('dolar', 'bcb', pontos)).rejects.toThrow('boom');
   });
 });
 
