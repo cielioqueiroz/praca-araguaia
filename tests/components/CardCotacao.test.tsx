@@ -37,4 +37,13 @@ describe('CardCotacao', () => {
     expect(variacao).toHaveTextContent('2,5%');
     expect(variacao).toHaveClass('text-red-600');
   });
+
+  it('mostra a legenda quando informada', () => {
+    render(
+      <CardCotacao titulo="Boi gordo" valor={337.5} unidade="R$/@"
+        variacaoPct={null} dataReferencia="2026-06-26T03:00:00.000Z" desatualizado={false}
+        legenda="média MT/PA/TO/GO · CONAB" />
+    );
+    expect(screen.getByText('média MT/PA/TO/GO · CONAB')).toBeInTheDocument();
+  });
 });
