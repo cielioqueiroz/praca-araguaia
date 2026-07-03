@@ -57,7 +57,13 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Selo "desatualizado" agora é **por tipo**: 48h (diárias) / 10 dias (semanais).
 - **Fix de integração** achado no review final: variação % passou a ser calculada contra o último valor com `data_referencia` **anterior** (`ultimoValor(tipo, antesDe)`) — sem isso, a recoleta diária do mesmo ponto semanal zerava o %. `maxDuration = 60` nas rotas de coleta/backfill.
 
-**Estado atual:** 79 testes passando, build/lint limpos, 6 cotações (boi, soja, milho, dólar, euro, ouro).
+### Fatia 5 — Boletim diário em card
+- `GET /api/boletim` (pública) gera PNG 1080×1080 via `next/og` (Satori) com as 6 cotações, marca Praça Araguaia, data por extenso e rodapé de fontes; cache CDN de 1h (`s-maxage=3600` + SWR 24h).
+- `/boletim` mostra o card com botão "Baixar imagem"; painel ganhou o link "Boletim do dia →".
+- View-model puro em `lib/boletim.ts` (ordem do painel, formatação pt-BR, variação ▲/▼, fuso America/Araguaina).
+- Lição do review final: a fonte default do Satori (Noto Sans latin) **não tem os glifos ▲/▼** — as setas do card são triângulos SVG inline.
+
+**Estado atual:** 90 testes passando, build/lint limpos, 6 cotações (boi, soja, milho, dólar, euro, ouro) + boletim diário.
 
 ---
 
@@ -111,14 +117,11 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
 1. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas).
-2. **Boletim diário em card** (Satori / `@vercel/og`) para postar no Instagram/WhatsApp.
-3. **Previsão de chuva** por município (Open-Meteo, grátis).
-4. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+2. **Previsão de chuva** por município (Open-Meteo, grátis).
+3. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
-- **Tooltip do gráfico** rotula tudo como "Dólar (R$)" (`components/GraficoCotacao.tsx` — label hardcoded; passar título/unidade como prop).
-- **Gráfico de 7d com 1 ponto semanal** renderiza vazio (`dot={false}` — habilitar dot quando `dados.length < 2`).
-- **Horário do cron** (11:00 UTC) coincide com a janela de atualização da CONAB — mover para 12:00 UTC.
+- Formatação de valor/variação duplicada entre `lib/boletim.ts` e `components/CardCotacao.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
 - Recorte **municipal** da CONAB (`PrecosSemanalMunicipio.txt`) para aproximar da "Praça Araguaia" de verdade.
 - Backfill de **ouro** (sem fonte histórica grátis definida ainda).
 - Tipos gerados do Supabase (`supabase gen types`) para tipar as queries.
@@ -128,6 +131,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações — boi gordo, soja, milho (CONAB, média MT/PA/TO/GO), dólar, euro e ouro**. O próximo passo de maior valor é o **Termômetro da Praça** (diferencial estratégico) ou uma fatia menor (boletim em card, previsão de chuva). É só dizer qual e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro) + boletim diário em `/boletim`**. O próximo passo de maior valor é o **Termômetro da Praça** (diferencial estratégico) ou a **previsão de chuva** (fatia menor). É só dizer qual e eu inicio pelo `/brainstorming`.
 
-Specs e planos da fatia 4: `docs/superpowers/specs/2026-07-02-commodities-conab-design.md` e `docs/superpowers/plans/2026-07-02-commodities-conab.md`.
+Specs/planos recentes em `docs/superpowers/`: fatia 4 (`2026-07-02-commodities-conab-*`) e fatia 5 (`2026-07-03-boletim-diario-card-*`).
