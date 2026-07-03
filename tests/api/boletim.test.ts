@@ -13,9 +13,14 @@ vi.mock('next/og', () => ({
   },
 }));
 vi.mock('@/lib/supabase/public', () => ({ createPublicClient: vi.fn() }));
+vi.mock('@/lib/boletim', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/lib/boletim')>();
+  return { ...orig, montarBoletim: vi.fn(orig.montarBoletim) };
+});
 
 import { GET } from '@/app/api/boletim/route';
 import { createPublicClient } from '@/lib/supabase/public';
+import { montarBoletim } from '@/lib/boletim';
 
 const mockClient = (retorno: { data: unknown; error: unknown }) => {
   (createPublicClient as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -47,5 +52,17 @@ describe('GET /api/boletim', () => {
     mockClient({ data: null, error: { message: 'boom' } });
     const res = await GET();
     expect(res.status).toBe(500);
+  });
+
+  it('preserva variacao_pct null na conversão (não vira 0)', async () => {
+    mockClient({
+      data: [{ tipo: 'ouro', valor: 21000, unidade: 'R$', variacao_pct: null }],
+      error: null,
+    });
+    const res = await GET();
+    expect(res.status).toBe(200);
+    expect(montarBoletim).toHaveBeenCalledWith([
+      { tipo: 'ouro', valor: 21000, unidade: 'R$', variacao_pct: null },
+    ]);
   });
 });
