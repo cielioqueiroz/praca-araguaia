@@ -9,8 +9,8 @@ export type Cotacao = {
 export type CotacaoSalva = Cotacao & { variacaoPct: number | null };
 
 export interface CotacaoRepo {
-  /** Último valor gravado para o tipo, ou null se ainda não há histórico. */
-  ultimoValor(tipo: string): Promise<number | null>;
+  /** Último valor gravado para o tipo com data_referencia < antesDe, ou null. */
+  ultimoValor(tipo: string, antesDe: string): Promise<number | null>;
   /** Faz upsert em cotacoes e insert em cotacoes_historico. */
   salvar(cotacao: Cotacao, variacaoPct: number | null): Promise<void>;
 }

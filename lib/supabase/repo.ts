@@ -3,11 +3,12 @@ import type { Cotacao, CotacaoRepo, HistoricoRepo, PontoHistorico } from '@/type
 
 export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRepo {
   return {
-    async ultimoValor(tipo) {
+    async ultimoValor(tipo, antesDe) {
       const { data, error } = await client
         .from('cotacoes_historico')
         .select('valor')
         .eq('tipo', tipo)
+        .lt('data_referencia', antesDe)
         .order('data_referencia', { ascending: false })
         .limit(1)
         .maybeSingle();

@@ -19,6 +19,7 @@ describe('coletarCotacao', () => {
     const repo = repoMock(5.00);
     const r = await coletarCotacao(async () => cotacao, repo);
     expect(r.variacaoPct).toBeCloseTo(10); // (5.5-5)/5 = 10%
+    expect(repo.ultimoValor).toHaveBeenCalledWith(cotacao.tipo, cotacao.dataReferencia);
     expect(repo.salvar).toHaveBeenCalledWith(cotacao, expect.closeTo(10, 2));
   });
 
@@ -27,6 +28,18 @@ describe('coletarCotacao', () => {
     const r = await coletarCotacao(async () => cotacao, repo);
     expect(r.variacaoPct).toBeNull();
     expect(repo.salvar).toHaveBeenCalledWith(cotacao, null);
+  });
+
+  it('recoleta do mesmo ponto (dado semanal repetido) mantém a variação da semana anterior', async () => {
+    // fonte semanal (boi/soja/milho) devolve o mesmo dataReferencia em dias
+    // seguidos do cron diário; o "anterior" já exclui esse próprio ponto
+    // (repo.ultimoValor filtra data_referencia < antesDe), então a variação
+    // não deve ser zerada.
+    const repo = repoMock(5.00);
+    const r1 = await coletarCotacao(async () => cotacao, repo);
+    const r2 = await coletarCotacao(async () => cotacao, repo);
+    expect(r1.variacaoPct).toBeCloseTo(10);
+    expect(r2.variacaoPct).toBeCloseTo(10);
   });
 
   it('não grava se a fonte falhar', async () => {

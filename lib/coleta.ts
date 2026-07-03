@@ -5,7 +5,7 @@ export async function coletarCotacao(
   repo: CotacaoRepo,
 ): Promise<CotacaoSalva> {
   const cotacao = await fonte();
-  const anterior = await repo.ultimoValor(cotacao.tipo);
+  const anterior = await repo.ultimoValor(cotacao.tipo, cotacao.dataReferencia);
 
   const variacaoPct =
     anterior === null || anterior === 0

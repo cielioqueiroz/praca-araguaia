@@ -8,32 +8,36 @@ const cotacao: Cotacao = {
 };
 
 describe('supabaseRepo.ultimoValor', () => {
-  it('retorna o valor do registro mais recente', async () => {
+  it('retorna o valor do registro mais recente antes da data informada', async () => {
+    const lt = vi.fn().mockReturnThis();
     const client = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        lt,
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: { valor: 5.0 }, error: null }),
       }),
     } as any;
     const repo = supabaseRepo(client);
-    expect(await repo.ultimoValor('dolar')).toBe(5.0);
+    expect(await repo.ultimoValor('dolar', cotacao.dataReferencia)).toBe(5.0);
+    expect(lt).toHaveBeenCalledWith('data_referencia', cotacao.dataReferencia);
   });
 
-  it('retorna null quando não há histórico', async () => {
+  it('retorna null quando não há histórico anterior à data informada', async () => {
     const client = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        lt: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       }),
     } as any;
     const repo = supabaseRepo(client);
-    expect(await repo.ultimoValor('dolar')).toBeNull();
+    expect(await repo.ultimoValor('dolar', cotacao.dataReferencia)).toBeNull();
   });
 });
 
