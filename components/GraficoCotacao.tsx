@@ -49,10 +49,10 @@ export function GraficoCotacao({
             key={p}
             type="button"
             onClick={() => setPeriodo(p)}
-            className={`rounded-md px-3 py-1 text-sm font-medium transition ${
+            className={`rounded-full px-3 py-1 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto ${
               periodo === p
-                ? 'bg-emerald-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                ? 'bg-mata text-white'
+                : 'border border-linha bg-papel text-tinta/60 hover:bg-linha/60'
             }`}
           >
             {p}d
@@ -61,7 +61,7 @@ export function GraficoCotacao({
       </div>
 
       {dados.length === 0 ? (
-        <p className="text-sm text-neutral-500">Sem dados neste período.</p>
+        <p className="text-sm text-tinta/50">Sem dados neste período.</p>
       ) : (
         <ChartContainer config={config} className="h-[280px] w-full">
           <LineChart data={dados} margin={{ left: 4, right: 8, top: 8, bottom: 4 }}>

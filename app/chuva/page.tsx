@@ -13,15 +13,16 @@ export default async function Chuva() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <Link href="/" className="text-sm text-neutral-500 hover:underline">← Voltar</Link>
-      <h1 className="mt-2 text-2xl font-bold text-neutral-900">Previsão de chuva</h1>
-      <p className="mt-1 text-sm text-neutral-500">
-        Próximos 7 dias na região do Araguaia — chuva, probabilidade e temperaturas.
+    <main className="mx-auto max-w-3xl px-4 py-10">
+      <Link href="/" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rio">Próximos 7 dias · Open-Meteo</p>
+      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Chuva na região</h1>
+      <p className="mt-1 text-sm text-tinta/50">
+        Chuva, probabilidade e temperaturas por município do Araguaia.
       </p>
 
       {previsoes === null ? (
-        <p className="mt-8 text-neutral-500">Previsão indisponível no momento. Tente mais tarde.</p>
+        <p className="mt-8 text-tinta/50">Previsão indisponível no momento. Tente mais tarde.</p>
       ) : (
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           {previsoes.map((p) => (
@@ -29,8 +30,6 @@ export default async function Chuva() {
           ))}
         </section>
       )}
-
-      <p className="mt-8 text-xs text-neutral-400">fonte: Open-Meteo</p>
     </main>
   );
 }

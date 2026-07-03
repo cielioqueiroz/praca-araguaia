@@ -3,6 +3,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Identidade Praça Araguaia — tokens nomeados pelo mundo do assunto. */
+@theme {
+  --color-mata: #1c3a2b;   /* verde profundo: header, títulos */
+  --color-pasto: #15803d;  /* o verde do broto: ações e acentos */
+  --color-palha: #f6f4ec;  /* fundo do app */
+  --color-papel: #fffdf7;  /* superfície de card (mesma do boletim) */
+  --color-linha: #e7e3d6;  /* hairlines quentes */
+  --color-tinta: #20241f;  /* texto */
+  --color-rio: #0e7490;    /* acentos de chuva */
+  --font-display: var(--font-bricolage);
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

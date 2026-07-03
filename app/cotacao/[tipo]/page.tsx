@@ -27,9 +27,9 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
   const titulo = TITULOS[tipo] ?? tipo;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <Link href="/" className="text-sm text-neutral-500 hover:underline">← Voltar</Link>
-      <h1 className="mt-2 text-2xl font-bold text-neutral-900">{titulo}</h1>
+    <main className="mx-auto max-w-3xl px-4 py-10">
+      <Link href="/" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
+      <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-mata">{titulo}</h1>
 
       <div className="mt-6 max-w-sm">
         <CardCotacao
@@ -43,13 +43,17 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
         />
       </div>
 
-      <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-neutral-500">Tendência</h2>
-        {pontos.length === 0 ? (
-          <p className="text-neutral-500">Sem histórico ainda.</p>
-        ) : (
-          <GraficoCotacao pontos={pontos} titulo={titulo} unidade={atual.unidade} />
-        )}
+      <section className="mt-10">
+        <div className="border-b border-linha pb-2">
+          <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-tinta/70">Tendência</h2>
+        </div>
+        <div className="mt-4">
+          {pontos.length === 0 ? (
+            <p className="text-tinta/50">Sem histórico ainda.</p>
+          ) : (
+            <GraficoCotacao pontos={pontos} titulo={titulo} unidade={atual.unidade} />
+          )}
+        </div>
       </section>
     </main>
   );

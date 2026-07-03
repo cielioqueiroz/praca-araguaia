@@ -14,18 +14,21 @@ const fmtData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle
 export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferencia, desatualizado, legenda }: CardCotacaoProps) {
   const subiu = (variacaoPct ?? 0) >= 0;
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">{titulo}</h2>
-      {legenda && <p className="mt-0.5 text-xs text-neutral-400">{legenda}</p>}
-      <p className="mt-2 text-4xl font-bold text-neutral-900">
-        {unidade} {fmtValor.format(valor)}
+    <div className="relative h-full overflow-hidden rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)] transition group-hover:border-pasto/40 group-hover:shadow-md">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-tinta/60">{titulo}</h2>
+        {variacaoPct !== null && (
+          <p className={`text-sm font-semibold tabular-nums ${subiu ? 'text-emerald-600' : 'text-red-600'}`}>
+            {subiu ? '▲' : '▼'} {Math.abs(variacaoPct).toLocaleString('pt-BR')}%
+          </p>
+        )}
+      </div>
+      {legenda && <p className="mt-0.5 text-xs text-tinta/40">{legenda}</p>}
+      <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-pasto">{unidade}</p>
+      <p className="font-display text-4xl font-bold tabular-nums tracking-tight text-tinta">
+        {fmtValor.format(valor)}
       </p>
-      {variacaoPct !== null && (
-        <p className={`mt-1 text-sm font-medium ${subiu ? 'text-emerald-600' : 'text-red-600'}`}>
-          {subiu ? '▲' : '▼'} {Math.abs(variacaoPct).toLocaleString('pt-BR')}%
-        </p>
-      )}
-      <p className="mt-3 text-xs text-neutral-400">
+      <p className="mt-4 text-xs text-tinta/40">
         {fmtData.format(new Date(dataReferencia))}
         {desatualizado && <span className="ml-2 font-semibold text-amber-600">desatualizado</span>}
       </p>
