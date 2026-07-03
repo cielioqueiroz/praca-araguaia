@@ -10,14 +10,14 @@ const pontos: PontoHistorico[] = Array.from({ length: 40 }, (_, i) => ({
 
 describe('GraficoCotacao', () => {
   it('renderiza os botões de período', () => {
-    render(<GraficoCotacao pontos={pontos} />);
+    render(<GraficoCotacao pontos={pontos} titulo="Dólar" unidade="R$" />);
     expect(screen.getByRole('button', { name: '7d' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '30d' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '90d' })).toBeInTheDocument();
   });
 
   it('renderiza sem quebrar mesmo com poucos pontos', () => {
-    render(<GraficoCotacao pontos={pontos.slice(-1)} />);
+    render(<GraficoCotacao pontos={pontos.slice(-1)} titulo="Boi gordo" unidade="R$/@" />);
     expect(screen.getByRole('button', { name: '90d' })).toBeInTheDocument();
   });
 });

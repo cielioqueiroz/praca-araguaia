@@ -1,5 +1,5 @@
 {
   "crons": [
-    { "path": "/api/coletar", "schedule": "0 11 * * *" }
+    { "path": "/api/coletar", "schedule": "0 12 * * *" }
   ]
 }

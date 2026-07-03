@@ -14,14 +14,23 @@ import type { PontoHistorico } from '@/types/cotacao';
 const PERIODOS = [7, 30, 90] as const;
 type Periodo = (typeof PERIODOS)[number];
 
-const config = {
-  valor: { label: 'Dólar (R$)', color: 'hsl(142 71% 45%)' },
-} satisfies ChartConfig;
-
 const fmtData = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
 
-export function GraficoCotacao({ pontos }: { pontos: PontoHistorico[] }) {
+export function GraficoCotacao({
+  pontos,
+  titulo,
+  unidade,
+}: {
+  pontos: PontoHistorico[];
+  titulo: string;
+  unidade: string;
+}) {
   const [periodo, setPeriodo] = useState<Periodo>(30);
+
+  const config = useMemo(
+    () => ({ valor: { label: `${titulo} (${unidade})`, color: 'hsl(142 71% 45%)' } }) satisfies ChartConfig,
+    [titulo, unidade],
+  );
 
   const dados = useMemo(
     () =>
@@ -60,7 +69,8 @@ export function GraficoCotacao({ pontos }: { pontos: PontoHistorico[] }) {
             <XAxis dataKey="rotulo" tickLine={false} axisLine={false} minTickGap={24} />
             <YAxis width={48} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Line dataKey="valor" type="monotone" stroke="var(--color-valor)" strokeWidth={2} dot={false} />
+            {/* Com 1 ponto não há linha — o dot é o único traço visível (dado semanal no período de 7d). */}
+            <Line dataKey="valor" type="monotone" stroke="var(--color-valor)" strokeWidth={2} dot={dados.length < 2} />
           </LineChart>
         </ChartContainer>
       )}
