@@ -58,8 +58,14 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                 <div style={{ fontSize: 42, color: '#171717' }}>{item.valorFmt}</div>
                 {item.variacao && (
-                  <div style={{ display: 'flex', fontSize: 29, color: item.variacao.direcao === 'alta' ? ALTA : BAIXA }}>
-                    {item.variacao.direcao === 'alta' ? '▲' : '▼'} {item.variacao.texto}
+                  <div style={{ display: 'flex', alignItems: 'center', fontSize: 29, color: item.variacao.direcao === 'alta' ? ALTA : BAIXA }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+                      <path
+                        d={item.variacao.direcao === 'alta' ? 'M12 5l8 13H4z' : 'M12 19L4 6h16z'}
+                        fill={item.variacao.direcao === 'alta' ? ALTA : BAIXA}
+                      />
+                    </svg>
+                    {item.variacao.texto}
                   </div>
                 )}
               </div>
