@@ -22,6 +22,9 @@ export default async function Home() {
     <main className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="text-2xl font-bold text-neutral-900">agro_app</h1>
       <p className="mt-1 text-sm text-neutral-500">Cotações de referência diárias para o produtor.</p>
+      <Link href="/boletim" className="mt-2 inline-block text-sm font-medium text-emerald-700 hover:underline">
+        Boletim do dia →
+      </Link>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
         {error && <p className="text-red-600">Erro ao carregar cotações.</p>}
