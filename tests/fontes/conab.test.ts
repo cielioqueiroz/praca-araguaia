@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { buscarBoi, buscarSoja, buscarMilho, resetCacheConab } from '@/lib/fontes/conab';
+import { buscarBoi, buscarSoja, buscarMilho, resetCacheConab, buscarHistoricoConab } from '@/lib/fontes/conab';
 
 // Monta uma linha no formato real do arquivo (campos com padding, decimal com vírgula).
 const linha = (produto: string, cls: string, uf: string, semana: string, nivel: string, valor: string) =>
@@ -80,5 +80,19 @@ describe('carregamento do arquivo', () => {
     resetCacheConab();
     await buscarMilho(f);
     expect(f).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('buscarHistoricoConab', () => {
+  it('devolve um ponto por semana, convertido e em ordem ascendente', async () => {
+    const pontos = await buscarHistoricoConab('boi', fetchConab());
+    expect(pontos).toEqual([
+      { data: new Date('2026-06-19T00:00:00-03:00').toISOString(), valor: 315 }, // 21,00 × 15
+      { data: new Date('2026-06-26T00:00:00-03:00').toISOString(), valor: 337.5 }, // média(22, 23) × 15
+    ]);
+  });
+
+  it('rejeita quando não há nenhuma semana para o tipo', async () => {
+    await expect(buscarHistoricoConab('soja', fetchConab(HEADER))).rejects.toThrow(/soja/);
   });
 });

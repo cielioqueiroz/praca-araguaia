@@ -96,3 +96,13 @@ async function buscarCommodity(tipo: TipoCommodity, fetchImpl: typeof fetch): Pr
 export const buscarBoi = (fetchImpl: typeof fetch = fetch) => buscarCommodity('boi', fetchImpl);
 export const buscarSoja = (fetchImpl: typeof fetch = fetch) => buscarCommodity('soja', fetchImpl);
 export const buscarMilho = (fetchImpl: typeof fetch = fetch) => buscarCommodity('milho', fetchImpl);
+
+// Série semanal completa do arquivo (~18 meses), para o backfill idempotente.
+export async function buscarHistoricoConab(
+  tipo: TipoCommodity,
+  fetchImpl: typeof fetch = fetch,
+): Promise<PontoHistorico[]> {
+  const pontos = mediasSemanais(await carregar(fetchImpl), tipo);
+  if (pontos.length === 0) throw new Error(`CONAB sem histórico de ${tipo}`);
+  return pontos;
+}
