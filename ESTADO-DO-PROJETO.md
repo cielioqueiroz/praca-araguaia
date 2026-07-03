@@ -63,7 +63,12 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - View-model puro em `lib/boletim.ts` (ordem do painel, formatação pt-BR, variação ▲/▼, fuso America/Araguaina).
 - Lição do review final: a fonte default do Satori (Noto Sans latin) **não tem os glifos ▲/▼** — as setas do card são triângulos SVG inline.
 
-**Estado atual:** 90 testes passando, build/lint limpos, 6 cotações (boi, soja, milho, dólar, euro, ouro) + boletim diário.
+### Fatia 6 — Previsão de chuva
+- `/chuva`: 7 dias (chuva mm, probabilidade, temp mín–máx) para Redenção/PA, Santana do Araguaia/PA, Vila Rica/MT, Confresa/MT e São Félix do Araguaia/MT; dias com chuva ≥ 10 mm destacados.
+- Open-Meteo (grátis, sem chave), 1 chamada multi-coordenada, página estática com ISR de 1h (`next: { revalidate: 3600 }`); sem banco/cron. Falha da API → mensagem amigável (validado com a API fora do ar de verdade).
+- `lib/fontes/chuva.ts` (fonte pura) + `components/CardChuva.tsx`.
+
+**Estado atual:** 101 testes passando, build/lint limpos, 6 cotações + boletim diário + previsão de chuva.
 
 ---
 
@@ -116,11 +121,11 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas).
-2. **Previsão de chuva** por município (Open-Meteo, grátis).
-3. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+1. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas). *Próxima fatia de maior valor.*
+2. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
+- Chuva: `AbortSignal.timeout` no fetch da Open-Meteo; `console.error` no catch da página (hoje a falha não deixa rastro nos logs); reter o último dado bom na revalidação (hoje um blip da API troca dados bons por "indisponível" por até 1h); validar temperaturas por elemento (`Number(null)` vira 0 silencioso); card com grid de colunas fixas.
 - Formatação de valor/variação duplicada entre `lib/boletim.ts` e `components/CardCotacao.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
 - Recorte **municipal** da CONAB (`PrecosSemanalMunicipio.txt`) para aproximar da "Praça Araguaia" de verdade.
 - Backfill de **ouro** (sem fonte histórica grátis definida ainda).
@@ -131,6 +136,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro) + boletim diário em `/boletim`**. O próximo passo de maior valor é o **Termômetro da Praça** (diferencial estratégico) ou a **previsão de chuva** (fatia menor). É só dizer qual e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim` e previsão de chuva em `/chuva`**. O próximo passo de maior valor é o **Termômetro da Praça** (o diferencial estratégico — merece decomposição em sub-fatias no brainstorming). É só dizer e eu inicio pelo `/brainstorming`.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 4 (`2026-07-02-commodities-conab-*`) e fatia 5 (`2026-07-03-boletim-diario-card-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 4 (`2026-07-02-commodities-conab-*`), fatia 5 (`2026-07-03-boletim-diario-card-*`) e fatia 6 (`2026-07-03-previsao-chuva-*`).
