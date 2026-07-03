@@ -4,11 +4,10 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { supabaseRepo } from '@/lib/supabase/repo';
 import { CardCotacao } from '@/components/CardCotacao';
 import { GraficoCotacao } from '@/components/GraficoCotacao';
+import { TITULOS, LEGENDAS, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 
 export const dynamic = 'force-dynamic';
 
-const TITULOS: Record<string, string> = { dolar: 'Dólar', euro: 'Euro', ouro: 'Ouro' };
-const DOIS_DIAS_MS = 48 * 60 * 60 * 1000;
 const JANELA_DIAS = 90;
 
 export default async function DetalheCotacao({ params }: { params: Promise<{ tipo: string }> }) {
@@ -39,7 +38,8 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
           unidade={atual.unidade}
           variacaoPct={atual.variacao_pct === null ? null : Number(atual.variacao_pct)}
           dataReferencia={atual.data_referencia}
-          desatualizado={Date.now() - new Date(atual.data_referencia).getTime() > DOIS_DIAS_MS}
+          desatualizado={Date.now() - new Date(atual.data_referencia).getTime() > prazoDesatualizadoMs(tipo)}
+          legenda={LEGENDAS[tipo]}
         />
       </div>
 

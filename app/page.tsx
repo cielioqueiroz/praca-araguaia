@@ -1,17 +1,22 @@
 import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { CardCotacao } from '@/components/CardCotacao';
+import { TITULOS, ORDEM_PAINEL, LEGENDAS, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 
 export const dynamic = 'force-dynamic';
 
-const TITULOS: Record<string, string> = { dolar: 'Dólar', euro: 'Euro', ouro: 'Ouro' };
-const DOIS_DIAS_MS = 48 * 60 * 60 * 1000;
+const posicao = (tipo: string) => {
+  const i = ORDEM_PAINEL.indexOf(tipo);
+  return i === -1 ? ORDEM_PAINEL.length : i;
+};
 
 export default async function Home() {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from('cotacoes')
     .select('tipo, valor, unidade, variacao_pct, data_referencia');
+
+  const cotacoes = (data ?? []).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -20,10 +25,10 @@ export default async function Home() {
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
         {error && <p className="text-red-600">Erro ao carregar cotações.</p>}
-        {!error && (!data || data.length === 0) && (
+        {!error && cotacoes.length === 0 && (
           <p className="text-neutral-500">Ainda sem cotação — rode a coleta (/api/coletar).</p>
         )}
-        {data?.map((c) => (
+        {cotacoes.map((c) => (
           <Link key={c.tipo} href={`/cotacao/${c.tipo}`} className="block transition hover:opacity-90">
             <CardCotacao
               titulo={TITULOS[c.tipo] ?? c.tipo}
@@ -31,7 +36,8 @@ export default async function Home() {
               unidade={c.unidade}
               variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
               dataReferencia={c.data_referencia}
-              desatualizado={Date.now() - new Date(c.data_referencia).getTime() > DOIS_DIAS_MS}
+              desatualizado={Date.now() - new Date(c.data_referencia).getTime() > prazoDesatualizadoMs(c.tipo)}
+              legenda={LEGENDAS[c.tipo]}
             />
           </Link>
         ))}
