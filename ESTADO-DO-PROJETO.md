@@ -1,6 +1,6 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-06-19.
+> **Documento de retomada.** Última atualização: 2026-07-03.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
@@ -50,7 +50,14 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Nome visível **agro_app** (aba + título) e **favicon** (`app/icon.svg`).
 - Coleta diária virou idempotente no histórico (upsert), evitando conflito com o backfill.
 
-**Estado atual:** 63 testes passando, build/lint limpos, 3 cotações no ar (dólar, euro, ouro).
+### Fatia 4 — Commodities CONAB (boi gordo, soja, milho)
+- **Fonte:** arquivo público semanal da CONAB (`PrecosSemanalUF.txt`, ~14,5 MB, ISO-8859-1) — `lib/fontes/conab.ts` baixa 1×/coleta (memoização), parseia e devolve a **média de MT/PA/TO/GO** da semana mais recente.
+- Unidades de mercado: boi **R$/@** (×15), soja/milho **R$/sc 60kg** (×60). Cards com legenda "média MT/PA/TO/GO · CONAB".
+- Backfill de ~51 semanas por commodity com o mesmo parser; painel com ordem fixa (commodities primeiro) via `lib/tipos-ui.ts`.
+- Selo "desatualizado" agora é **por tipo**: 48h (diárias) / 10 dias (semanais).
+- **Fix de integração** achado no review final: variação % passou a ser calculada contra o último valor com `data_referencia` **anterior** (`ultimoValor(tipo, antesDe)`) — sem isso, a recoleta diária do mesmo ponto semanal zerava o %. `maxDuration = 60` nas rotas de coleta/backfill.
+
+**Estado atual:** 79 testes passando, build/lint limpos, 6 cotações (boi, soja, milho, dólar, euro, ouro).
 
 ---
 
@@ -103,13 +110,16 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Commodities: boi gordo, soja, milho** — o dado mais importante pro produtor. **Bloqueio:** definir a fonte (B3 não tem API pública simples; CEPEA tem direitos sobre os indicadores; IMEA é regional de MT). Começa com uma fase de pesquisa/decisão de fonte. *Provável próximo passo de maior valor.*
-2. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas).
-3. **Boletim diário em card** (Satori / `@vercel/og`) para postar no Instagram/WhatsApp.
-4. **Previsão de chuva** por município (Open-Meteo, grátis).
-5. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+1. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas).
+2. **Boletim diário em card** (Satori / `@vercel/og`) para postar no Instagram/WhatsApp.
+3. **Previsão de chuva** por município (Open-Meteo, grátis).
+4. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
+- **Tooltip do gráfico** rotula tudo como "Dólar (R$)" (`components/GraficoCotacao.tsx` — label hardcoded; passar título/unidade como prop).
+- **Gráfico de 7d com 1 ponto semanal** renderiza vazio (`dot={false}` — habilitar dot quando `dados.length < 2`).
+- **Horário do cron** (11:00 UTC) coincide com a janela de atualização da CONAB — mover para 12:00 UTC.
+- Recorte **municipal** da CONAB (`PrecosSemanalMunicipio.txt`) para aproximar da "Praça Araguaia" de verdade.
 - Backfill de **ouro** (sem fonte histórica grátis definida ainda).
 - Tipos gerados do Supabase (`supabase gen types`) para tipar as queries.
 - `salvar` não é transacional (upsert em `cotacoes` + histórico em 2 chamadas) — risco baixo numa coleta diária.
@@ -118,4 +128,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional e no ar com dólar, euro e ouro**. O próximo passo de maior valor é decidir a **fonte de dados das commodities (boi/soja/milho)** e abrir a Fatia 4 — ou, se preferir o diferencial estratégico, o **Termômetro da Praça**. É só dizer qual e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações — boi gordo, soja, milho (CONAB, média MT/PA/TO/GO), dólar, euro e ouro**. O próximo passo de maior valor é o **Termômetro da Praça** (diferencial estratégico) ou uma fatia menor (boletim em card, previsão de chuva). É só dizer qual e eu inicio pelo `/brainstorming`.
+
+Specs e planos da fatia 4: `docs/superpowers/specs/2026-07-02-commodities-conab-design.md` e `docs/superpowers/plans/2026-07-02-commodities-conab.md`.
