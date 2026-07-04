@@ -60,29 +60,40 @@ export type ResumoProduto = {
   produto: ProdutoTermometro;
   rotulo: string;
   unidade: string;
-  media: number;
+  mediana: number;
+  faixa: { min: number; max: number };
   contagem: number;
-  municipios: { municipio: string; media: number; contagem: number }[];
+  municipios: { municipio: string; mediana: number; contagem: number }[];
 };
 
-const media2 = (valores: number[]) =>
-  Math.round((valores.reduce((s, v) => s + v, 0) / valores.length) * 100) / 100;
+// Mediana de uma lista NÃO vazia, arredondada a 2 casas (par: média dos dois centrais).
+export function mediana(valores: number[]): number {
+  const ordenados = [...valores].sort((a, b) => a - b);
+  const meio = Math.floor(ordenados.length / 2);
+  const bruta =
+    ordenados.length % 2 === 0 ? (ordenados[meio - 1] + ordenados[meio]) / 2 : ordenados[meio];
+  return Math.round(bruta * 100) / 100;
+}
 
 // Agrega reportes JÁ filtrados (aprovados, últimos 7 dias — responsabilidade da query).
 export function resumirReportes(reportes: ReporteAprovado[]): ResumoProduto[] {
   return ORDEM_PRODUTOS.flatMap((produto) => {
     const doProduto = reportes.filter((r) => r.produto === produto);
     if (doProduto.length === 0) return [];
+    const valores = doProduto.map((r) => r.valor);
     const municipios = MUNICIPIOS_TERMOMETRO.flatMap((municipio) => {
-      const valores = doProduto.filter((r) => r.municipio === municipio).map((r) => r.valor);
-      return valores.length === 0 ? [] : [{ municipio, media: media2(valores), contagem: valores.length }];
+      const doMunicipio = doProduto.filter((r) => r.municipio === municipio).map((r) => r.valor);
+      return doMunicipio.length === 0
+        ? []
+        : [{ municipio, mediana: mediana(doMunicipio), contagem: doMunicipio.length }];
     });
     return [
       {
         produto,
         rotulo: PRODUTOS[produto].rotulo,
         unidade: PRODUTOS[produto].unidade,
-        media: media2(doProduto.map((r) => r.valor)),
+        mediana: mediana(valores),
+        faixa: { min: Math.min(...valores), max: Math.max(...valores) },
         contagem: doProduto.length,
         municipios,
       },

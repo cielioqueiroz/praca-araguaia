@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validarReporte, resumirReportes, normalizarValor, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
+import { validarReporte, resumirReportes, mediana, normalizarValor, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
 
 const corpo = (extra: Record<string, unknown> = {}) => ({
   produto: 'boi', municipio: 'Redenção', valor: 320, contato: '', ...extra,
@@ -45,27 +45,56 @@ describe('validarReporte', () => {
   });
 });
 
+describe('mediana', () => {
+  it('valor central em contagem ímpar', () => {
+    expect(mediana([310, 320, 900])).toBe(320);
+  });
+  it('média dos dois centrais em contagem par, 2 casas', () => {
+    expect(mediana([300, 310, 320, 331])).toBe(315);
+    expect(mediana([50, 51])).toBe(50.5);
+  });
+  it('um elemento é ele mesmo; repetidos ok', () => {
+    expect(mediana([320])).toBe(320);
+    expect(mediana([320, 320, 320])).toBe(320);
+  });
+  it('não depende da ordem de entrada', () => {
+    expect(mediana([900, 310, 320])).toBe(320);
+  });
+});
+
 describe('resumirReportes', () => {
   const r = (produto: string, municipio: string, valor: number) => ({ produto, municipio, valor });
 
-  it('agrega média regional e por município, na ordem fixa', () => {
+  it('agrega mediana regional (imune a um extremo) e faixa, na ordem fixa', () => {
     const resumo = resumirReportes([
       r('soja', 'Vila Rica', 110),
+      r('boi', 'Redenção', 300),
+      r('boi', 'Redenção', 310),
+      r('boi', 'Confresa', 320),
+      r('boi', 'Confresa', 330),
+      r('boi', 'Vila Rica', 900), // extremo: puxaria a média para ~432
+    ]);
+    expect(resumo.map((x) => x.produto)).toEqual(['boi', 'soja']); // ordem fixa, sem produtos vazios
+    expect(resumo[0]).toMatchObject({ rotulo: 'Boi gordo', unidade: 'R$/@', mediana: 320, contagem: 5 });
+    expect(resumo[0].faixa).toEqual({ min: 300, max: 900 });
+  });
+
+  it('mediana por município e contagem', () => {
+    const resumo = resumirReportes([
       r('boi', 'Redenção', 320),
       r('boi', 'Redenção', 330),
       r('boi', 'Confresa', 310),
     ]);
-    expect(resumo.map((x) => x.produto)).toEqual(['boi', 'soja']); // ordem fixa, sem produtos vazios
-    expect(resumo[0]).toMatchObject({ rotulo: 'Boi gordo', unidade: 'R$/@', media: 320, contagem: 3 });
     expect(resumo[0].municipios).toEqual([
-      { municipio: 'Redenção', media: 325, contagem: 2 },
-      { municipio: 'Confresa', media: 310, contagem: 1 },
+      { municipio: 'Redenção', mediana: 325, contagem: 2 },
+      { municipio: 'Confresa', mediana: 310, contagem: 1 },
     ]);
   });
 
-  it('arredonda médias a 2 casas', () => {
-    const resumo = resumirReportes([r('milho', 'Vila Rica', 50), r('milho', 'Vila Rica', 51)]);
-    expect(resumo[0].media).toBe(50.5);
+  it('um reporte: mediana = valor, faixa degenerada', () => {
+    const resumo = resumirReportes([r('milho', 'Vila Rica', 50)]);
+    expect(resumo[0]).toMatchObject({ mediana: 50, contagem: 1 });
+    expect(resumo[0].faixa).toEqual({ min: 50, max: 50 });
   });
 
   it('lista vazia devolve vazio', () => {
