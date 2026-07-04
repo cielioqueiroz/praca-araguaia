@@ -46,7 +46,13 @@ export default async function Termometro() {
       ) : (
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           {resumos.map((r) => (
-            <CardTermometro key={r.produto} resumo={r} mediaConab={conab.get(r.produto)} />
+            <Link
+              key={r.produto}
+              href={`/termometro/${r.produto}`}
+              className="rounded-xl transition hover:shadow-[0_2px_10px_rgba(28,38,32,0.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
+            >
+              <CardTermometro resumo={r} mediaConab={conab.get(r.produto)} />
+            </Link>
           ))}
         </section>
       )}
