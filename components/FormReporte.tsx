@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO, type ProdutoTermometro } from '@/lib/termometro';
+import { PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO, normalizarValor, type ProdutoTermometro } from '@/lib/termometro';
 
 export function FormReporte() {
   const [produto, setProduto] = useState<ProdutoTermometro>('boi');
@@ -20,15 +20,16 @@ export function FormReporte() {
     );
   }
 
-  async function enviar(e: React.FormEvent) {
+  async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const contato = String(new FormData(e.currentTarget).get('contato') ?? '');
     setErro(null);
     setEnviando(true);
     try {
       const res = await fetch('/api/reportar', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ produto, municipio, valor: Number(valor.replace(',', '.')), contato: '' }),
+        body: JSON.stringify({ produto, municipio, valor: normalizarValor(valor), contato }),
       });
       if (res.ok) {
         setEnviado(true);

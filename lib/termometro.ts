@@ -15,6 +15,14 @@ export const ORDEM_PRODUTOS: ProdutoTermometro[] = ['boi', 'bezerro', 'vaca', 's
 
 export const MUNICIPIOS_TERMOMETRO: string[] = MUNICIPIOS.map((m) => m.nome);
 
+// Converte texto pt-BR em número: "1.500" → 1500, "1.500,50" → 1500.5, "320,5" → 320.5, "320.5" → 320.5.
+export function normalizarValor(texto: string): number {
+  const t = texto.trim().replace(/\s/g, '');
+  if (t.includes(',')) return Number(t.replace(/\./g, '').replace(',', '.'));
+  if (/^\d{1,3}(\.\d{3})+$/.test(t)) return Number(t.replace(/\./g, ''));
+  return Number(t);
+}
+
 export type ReporteValido = { produto: ProdutoTermometro; municipio: string; valor: number };
 
 export type Validacao =

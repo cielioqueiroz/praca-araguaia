@@ -36,4 +36,26 @@ describe('FormReporte', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar preço' }));
     expect(await screen.findByText(/Limite diário/)).toBeInTheDocument();
   });
+
+  it('bot que preenche o honeypot tem o valor enviado ao servidor', async () => {
+    const f = mockFetch(200, { recebido: true });
+    render(<FormReporte />);
+    const honeypot = document.querySelector('input[name="contato"]') as HTMLInputElement;
+    fireEvent.change(honeypot, { target: { value: 'sou bot' } });
+    fireEvent.change(screen.getByLabelText(/Preço/), { target: { value: '320' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar preço' }));
+    await screen.findByText(/Recebido!/);
+    const corpo = JSON.parse(String((f.mock.calls[0][1] as RequestInit).body));
+    expect(corpo).toMatchObject({ contato: 'sou bot' });
+  });
+
+  it('converte valor pt-BR com separador de milhar', async () => {
+    const f = mockFetch(200, { recebido: true });
+    render(<FormReporte />);
+    fireEvent.change(screen.getByLabelText(/Preço/), { target: { value: '1.500' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar preço' }));
+    await screen.findByText(/Recebido!/);
+    const corpo = JSON.parse(String((f.mock.calls[0][1] as RequestInit).body));
+    expect(corpo).toMatchObject({ valor: 1500 });
+  });
 });

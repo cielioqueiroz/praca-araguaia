@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validarReporte, resumirReportes, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
+import { validarReporte, resumirReportes, normalizarValor, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
 
 const corpo = (extra: Record<string, unknown> = {}) => ({
   produto: 'boi', municipio: 'Redenção', valor: 320, contato: '', ...extra,
@@ -70,6 +70,32 @@ describe('resumirReportes', () => {
 
   it('lista vazia devolve vazio', () => {
     expect(resumirReportes([])).toEqual([]);
+  });
+});
+
+describe('normalizarValor', () => {
+  it('converte separador de milhar pt-BR', () => {
+    expect(normalizarValor('1.500')).toBe(1500);
+  });
+
+  it('converte milhar com decimal pt-BR', () => {
+    expect(normalizarValor('1.500,50')).toBe(1500.5);
+  });
+
+  it('converte decimal com vírgula', () => {
+    expect(normalizarValor('320,5')).toBe(320.5);
+  });
+
+  it('mantém decimal com ponto', () => {
+    expect(normalizarValor('320.5')).toBe(320.5);
+  });
+
+  it('mantém número inteiro simples', () => {
+    expect(normalizarValor('320')).toBe(320);
+  });
+
+  it('devolve NaN para texto não numérico', () => {
+    expect(normalizarValor('abc')).toBeNaN();
   });
 });
 
