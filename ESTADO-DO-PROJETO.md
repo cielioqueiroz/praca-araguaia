@@ -96,7 +96,13 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - A robustez já é reforçada pela faixa plausível na entrada (validação do reporte), então **sem corte estatístico extra** (IQR/desvio) — desnecessário com o volume atual.
 - Próximas sub-fatias do T3 (não iniciadas): **OTP** por telefone/WhatsApp (provedor pago + PII — rompe com "fontes grátis", decidir se vale) e **reputação** por reportador (depende de identidade estável, ou seja, do OTP).
 
-**Estado atual:** 172 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro (mediana/faixa + moderação própria em `/moderar`), identidade visual própria.
+### Fatia 11 — Histórico do Termômetro
+- Nova página **`/termometro/[produto]`** (espelha `/cotacao/[tipo]`): card atual (valor típico dos últimos 7 dias) + **gráfico da tendência da mediana diária** dos últimos 90 dias, com o toggle 7/30/90 — reaproveitando o `GraficoCotacao` inteiro (zero componente novo de gráfico).
+- `historicoTermometro()` puro em `lib/termometro-historico.ts`: agrupa os reportes aprovados por dia (fuso America/Araguaina via `Intl` en-CA) e devolve a mediana de cada dia; um extremo no dia não puxa o ponto.
+- Cards do `/termometro` viram **links** para a página de detalhe (com `aria-label`). Sem banco, deps, PII ou rotas de API.
+- Detalhe do review: o card do detalhe usa a janela de **7 dias** (espelha a lista que o usuário clicou), enquanto o gráfico usa 90 dias.
+
+**Estado atual:** 177 testes passando, build/lint limpos, 6 cotações + boletim + chuva + Termômetro completo (reporte anônimo, moderação própria em `/moderar`, mediana/faixa e histórico por produto), identidade visual própria. README profissional atualizado no GitHub (com diagramas Mermaid).
 
 ---
 
@@ -149,8 +155,11 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Termômetro T3 (sub-fatias restantes)** — verificação por telefone/WhatsApp (OTP: provedor pago + PII) e reputação por reportador (depende do OTP). A mediana/faixa já foi entregue na fatia 10.
-2. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do caminho por ora.
+
+1. **Bot de Telegram (grátis)** — boletim diário (reaproveita o PNG de `/api/boletim`) + alertas de preço para inscritos; substitui o "alertas no WhatsApp" pago. Telegram Bot API é gratuita.
+2. **Vitrine de insumos/fornecedores** — diretório curado com contato por link `wa.me` (grátis, sem API).
+3. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, então só se o usuário decidir bancar. A mediana/faixa (fatia 10) e o histórico (fatia 11) já saíram.
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
 - Moderação (`/moderar`): botões Aprovar/Rejeitar sem `aria-label` por card e mensagens de erro sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente no repo); endurecer o HMAC do cookie (derivar chave de um segredo separado da senha) se um dia houver mais de um moderador.
@@ -165,6 +174,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** moderados em `/termometro`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O próximo passo do Termômetro T3 é a **verificação do produtor (OTP por telefone/WhatsApp)** + **reputação** — ambas exigem decidir sobre um provedor pago e guardar telefone (PII), então valem uma conversa antes. É só dizer e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça completo** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O usuário pediu **só ferramentas grátis** — a próxima fatia mais provável é o **bot de Telegram** (boletim/alertas grátis) ou a **vitrine de fornecedores** (link `wa.me`). É só dizer e eu inicio pelo `/brainstorming`.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 8 (`2026-07-03-termometro-t1`), fatia 9 (`2026-07-04-termometro-t2-moderacao-*`) e fatia 10 (`2026-07-04-termometro-t3-mediana-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 9 (`2026-07-04-termometro-t2-moderacao-*`), fatia 10 (`2026-07-04-termometro-t3-mediana-*`) e fatia 11 (`2026-07-04-termometro-historico-*`).
