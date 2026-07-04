@@ -68,7 +68,14 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Open-Meteo (grátis, sem chave), 1 chamada multi-coordenada, página estática com ISR de 1h (`next: { revalidate: 3600 }`); sem banco/cron. Falha da API → mensagem amigável (validado com a API fora do ar de verdade).
 - `lib/fontes/chuva.ts` (fonte pura) + `components/CardChuva.tsx`.
 
-**Estado atual:** 101 testes passando, build/lint limpos, 6 cotações + boletim diário + previsão de chuva.
+### Fatia 7 — Redesign visual (identidade Praça Araguaia)
+- Tokens Tailwind v4 nomeados pelo assunto (`mata`, `pasto`, `palha`, `papel`, `linha`, `tinta`, `rio`) + fonte display **Bricolage Grotesque** (números tabulares grandes como assinatura).
+- Header verde-mata com marca e nav (Cotações · Boletim · Chuva) + footer com fontes, em todas as páginas.
+- Painel agrupado em **"Na porteira"** (boi/soja/milho — regional/semanal) e **"Mercado"** (câmbio/ouro — diário); cards em papel com unidade como etiqueta.
+- `/chuva` com barras proporcionais de mm e colunas alinhadas; título da aba → "Praça Araguaia — cotações do agro".
+- Zero mudanças de comportamento: 101 testes passaram **sem alterar nenhum teste**; boletim PNG intocado.
+
+**Estado atual:** 101 testes passando, build/lint limpos, 6 cotações + boletim diário + previsão de chuva, com identidade visual própria.
 
 ---
 
