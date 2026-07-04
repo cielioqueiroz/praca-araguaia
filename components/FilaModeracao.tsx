@@ -10,9 +10,21 @@ export function FilaModeracao({ pendentes, agora }: { pendentes: ReportePendente
   const [erro, setErro] = useState<string | null>(null);
 
   async function decidir(id: string, decisao: Decisao) {
-    const anterior = fila;
+    const indice = fila.findIndex((r) => r.id === id);
+    const card = fila[indice];
     setErro(null);
-    setFila(anterior.filter((r) => r.id !== id)); // otimista: some na hora
+    setFila((prev) => prev.filter((r) => r.id !== id)); // otimista: some na hora
+
+    // No erro, reinsere só o card desta decisão, na posição original —
+    // decisões concorrentes que deram certo continuam fora da fila.
+    const devolverCard = () =>
+      setFila((prev) => {
+        if (!card || prev.some((r) => r.id === card.id)) return prev;
+        const copia = [...prev];
+        copia.splice(Math.min(indice, copia.length), 0, card);
+        return copia;
+      });
+
     try {
       const res = await fetch('/api/moderar/decidir', {
         method: 'POST',
@@ -25,10 +37,10 @@ export function FilaModeracao({ pendentes, agora }: { pendentes: ReportePendente
       }
       if (res.ok || res.status === 404) return; // 404: já moderado — segue removido
       const body = (await res.json().catch(() => null)) as { erro?: string } | null;
-      setFila(anterior);
+      devolverCard();
       setErro(body?.erro ?? 'Não deu certo. Tente de novo.');
     } catch {
-      setFila(anterior);
+      devolverCard();
       setErro('Sem conexão. Tente de novo.');
     }
   }

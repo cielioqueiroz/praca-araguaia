@@ -80,6 +80,33 @@ describe('FilaModeracao', () => {
     expect(screen.getByText('Boi gordo')).toBeInTheDocument(); // voltou
   });
 
+  it('decisões concorrentes: falha em A devolve só A; B (sucesso) segue fora da fila', async () => {
+    let resolveA!: (r: Response) => void;
+    let resolveB!: (r: Response) => void;
+    const pA = new Promise<Response>((res) => (resolveA = res));
+    const pB = new Promise<Response>((res) => (resolveB = res));
+    const fetchMock = vi.fn((_url: string, init: RequestInit) => {
+      const { id } = JSON.parse(String(init.body)) as { id: string };
+      return id === pendentes[0].id ? pA : pB;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
+
+    // Aprova A (Boi gordo) e rejeita B (Bezerro) quase juntos — ambos em voo.
+    fireEvent.click(screen.getAllByRole('button', { name: 'Aprovar' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Rejeitar' })[0]); // só resta B na fila
+    expect(screen.queryByText('Boi gordo')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bezerro')).not.toBeInTheDocument();
+
+    // B resolve 200 primeiro; A falha com 500 depois.
+    resolveB(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    resolveA(new Response(JSON.stringify({ erro: 'Erro ao salvar. Tente de novo.' }), { status: 500 }));
+
+    expect(await screen.findByText('Erro ao salvar. Tente de novo.')).toBeInTheDocument();
+    expect(screen.getByText('Boi gordo')).toBeInTheDocument(); // A voltou
+    expect(screen.queryByText('Bezerro')).not.toBeInTheDocument(); // B moderado com sucesso, sem card fantasma
+  });
+
   it('404 (já moderado) mantém o card removido, sem erro', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ erro: 'Reporte não encontrado ou já moderado.' }), { status: 404 })));
     render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
