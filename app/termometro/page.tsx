@@ -28,7 +28,7 @@ export default async function Termometro() {
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Preço de quem tá na lida</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Termômetro da Praça</h1>
       <p className="mt-1 text-sm text-tinta/50">
-        Média dos preços reportados por produtores da região nos últimos 7 dias, conferidos antes de entrar na conta.
+        Valor típico dos preços reportados por produtores da região nos últimos 7 dias — conferidos antes de entrar na conta e resistentes a um lance fora da curva.
       </p>
 
       <Link
