@@ -4,11 +4,17 @@ import { CardChuva } from '@/components/CardChuva';
 
 export const metadata = { title: 'Previsão de chuva — Praça Araguaia' };
 
+// Dinâmica de propósito: o fetch da Open-Meteo continua cacheado por 1h (data cache),
+// mas uma FALHA não fica congelada na página estática — a próxima visita tenta de novo
+// e a página se recupera assim que a API voltar (falha de fetch não entra no cache).
+export const dynamic = 'force-dynamic';
+
 export default async function Chuva() {
   let previsoes: PrevisaoMunicipio[] | null;
   try {
     previsoes = await buscarPrevisao();
-  } catch {
+  } catch (erro) {
+    console.error('Previsão indisponível (Open-Meteo):', erro);
     previsoes = null;
   }
 
