@@ -90,7 +90,13 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - T3 = OTP por telefone/WhatsApp para produtores, reputação, mediana/corte de outliers.
 - Backlog anotado: botões Aprovar/Rejeitar sem `aria-label` por card e erros sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente); endurecer o HMAC (derivar chave de um segredo separado) se um dia houver mais de um moderador.
 
-**Estado atual:** 165 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro (com moderação própria em `/moderar`), identidade visual própria.
+### Fatia 10 — Termômetro T3 (sub-fatia 1): mediana + faixa
+- `/termometro` agora mostra o **"valor típico" (mediana)** dos reportes aprovados dos últimos 7 dias, no lugar da média — **imune a 1-2 preços absurdos** (um reporte de R$ 900/@ no boi não puxa mais o número). Mais a **faixa** (menor–maior reportado), exibida só quando há 2+ reportes com dispersão.
+- Só lógica pura + exibição: `mediana()` em `lib/termometro.ts` (2 casas, par = média dos dois centrais), `ResumoProduto` troca `media` por `mediana` + `faixa`, `CardTermometro` mostra "valor típico" e a linha de faixa; contraste "média CONAB" mantido. Sem banco, deps, PII ou rotas.
+- A robustez já é reforçada pela faixa plausível na entrada (validação do reporte), então **sem corte estatístico extra** (IQR/desvio) — desnecessário com o volume atual.
+- Próximas sub-fatias do T3 (não iniciadas): **OTP** por telefone/WhatsApp (provedor pago + PII — rompe com "fontes grátis", decidir se vale) e **reputação** por reportador (depende de identidade estável, ou seja, do OTP).
+
+**Estado atual:** 172 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro (mediana/faixa + moderação própria em `/moderar`), identidade visual própria.
 
 ---
 
@@ -143,7 +149,7 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Termômetro T3** — verificação por telefone/WhatsApp (OTP), reputação, mediana/corte de outliers.
+1. **Termômetro T3 (sub-fatias restantes)** — verificação por telefone/WhatsApp (OTP: provedor pago + PII) e reputação por reportador (depende do OTP). A mediana/faixa já foi entregue na fatia 10.
 2. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
@@ -159,6 +165,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça** — reportes anônimos em `/termometro/reportar`, média moderada em `/termometro`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O próximo passo de maior valor é o **Termômetro T3** (verificação por telefone/OTP + reputação + mediana), que dá confiança aos preços reportados. É só dizer e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** moderados em `/termometro`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O próximo passo do Termômetro T3 é a **verificação do produtor (OTP por telefone/WhatsApp)** + **reputação** — ambas exigem decidir sobre um provedor pago e guardar telefone (PII), então valem uma conversa antes. É só dizer e eu inicio pelo `/brainstorming`.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 6 (`2026-07-03-previsao-chuva-*`), fatia 8 (`2026-07-03-termometro-t1`) e fatia 9 (`2026-07-04-termometro-t2-moderacao-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 8 (`2026-07-03-termometro-t1`), fatia 9 (`2026-07-04-termometro-t2-moderacao-*`) e fatia 10 (`2026-07-04-termometro-t3-mediana-*`).
