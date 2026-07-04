@@ -1,4 +1,4 @@
-import { criarToken, verificarSenha, COOKIE_MODERACAO } from '@/lib/moderacao';
+import { criarToken, verificarSenha, COOKIE_MODERACAO, VALIDADE_TOKEN_MS } from '@/lib/moderacao';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,11 +7,6 @@ const ESPERA_MS = process.env.NODE_ENV === 'test' ? 0 : 800;
 const espera = () => new Promise((r) => setTimeout(r, ESPERA_MS));
 
 export async function POST(req: Request) {
-  const senha = process.env.MODERACAO_SENHA;
-  if (!senha) {
-    return Response.json({ erro: 'Moderação não configurada.' }, { status: 500 });
-  }
-
   let body: unknown = null;
   try {
     body = await req.json();
@@ -24,6 +19,11 @@ export async function POST(req: Request) {
       : '';
 
   await espera();
+  const senha = process.env.MODERACAO_SENHA;
+  if (!senha) {
+    return Response.json({ erro: 'Moderação não configurada.' }, { status: 500 });
+  }
+
   if (!verificarSenha(tentativa, senha)) {
     return Response.json({ erro: 'Senha incorreta.' }, { status: 401 });
   }
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     'Path=/',
     'HttpOnly',
     'SameSite=Lax',
-    `Max-Age=${60 * 60 * 24 * 30}`,
+    `Max-Age=${VALIDADE_TOKEN_MS / 1000}`,
   ];
   if (process.env.NODE_ENV === 'production') atributos.push('Secure');
 
