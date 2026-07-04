@@ -75,7 +75,14 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - `/chuva` com barras proporcionais de mm e colunas alinhadas; título da aba → "Praça Araguaia — cotações do agro".
 - Zero mudanças de comportamento: 101 testes passaram **sem alterar nenhum teste**; boletim PNG intocado.
 
-**Estado atual:** 101 testes passando, build/lint limpos, 6 cotações + boletim diário + previsão de chuva, com identidade visual própria.
+### Fatia 8 — Termômetro da Praça T1 (capturar e mostrar)
+- **Reporte anônimo** em `/termometro/reportar` (boi R$/@, bezerro R$/cabeça, vaca R$/@, soja e milho R$/sc — nos 5 municípios da chuva), sem cadastro; validações de faixa plausível, honeypot real e limite de 5 por IP/24h (`POST /api/reportar`, service role).
+- Tabela `reportes` (migração 0003, aplicada) com RLS: público só lê `aprovado`; escrita revogada de anon/authenticated (defesa em profundidade).
+- **Moderação v1:** mudar `status` na tabela `reportes` pelo dashboard do Supabase (pendente → aprovado/rejeitado). T2 = UI de moderação; T3 = OTP/reputação/mediana.
+- `/termometro`: média dos últimos 7 dias por produto (regional + por município) com contagem e contraste "média CONAB" para boi/soja/milho; item Termômetro no header.
+- Backlog anotado: página mascara erro de banco como estado vazio; município editado à mão fora da lista some da quebra; mensagem imprecisa p/ valor não numérico; TOCTOU no soft-limit.
+
+**Estado atual:** 132 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro, com identidade visual própria.
 
 ---
 
@@ -128,8 +135,9 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Termômetro da Praça** — o diferencial/fosso: reporte anônimo de preço local + moderação + média semanal. Mais complexo (auth por telefone/WhatsApp, moderação, novas tabelas). *Próxima fatia de maior valor.*
-2. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+1. **Termômetro T2** — UI de moderação protegida (aprovar/rejeitar a fila pelo celular, sem abrir o dashboard do Supabase).
+2. **Termômetro T3** — verificação por telefone/WhatsApp (OTP), reputação, mediana/corte de outliers.
+3. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
 - Chuva: `AbortSignal.timeout` no fetch da Open-Meteo; `console.error` no catch da página (hoje a falha não deixa rastro nos logs); reter o último dado bom na revalidação (hoje um blip da API troca dados bons por "indisponível" por até 1h); validar temperaturas por elemento (`Number(null)` vira 0 silencioso); card com grid de colunas fixas.
