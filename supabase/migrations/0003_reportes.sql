@@ -17,3 +17,10 @@ alter table reportes enable row level security;
 -- Público só enxerga aprovados; escrita apenas via service role (sem policy de insert/update).
 create policy "leitura publica de aprovados" on reportes
   for select using (status = 'aprovado');
+
+-- RLS: leitura pública de aprovados, escrita só service role (que ignora RLS).
+-- A escrita por anon fica negada por AUSÊNCIA de policy permissiva (RLS nega por
+-- padrão). Para defesa em profundidade, revogamos também os GRANTs de tabela do
+-- anon/authenticated: assim, mesmo que uma migração futura adicione uma policy
+-- permissiva por engano, a escrita continua bloqueada no nível de privilégio.
+revoke insert, update, delete on reportes from anon, authenticated;
