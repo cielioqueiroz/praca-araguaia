@@ -34,12 +34,13 @@ export default async function HistoricoProduto({ params }: { params: Promise<{ p
   const { data: cotacoes } = await supabase.from('cotacoes').select('tipo, valor');
   const conab = new Map((cotacoes ?? []).map((c) => [c.tipo as string, Number(c.valor)]));
 
-  const linhas = (reportes ?? []).map((x) => ({
-    produto,
-    municipio: x.municipio as string,
-    valor: Number(x.valor),
-  }));
-  const resumo = resumirReportes(linhas)[0]; // 1 produto -> 0 ou 1 resumo
+  // O card do topo espelha o de 7 dias que o usuário clicou no /termometro (o CardTermometro
+  // rotula "últimos 7 dias"); o gráfico abaixo usa a janela completa de 90 dias.
+  const corte7d = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const linhas7d = (reportes ?? [])
+    .filter((x) => new Date(x.criado_em as string).getTime() >= corte7d)
+    .map((x) => ({ produto, municipio: x.municipio as string, valor: Number(x.valor) }));
+  const resumo = resumirReportes(linhas7d)[0]; // 1 produto -> 0 ou 1 resumo
 
   const pontos = historicoTermometro(
     (reportes ?? []).map((x): ReporteHistorico => ({ valor: Number(x.valor), criado_em: x.criado_em as string })),

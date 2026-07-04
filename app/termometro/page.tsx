@@ -49,6 +49,7 @@ export default async function Termometro() {
             <Link
               key={r.produto}
               href={`/termometro/${r.produto}`}
+              aria-label={`Ver histórico de ${r.rotulo}`}
               className="rounded-xl transition hover:shadow-[0_2px_10px_rgba(28,38,32,0.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
             >
               <CardTermometro resumo={r} mediaConab={conab.get(r.produto)} />
