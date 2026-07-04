@@ -1,6 +1,6 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-03.
+> **Documento de retomada.** Última atualização: 2026-07-04.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
@@ -82,7 +82,15 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - `/termometro`: média dos últimos 7 dias por produto (regional + por município) com contagem e contraste "média CONAB" para boi/soja/milho; item Termômetro no header.
 - Backlog anotado: página mascara erro de banco como estado vazio; município editado à mão fora da lista some da quebra; mensagem imprecisa p/ valor não numérico; TOCTOU no soft-limit.
 
-**Estado atual:** 132 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro, com identidade visual própria.
+### Fatia 9 — Termômetro da Praça T2 (UI de moderação)
+- **`/moderar`** protegida por senha (não entra no menu, `robots: noindex`): sem sessão mostra tela de senha; com sessão, a fila de reportes pendentes (mais recente primeiro) com valor, município, tempo relativo e a **referência CONAB** do produto — botões grandes Aprovar/Rejeitar, mobile-first.
+- **Auth de moderador único:** `POST /api/moderar/login` compara `MODERACAO_SENHA` (env) em tempo constante, com espera fixa de 800 ms em toda resposta (anti-brute-force), e grava cookie `moderacao` HttpOnly/SameSite=Lax de 30 dias, assinado por HMAC-SHA256 com a própria senha (**trocar a senha derruba todas as sessões**). `POST /api/moderar/decidir` exige cookie válido + body válido; update restrito a `status='pendente'` (0 linhas → 404, sem TOCTOU).
+- **Fila com remoção otimista:** card some no clique; erro devolve só o card da decisão que falhou (não atropela decisões concorrentes); 401 recarrega para a tela de senha. Sem migração de banco (a tabela `reportes` já bastava).
+- Lição de arquitetura: `lib/moderacao.ts` importa `node:crypto`, então os itens usados pelo componente client (`tempoRelativo`, tipos) foram extraídos para `lib/moderacao-tipos.ts` — sem isso o `node:crypto` vazava para o bundle do navegador e o build quebrava.
+- T3 = OTP por telefone/WhatsApp para produtores, reputação, mediana/corte de outliers.
+- Backlog anotado: botões Aprovar/Rejeitar sem `aria-label` por card e erros sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente); endurecer o HMAC (derivar chave de um segredo separado) se um dia houver mais de um moderador.
+
+**Estado atual:** 165 testes passando, build/lint limpos, 6 cotações + boletim + chuva + termômetro (com moderação própria em `/moderar`), identidade visual própria.
 
 ---
 
@@ -135,11 +143,11 @@ docs/superpowers/{specs,plans}/ # specs e planos de cada fatia
 
 Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano → implementação.
 
-1. **Termômetro T2** — UI de moderação protegida (aprovar/rejeitar a fila pelo celular, sem abrir o dashboard do Supabase).
-2. **Termômetro T3** — verificação por telefone/WhatsApp (OTP), reputação, mediana/corte de outliers.
-3. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
+1. **Termômetro T3** — verificação por telefone/WhatsApp (OTP), reputação, mediana/corte de outliers.
+2. **Vitrine de insumos/fornecedores** + **alertas no WhatsApp** (fases posteriores do conceito).
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
+- Moderação (`/moderar`): botões Aprovar/Rejeitar sem `aria-label` por card e mensagens de erro sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente no repo); endurecer o HMAC do cookie (derivar chave de um segredo separado da senha) se um dia houver mais de um moderador.
 - Chuva: `AbortSignal.timeout` no fetch da Open-Meteo; `console.error` no catch da página (hoje a falha não deixa rastro nos logs); reter o último dado bom na revalidação (hoje um blip da API troca dados bons por "indisponível" por até 1h); validar temperaturas por elemento (`Number(null)` vira 0 silencioso); card com grid de colunas fixas.
 - Formatação de valor/variação duplicada entre `lib/boletim.ts` e `components/CardCotacao.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
 - Recorte **municipal** da CONAB (`PrecosSemanalMunicipio.txt`) para aproximar da "Praça Araguaia" de verdade.
@@ -151,6 +159,6 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim` e previsão de chuva em `/chuva`**. O próximo passo de maior valor é o **Termômetro da Praça** (o diferencial estratégico — merece decomposição em sub-fatias no brainstorming). É só dizer e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça** — reportes anônimos em `/termometro/reportar`, média moderada em `/termometro`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O próximo passo de maior valor é o **Termômetro T3** (verificação por telefone/OTP + reputação + mediana), que dá confiança aos preços reportados. É só dizer e eu inicio pelo `/brainstorming`.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 4 (`2026-07-02-commodities-conab-*`), fatia 5 (`2026-07-03-boletim-diario-card-*`) e fatia 6 (`2026-07-03-previsao-chuva-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 6 (`2026-07-03-previsao-chuva-*`), fatia 8 (`2026-07-03-termometro-t1`) e fatia 9 (`2026-07-04-termometro-t2-moderacao-*`).
