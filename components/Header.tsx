@@ -4,6 +4,7 @@ const LINKS = [
   { href: '/', rotulo: 'Cotações' },
   { href: '/boletim', rotulo: 'Boletim' },
   { href: '/chuva', rotulo: 'Chuva' },
+  { href: '/termometro', rotulo: 'Termômetro' },
 ];
 
 export function Header() {
