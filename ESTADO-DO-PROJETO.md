@@ -102,7 +102,13 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Cards do `/termometro` viram **links** para a página de detalhe (com `aria-label`). Sem banco, deps, PII ou rotas de API.
 - Detalhe do review: o card do detalhe usa a janela de **7 dias** (espelha a lista que o usuário clicou), enquanto o gráfico usa 90 dias.
 
-**Estado atual:** 177 testes passando, build/lint limpos, 6 cotações + boletim + chuva + Termômetro completo (reporte anônimo, moderação própria em `/moderar`, mediana/faixa e histórico por produto), identidade visual própria. README profissional atualizado no GitHub (com diagramas Mermaid).
+### Fatia 12 — Vitrine de fornecedores
+- Nova página **`/fornecedores`** (estática, no menu): diretório curado de agropecuárias/revendas/prestadores, filtrável por **categoria** (chips), com contato por link **`wa.me`** (mensagem pronta, grátis, sem API do WhatsApp).
+- Dados curados em `lib/fornecedores.ts` (`FORNECEDORES` **começa vazio** — nenhum dado fictício no ar; estado "em breve"). `linkWhatsApp` e `agruparPorCategoria` puros e testados; uma **invariante de teste** protege o formato (`categoria` válida, `whatsapp` só dígitos DDI+DDD+número) quando os reais entrarem.
+- Sem banco, deps, rotas de API ou PII de usuário. Categorias: Ração e sal · Defensivos e sementes · Veterinário · Máquinas e peças · Assistência técnica.
+- **Pendente de conteúdo:** o dono envia os fornecedores reais (nome, categoria, município, WhatsApp com DDD) para um commit de dados.
+
+**Estado atual:** 190 testes passando, build/lint limpos, 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores, identidade visual própria. README profissional no GitHub (com diagramas Mermaid).
 
 ---
 
@@ -157,8 +163,8 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do caminho por ora.
 
-1. **Bot de Telegram (grátis)** — boletim diário (reaproveita o PNG de `/api/boletim`) + alertas de preço para inscritos; substitui o "alertas no WhatsApp" pago. Telegram Bot API é gratuita.
-2. **Vitrine de insumos/fornecedores** — diretório curado com contato por link `wa.me` (grátis, sem API).
+1. **Conteúdo da vitrine** — receber do dono os primeiros fornecedores reais e adicioná-los a `lib/fornecedores.ts` num commit (a estrutura já está no ar; só falta a lista).
+2. **Bot de Telegram (grátis)** — boletim diário (reaproveita o PNG de `/api/boletim`) + alertas de preço para inscritos; substitui o "alertas no WhatsApp" pago. Telegram Bot API é gratuita.
 3. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, então só se o usuário decidir bancar. A mediana/faixa (fatia 10) e o histórico (fatia 11) já saíram.
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
@@ -174,6 +180,6 @@ O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva` e o Termômetro da Praça completo** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, e **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel, projeto `agro_app`). O usuário pediu **só ferramentas grátis** — a próxima fatia mais provável é o **bot de Telegram** (boletim/alertas grátis) ou a **vitrine de fornecedores** (link `wa.me`). É só dizer e eu inicio pelo `/brainstorming`.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva`, o Termômetro da Praça completo e a vitrine de fornecedores** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel), e **`/fornecedores`** (curado, link `wa.me`, começa vazio). O usuário pediu **só ferramentas grátis**. Próximo passo mais imediato: **receber os fornecedores reais** para popular a vitrine; depois, o **bot de Telegram** (boletim/alertas grátis). É só dizer e eu sigo.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 9 (`2026-07-04-termometro-t2-moderacao-*`), fatia 10 (`2026-07-04-termometro-t3-mediana-*`) e fatia 11 (`2026-07-04-termometro-historico-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 10 (`2026-07-04-termometro-t3-mediana-*`), fatia 11 (`2026-07-04-termometro-historico-*`) e fatia 12 (`2026-07-04-vitrine-fornecedores-*`).
