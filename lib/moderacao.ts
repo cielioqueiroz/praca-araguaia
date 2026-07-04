@@ -1,4 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import type { Decisao } from './moderacao-tipos';
+
+export { tempoRelativo, type ReportePendente, type Decisao } from './moderacao-tipos';
 
 export const COOKIE_MODERACAO = 'moderacao';
 export const VALIDADE_TOKEN_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -42,8 +45,6 @@ export function lerTokenDoCookie(header: string | null): string | null {
   return null;
 }
 
-export type Decisao = 'aprovado' | 'rejeitado';
-
 export type ValidacaoDecisao =
   | { tipo: 'invalido'; erro: string }
   | { tipo: 'valido'; id: string; decisao: Decisao };
@@ -63,23 +64,3 @@ export function validarDecisao(body: unknown): ValidacaoDecisao {
   }
   return { tipo: 'valido', id: b.id, decisao: b.decisao };
 }
-
-export function tempoRelativo(iso: string, agora: number): string {
-  const minutos = Math.max(0, Math.floor((agora - new Date(iso).getTime()) / 60_000));
-  if (minutos < 60) return `há ${minutos} min`;
-  const horas = Math.floor(minutos / 60);
-  if (horas < 24) return `há ${horas} h`;
-  const dias = Math.floor(horas / 24);
-  return dias === 1 ? 'há 1 dia' : `há ${dias} dias`;
-}
-
-// Forma que a página /moderar entrega para a FilaModeracao (produto já resolvido).
-export type ReportePendente = {
-  id: string;
-  rotulo: string;
-  unidade: string;
-  valor: number;
-  municipio: string;
-  criadoEm: string; // ISO
-  mediaConab?: number;
-};

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { tempoRelativo, type ReportePendente, type Decisao } from '@/lib/moderacao';
+import { tempoRelativo, type ReportePendente, type Decisao } from '@/lib/moderacao-tipos';
 
 const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
