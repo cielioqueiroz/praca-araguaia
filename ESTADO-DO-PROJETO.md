@@ -108,18 +108,17 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Sem banco, deps, rotas de API ou PII de usuário. Categorias: Ração e sal · Defensivos e sementes · Veterinário · Máquinas e peças · Assistência técnica.
 - **Pendente de conteúdo:** o dono envia os fornecedores reais (nome, categoria, município, WhatsApp com DDD) para um commit de dados.
 
-### Fatia 13A — Bot de Telegram: inscrição + webhook (EM PROD, DORMENTE)
-- Código completo e testado, **migração `0004_assinantes_telegram` aplicada**, e agora **no master/produção** (foi junto no push da fatia 14). O endpoint `/api/telegram` está **dormente**: responde 500 sem env e nunca é chamado (nenhum webhook registrado). O bot **ainda não está ligado**.
+### Fatia 13A — Bot de Telegram: inscrição + webhook (NO AR / LIGADO 🟢)
+- **Ligado em 2026-07-04.** Bot **`@pracaaraguaia_bot`** criado no @BotFather (com comandos `/start` e `/parar` e descrição no menu); `TELEGRAM_BOT_TOKEN` + `TELEGRAM_WEBHOOK_SECRET` cadastrados na Vercel (Production) e capturados por redeploy; webhook registrado (`setWebhook` apontando `https://agroapp-bay.vercel.app/api/telegram`, com `secret_token`) e saudável (`getWebhookInfo` sem erros). Teste e2e OK: `/start` respondeu e gravou o `chat_id` em `assinantes_telegram` (1 inscrito).
 - `lib/telegram.ts` (`interpretarUpdate` + `enviarMensagem` + textos) e o webhook `app/api/telegram/route.ts`: responde a `/start` (upsert do `chat_id`), `/parar` (apaga) e ajuda; verifica o header `x-telegram-bot-api-secret-token`; sempre 200 (o Telegram re-tenta em não-200). Só guarda o `chat_id`; tabela com RLS fechada.
-- **Para ligar (só ativação — o código já está no ar):** (1) criar o bot no @BotFather → `TELEGRAM_BOT_TOKEN`; (2) cadastrar `TELEGRAM_BOT_TOKEN` + `TELEGRAM_WEBHOOK_SECRET` na Vercel (Production) → redeploy pega as env; (3) `setWebhook` (curl com url `/api/telegram` + secret_token); (4) `/start` no bot e conferir a linha em `assinantes_telegram`.
-- Sub-fatias seguintes do bot: **B** (envio diário do boletim via cron + `sendPhoto` do PNG) e **C** (alertas de preço), ambas dependem de A ligada.
+- Sub-fatias seguintes do bot (agora desbloqueadas): **B** (envio diário do boletim via cron + `sendPhoto` do PNG) e **C** (alertas de preço).
 
 ### Fatia 14 — Calculadora do produtor
 - **`/calculadora`** (no menu, `force-dynamic`): valor de um lote de boi (peso vivo + rendimento → arrobas → R$) e de uma colheita de grãos (sacas → R$), com os **preços pré-preenchidos das cotações ao vivo** e editáveis. Só front + leitura de cotações; sem banco de escrita, deps ou PII.
 - `lib/calculadora.ts` puro (`arrobasDeBoi`, `valorEmReais`, `sacas↔kg`; arroba do boi = 15 kg carcaça, rendimento padrão 50; guarda NaN/negativo → 0, nunca mostra NaN). Reusa `normalizarValor`.
 - **Contexto:** substituiu a ideia de "cotações por município da CONAB", investigada e **descartada** — o arquivo municipal traz boi/soja/milho ~6 meses desatualizados (o estadual é fresco), e a CONAB quase não pesquisa os municípios da praça.
 
-**Estado atual:** 213 testes passando, build/lint limpos, no ar: 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores + calculadora do produtor; bot de Telegram em prod, dormente, faltando só a ativação. README profissional no GitHub (com diagramas Mermaid).
+**Estado atual:** 213 testes passando, build/lint limpos, no ar: 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores + calculadora do produtor; **bot de Telegram `@pracaaraguaia_bot` LIGADO** (inscrição/webhook funcionando). README profissional no GitHub (com diagramas Mermaid).
 
 ---
 
@@ -174,8 +173,8 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do caminho por ora.
 
-1. **Ligar o bot de Telegram (13A)** — só ativação: @BotFather + env na Vercel + setWebhook (o código já está em prod, dormente; detalhado na seção da fatia 13A).
-2. **Bot de Telegram B e C** — envio diário do boletim (cron + `sendPhoto` do PNG) e alertas de preço; dependem de 13A ligada.
+1. ~~**Ligar o bot de Telegram (13A)**~~ ✅ **feito em 2026-07-04** (`@pracaaraguaia_bot` no ar).
+2. **Bot de Telegram B e C** — envio diário do boletim (cron + `sendPhoto` do PNG) e alertas de preço; **agora desbloqueados** (13A ligada).
 3. **Conteúdo da vitrine** — receber do dono os primeiros fornecedores reais e adicioná-los a `lib/fornecedores.ts` num commit (estrutura já no ar).
 4. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, só se o dono decidir bancar.
 
