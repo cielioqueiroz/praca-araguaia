@@ -108,7 +108,13 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Sem banco, deps, rotas de API ou PII de usuário. Categorias: Ração e sal · Defensivos e sementes · Veterinário · Máquinas e peças · Assistência técnica.
 - **Pendente de conteúdo:** o dono envia os fornecedores reais (nome, categoria, município, WhatsApp com DDD) para um commit de dados.
 
-**Estado atual:** 190 testes passando, build/lint limpos, 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores, identidade visual própria. README profissional no GitHub (com diagramas Mermaid).
+### Fatia 13A — Bot de Telegram: inscrição + webhook (PRONTA, NÃO LIGADA)
+- Código completo e testado (203 testes, review "pronto para deploy"), **migração `0004_assinantes_telegram` já aplicada** — mas o bot **ainda não está no ar** porque depende de um passo manual do dono no **@BotFather**.
+- `lib/telegram.ts` (`interpretarUpdate` + `enviarMensagem` + textos) e o webhook `app/api/telegram/route.ts`: responde a `/start` (upsert do `chat_id`), `/parar` (apaga) e ajuda; verifica o header `x-telegram-bot-api-secret-token`; sempre 200 (o Telegram re-tenta em não-200). Só guarda o `chat_id`; tabela com RLS fechada.
+- **Para ligar (5 min):** (1) criar o bot no @BotFather → `TELEGRAM_BOT_TOKEN`; (2) cadastrar `TELEGRAM_BOT_TOKEN` + `TELEGRAM_WEBHOOK_SECRET` na Vercel (Production); (3) push; (4) `setWebhook` (curl com url `/api/telegram` + secret_token); (5) `/start` no bot e conferir a linha em `assinantes_telegram`. **Commits locais ainda não enviados.**
+- Sub-fatias seguintes do bot: **B** (envio diário do boletim via cron + `sendPhoto` do PNG) e **C** (alertas de preço), ambas dependem de A ligada.
+
+**Estado atual:** 203 testes passando, build/lint limpos, 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores no ar; bot de Telegram (inscrição) pronto para ligar. README profissional no GitHub (com diagramas Mermaid).
 
 ---
 
@@ -163,9 +169,10 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 
 O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do caminho por ora.
 
-1. **Conteúdo da vitrine** — receber do dono os primeiros fornecedores reais e adicioná-los a `lib/fornecedores.ts` num commit (a estrutura já está no ar; só falta a lista).
-2. **Bot de Telegram (grátis)** — boletim diário (reaproveita o PNG de `/api/boletim`) + alertas de preço para inscritos; substitui o "alertas no WhatsApp" pago. Telegram Bot API é gratuita.
-3. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, então só se o usuário decidir bancar. A mediana/faixa (fatia 10) e o histórico (fatia 11) já saíram.
+1. **Ligar o bot de Telegram (13A)** — passos manuais do dono no @BotFather + env na Vercel + push + setWebhook (detalhado na seção da fatia 13A). Código pronto, migração aplicada.
+2. **Bot de Telegram B e C** — envio diário do boletim (cron + `sendPhoto` do PNG) e alertas de preço; dependem de 13A ligada.
+3. **Conteúdo da vitrine** — receber do dono os primeiros fornecedores reais e adicioná-los a `lib/fornecedores.ts` num commit (estrutura já no ar).
+4. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, só se o dono decidir bancar.
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
 - Moderação (`/moderar`): botões Aprovar/Rejeitar sem `aria-label` por card e mensagens de erro sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente no repo); endurecer o HMAC do cookie (derivar chave de um segredo separado da senha) se um dia houver mais de um moderador.
@@ -180,6 +187,6 @@ O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do
 
 ## Ponto de retomada
 
-Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva`, o Termômetro da Praça completo e a vitrine de fornecedores** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel), e **`/fornecedores`** (curado, link `wa.me`, começa vazio). O usuário pediu **só ferramentas grátis**. Próximo passo mais imediato: **receber os fornecedores reais** para popular a vitrine; depois, o **bot de Telegram** (boletim/alertas grátis). É só dizer e eu sigo.
+Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva`, o Termômetro da Praça completo e a vitrine de fornecedores** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel), e **`/fornecedores`** (curado, link `wa.me`, começa vazio). O usuário pediu **só ferramentas grátis**. **Pendências abertas:** (a) ligar o bot de Telegram 13A (BotFather + env + push + setWebhook — código e migração prontos, commits locais não enviados); (b) popular a vitrine com fornecedores reais. Próximas fatias grátis: bot Telegram B (envio do boletim) e C (alertas). É só dizer e eu sigo.
 
-Specs/planos recentes em `docs/superpowers/`: fatia 10 (`2026-07-04-termometro-t3-mediana-*`), fatia 11 (`2026-07-04-termometro-historico-*`) e fatia 12 (`2026-07-04-vitrine-fornecedores-*`).
+Specs/planos recentes em `docs/superpowers/`: fatia 11 (`2026-07-04-termometro-historico-*`), fatia 12 (`2026-07-04-vitrine-fornecedores-*`) e fatia 13A (`2026-07-04-telegram-inscricao-*`).
