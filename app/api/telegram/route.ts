@@ -27,17 +27,21 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const intencao = interpretarUpdate(update);
+  if (intencao.tipo === 'ignorar') return new Response('ok', { status: 200 });
+
   try {
     const supabase = createServerClient();
     if (intencao.tipo === 'start') {
-      await supabase
+      const { error } = await supabase
         .from('assinantes_telegram')
         .upsert({ chat_id: intencao.chatId }, { onConflict: 'chat_id', ignoreDuplicates: true });
+      if (error) console.error('telegram upsert falhou', error);
       await enviarMensagem(token, intencao.chatId, TEXTO_BOAS_VINDAS);
     } else if (intencao.tipo === 'parar') {
-      await supabase.from('assinantes_telegram').delete().eq('chat_id', intencao.chatId);
+      const { error } = await supabase.from('assinantes_telegram').delete().eq('chat_id', intencao.chatId);
+      if (error) console.error('telegram delete falhou', error);
       await enviarMensagem(token, intencao.chatId, TEXTO_DESPEDIDA);
-    } else if (intencao.tipo === 'ajuda') {
+    } else {
       await enviarMensagem(token, intencao.chatId, TEXTO_AJUDA);
     }
   } catch (e) {
