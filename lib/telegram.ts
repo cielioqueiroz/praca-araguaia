@@ -38,3 +38,25 @@ export async function enviarMensagem(
   });
   if (!res.ok) console.error('Telegram sendMessage falhou', res.status);
 }
+
+export type ResultadoEnvio = { ok: true } | { ok: false; bloqueado: boolean };
+
+// Envia uma foto (por URL — o Telegram baixa a imagem) via Bot API.
+// 403 = bot bloqueado / conta desativada → sinaliza remoção do inscrito.
+export async function enviarFoto(
+  token: string,
+  chatId: number,
+  photoUrl: string,
+  caption: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ResultadoEnvio> {
+  const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendPhoto`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption }),
+  });
+  if (res.ok) return { ok: true };
+  if (res.status === 403) return { ok: false, bloqueado: true };
+  console.error('Telegram sendPhoto falhou', res.status);
+  return { ok: false, bloqueado: false };
+}
