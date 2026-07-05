@@ -6,6 +6,7 @@ const LINKS = [
   { href: '/chuva', rotulo: 'Chuva' },
   { href: '/termometro', rotulo: 'Termômetro' },
   { href: '/fornecedores', rotulo: 'Fornecedores' },
+  { href: '/calculadora', rotulo: 'Calculadora' },
 ];
 
 export function Header() {
