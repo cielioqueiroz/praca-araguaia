@@ -6,7 +6,7 @@ import { normalizarValor } from '@/lib/termometro';
 
 const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const num = (s: string) => normalizarValor(s);
-const precoInicial = (v?: number) => (v === undefined ? '' : String(v));
+const precoInicial = (v?: number) => (v !== undefined && Number.isFinite(v) ? String(v) : '');
 
 type Precos = { boi?: number; soja?: number; milho?: number };
 type ProdutoGrao = 'soja' | 'milho';
