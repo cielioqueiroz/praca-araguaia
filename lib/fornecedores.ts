@@ -21,9 +21,6 @@ export type Fornecedor = {
   whatsapp: string; // só dígitos com DDI, ex.: "5594999998888"
 };
 
-// Curada pelo dono. Vazia até os primeiros fornecedores reais entrarem.
-export const FORNECEDORES: Fornecedor[] = [];
-
 export const MENSAGEM_PADRAO = 'Olá! Vi seu contato na Praça Araguaia.';
 
 // Monta o link wa.me com a mensagem pré-preenchida (o produtor é quem envia).

@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   linkWhatsApp,
   agruparPorCategoria,
-  CATEGORIAS,
-  FORNECEDORES,
   MENSAGEM_PADRAO,
   normalizarWhatsapp,
   validarFornecedor,
@@ -60,17 +58,6 @@ describe('agruparPorCategoria', () => {
 
   it('lista vazia devolve vazio', () => {
     expect(agruparPorCategoria([])).toEqual([]);
-  });
-});
-
-describe('invariante dos FORNECEDORES curados', () => {
-  const ids = new Set(CATEGORIAS.map((c) => c.id));
-  it('toda categoria é válida e o whatsapp é só dígitos (DDI+DDD+número)', () => {
-    for (const forn of FORNECEDORES) {
-      expect(ids.has(forn.categoria)).toBe(true);
-      expect(forn.whatsapp).toMatch(/^\d{12,13}$/);
-      expect(forn.nome.trim()).not.toBe('');
-    }
   });
 });
 
