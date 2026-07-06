@@ -1,13 +1,5 @@
 import Link from 'next/link';
-
-const LINKS = [
-  { href: '/', rotulo: 'Cotações' },
-  { href: '/boletim', rotulo: 'Boletim' },
-  { href: '/chuva', rotulo: 'Chuva' },
-  { href: '/termometro', rotulo: 'Termômetro' },
-  { href: '/fornecedores', rotulo: 'Fornecedores' },
-  { href: '/calculadora', rotulo: 'Calculadora' },
-];
+import { NavPrincipal } from '@/components/NavPrincipal';
 
 export function Header() {
   return (
@@ -25,17 +17,7 @@ export function Header() {
           </svg>
           <span className="font-display text-lg font-bold tracking-tight">Praça Araguaia</span>
         </Link>
-        <nav className="flex flex-wrap justify-end gap-1 text-sm">
-          {LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-full px-3 py-1.5 font-medium text-emerald-100/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
-            >
-              {l.rotulo}
-            </Link>
-          ))}
-        </nav>
+        <NavPrincipal />
       </div>
     </header>
   );
