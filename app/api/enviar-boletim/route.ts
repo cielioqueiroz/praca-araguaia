@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { enviarFoto } from '@/lib/telegram';
-import { enviarBoletim, legendaBoletim, urlFotoBoletim } from '@/lib/telegram-boletim';
+import { legendaBoletim, urlFotoBoletim } from '@/lib/telegram-boletim';
+import { enviarEmMassa } from '@/lib/telegram-broadcast';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -29,7 +30,7 @@ export async function GET(req: Request): Promise<Response> {
   const url = urlFotoBoletim(agora);
   const caption = legendaBoletim(agora);
 
-  const { enviados, bloqueados, falhas } = await enviarBoletim({
+  const { enviados, bloqueados, falhas } = await enviarEmMassa({
     chatIds,
     enviar: (chatId) => enviarFoto(token, chatId, url, caption),
   });
