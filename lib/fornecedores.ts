@@ -108,3 +108,13 @@ export function validarDecisaoFornecedor(body: unknown): ValidacaoDecisaoFornece
   }
   return { tipo: 'valido', id: b.id, decisao: b.decisao };
 }
+
+// View-model da moderação (client-safe — sem PII além do contato comercial público).
+export type FornecedorModeravel = {
+  id: string;
+  nome: string;
+  categoriaRotulo: string;
+  oQueVende: string;
+  municipio: string;
+  whatsapp: string;
+};

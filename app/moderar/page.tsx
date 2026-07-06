@@ -3,8 +3,9 @@ import { createServerClient } from '@/lib/supabase/server';
 import { createPublicClient } from '@/lib/supabase/public';
 import { verificarToken, COOKIE_MODERACAO, type ReportePendente } from '@/lib/moderacao';
 import { PRODUTOS, type ProdutoTermometro } from '@/lib/termometro';
+import { CATEGORIAS, type FornecedorModeravel } from '@/lib/fornecedores';
 import { FormLoginModeracao } from '@/components/FormLoginModeracao';
-import { FilaModeracao } from '@/components/FilaModeracao';
+import { AbasModeracao } from '@/components/AbasModeracao';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -65,6 +66,24 @@ export default async function Moderar() {
     };
   });
 
+  const { data: forns } = await supabase
+    .from('fornecedores')
+    .select('id, nome, categoria, o_que_vende, municipio, whatsapp, status')
+    .in('status', ['pendente', 'aprovado'])
+    .order('criado_em', { ascending: false });
+
+  const rotulo = new Map(CATEGORIAS.map((c) => [c.id, c.rotulo]));
+  const paraModeravel = (r: Record<string, unknown>): FornecedorModeravel => ({
+    id: r.id as string,
+    nome: r.nome as string,
+    categoriaRotulo: rotulo.get(r.categoria as never) ?? String(r.categoria),
+    oQueVende: r.o_que_vende as string,
+    municipio: r.municipio as string,
+    whatsapp: r.whatsapp as string,
+  });
+  const fornecedoresPendentes = (forns ?? []).filter((r) => r.status === 'pendente').map(paraModeravel);
+  const fornecedoresAprovados = (forns ?? []).filter((r) => r.status === 'aprovado').map(paraModeravel);
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Área restrita</p>
@@ -75,7 +94,12 @@ export default async function Moderar() {
           : `${pendentes.length} ${pendentes.length === 1 ? 'reporte esperando' : 'reportes esperando'} decisão.`}
       </p>
       <div className="mt-8">
-        <FilaModeracao pendentes={pendentes} agora={Date.now()} />
+        <AbasModeracao
+          reportes={pendentes}
+          agora={Date.now()}
+          fornecedoresPendentes={fornecedoresPendentes}
+          fornecedoresAprovados={fornecedoresAprovados}
+        />
       </div>
     </main>
   );
