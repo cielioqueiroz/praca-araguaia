@@ -1,6 +1,7 @@
 {
   "crons": [
     { "path": "/api/coletar", "schedule": "0 12 * * *" },
-    { "path": "/api/enviar-boletim", "schedule": "20 12 * * *" }
+    { "path": "/api/enviar-boletim", "schedule": "20 12 * * *" },
+    { "path": "/api/alertas", "schedule": "25 12 * * *" }
   ]
 }
