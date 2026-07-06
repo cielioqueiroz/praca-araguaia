@@ -5,6 +5,9 @@ import {
   CATEGORIAS,
   FORNECEDORES,
   MENSAGEM_PADRAO,
+  normalizarWhatsapp,
+  validarFornecedor,
+  validarDecisaoFornecedor,
   type Fornecedor,
   type CategoriaFornecedor,
 } from '@/lib/fornecedores';
@@ -68,5 +71,70 @@ describe('invariante dos FORNECEDORES curados', () => {
       expect(forn.whatsapp).toMatch(/^\d{12,13}$/);
       expect(forn.nome.trim()).not.toBe('');
     }
+  });
+});
+
+describe('normalizarWhatsapp', () => {
+  it('prepende 55 quando vem só DDD+número', () => {
+    expect(normalizarWhatsapp('(94) 99999-8888')).toBe('5594999998888');
+    expect(normalizarWhatsapp('9499998888')).toBe('559499998888'); // 10 dígitos → +55
+  });
+  it('mantém quando já tem DDI e tira lixo não-numérico', () => {
+    expect(normalizarWhatsapp('55 94 99999-8888')).toBe('5594999998888');
+    expect(normalizarWhatsapp('abc')).toBe('');
+  });
+});
+
+describe('validarFornecedor', () => {
+  const valido = {
+    nome: 'Casa Agro',
+    categoria: 'racao-sal',
+    oQueVende: 'ração e sal mineral',
+    municipio: 'Redenção',
+    whatsapp: '(94) 99999-8888',
+    contato: '',
+  };
+
+  it('aceita e normaliza (whatsapp com 55, strings trimadas)', () => {
+    const r = validarFornecedor(valido);
+    expect(r).toEqual({
+      tipo: 'valido',
+      fornecedor: {
+        nome: 'Casa Agro',
+        categoria: 'racao-sal',
+        oQueVende: 'ração e sal mineral',
+        municipio: 'Redenção',
+        whatsapp: '5594999998888',
+      },
+    });
+  });
+
+  it('honeypot preenchido → honeypot', () => {
+    expect(validarFornecedor({ ...valido, contato: 'sou bot' })).toEqual({ tipo: 'honeypot' });
+  });
+
+  it('rejeita nome curto, categoria fora da lista, oQueVende vazio, município curto e whatsapp inválido', () => {
+    expect(validarFornecedor({ ...valido, nome: 'A' }).tipo).toBe('invalido');
+    expect(validarFornecedor({ ...valido, categoria: 'inexistente' }).tipo).toBe('invalido');
+    expect(validarFornecedor({ ...valido, oQueVende: ' ' }).tipo).toBe('invalido');
+    expect(validarFornecedor({ ...valido, municipio: 'X' }).tipo).toBe('invalido');
+    expect(validarFornecedor({ ...valido, whatsapp: '123' }).tipo).toBe('invalido');
+  });
+
+  it('corpo não-objeto → inválido', () => {
+    expect(validarFornecedor(null).tipo).toBe('invalido');
+  });
+});
+
+describe('validarDecisaoFornecedor', () => {
+  const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
+  it('aceita aprovado/rejeitado/removido com UUID', () => {
+    for (const decisao of ['aprovado', 'rejeitado', 'removido'] as const) {
+      expect(validarDecisaoFornecedor({ id: UUID, decisao })).toEqual({ tipo: 'valido', id: UUID, decisao });
+    }
+  });
+  it('rejeita id não-UUID e decisão desconhecida', () => {
+    expect(validarDecisaoFornecedor({ id: 'abc', decisao: 'aprovado' }).tipo).toBe('invalido');
+    expect(validarDecisaoFornecedor({ id: UUID, decisao: 'sumir' }).tipo).toBe('invalido');
   });
 });
