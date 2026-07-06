@@ -24,22 +24,36 @@ export function interpretarUpdate(update: unknown): IntencaoTelegram {
   return { tipo: 'ajuda', chatId };
 }
 
-// Envia uma mensagem de texto via Bot API. fetchImpl injetável para teste.
+// Compat: o webhook não precisa do status de bloqueio. Delega em enviarTexto.
 export async function enviarMensagem(
   token: string,
   chatId: number,
   texto: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<void> {
+  await enviarTexto(token, chatId, texto, fetchImpl);
+}
+
+export type ResultadoEnvio = { ok: true } | { ok: false; bloqueado: boolean };
+
+// Envia uma mensagem de texto via Bot API, sinalizando bloqueio (403).
+// fetchImpl injetável para teste.
+export async function enviarTexto(
+  token: string,
+  chatId: number,
+  texto: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ResultadoEnvio> {
   const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text: texto }),
   });
-  if (!res.ok) console.error('Telegram sendMessage falhou', res.status);
+  if (res.ok) return { ok: true };
+  if (res.status === 403) return { ok: false, bloqueado: true };
+  console.error('Telegram sendMessage falhou', res.status);
+  return { ok: false, bloqueado: false };
 }
-
-export type ResultadoEnvio = { ok: true } | { ok: false; bloqueado: boolean };
 
 // Envia uma foto (por URL — o Telegram baixa a imagem) via Bot API.
 // 403 = bot bloqueado / conta desativada → sinaliza remoção do inscrito.

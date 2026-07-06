@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { interpretarUpdate, enviarMensagem, enviarFoto } from '@/lib/telegram';
+import { interpretarUpdate, enviarMensagem, enviarFoto, enviarTexto } from '@/lib/telegram';
 
 const msg = (text: string, id: number = 42) => ({ message: { text, chat: { id } } });
 
@@ -69,5 +69,27 @@ describe('enviarFoto', () => {
     const fetchMock = vi.fn(async () => new Response('boom', { status: 500 }));
     const r = await enviarFoto('TOKEN123', 42, 'https://x/foto.png', 'legenda', fetchMock);
     expect(r).toEqual({ ok: false, bloqueado: false });
+  });
+});
+
+describe('enviarTexto', () => {
+  it('faz POST em sendMessage com chat_id e text; ok em 200', async () => {
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    const r = await enviarTexto('TOKEN123', 42, 'alô', fetchMock);
+    expect(r).toEqual({ ok: true });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.telegram.org/botTOKEN123/sendMessage');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({ chat_id: 42, text: 'alô' });
+  });
+
+  it('403 (bot bloqueado) vira bloqueado:true', async () => {
+    const fetchMock = vi.fn(async () => new Response('forbidden', { status: 403 }));
+    expect(await enviarTexto('T', 42, 'x', fetchMock)).toEqual({ ok: false, bloqueado: true });
+  });
+
+  it('outro erro vira bloqueado:false', async () => {
+    const fetchMock = vi.fn(async () => new Response('boom', { status: 500 }));
+    expect(await enviarTexto('T', 42, 'x', fetchMock)).toEqual({ ok: false, bloqueado: false });
   });
 });
