@@ -12,10 +12,52 @@ export function SuaRegiaoChuva() {
   const [loc, setLoc] = useState<Local | null>(null);
 
   useEffect(() => {
-    fetch('/api/chuva-local')
-      .then((r) => r.json())
-      .then((d: Local) => setLoc(d))
-      .catch(() => {});
+    const porIP = () =>
+      fetch('/api/chuva-local')
+        .then((r) => r.json())
+        .then((d: Local) => setLoc(d))
+        .catch(() => {});
+
+    if (!navigator.geolocation) {
+      porIP();
+      return;
+    }
+    // Tenta a localização exata (em tempo real) primeiro; cai pro IP se negar.
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const [geo, met] = await Promise.all([
+            fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`,
+            ).then((r) => r.json()),
+            fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+                '&current=temperature_2m&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min' +
+                '&timezone=auto&forecast_days=7',
+            ).then((r) => r.json()),
+          ]);
+          const d = met.daily;
+          const dias: Dia[] = (d?.time ?? []).map((data: string, i: number) => ({
+            data,
+            chuvaMm: Number(d.precipitation_sum?.[i] ?? 0),
+            probMax: d.precipitation_probability_max?.[i] ?? null,
+            tempMin: Number(d.temperature_2m_min?.[i]),
+            tempMax: Number(d.temperature_2m_max?.[i]),
+          }));
+          setLoc({
+            cidade: geo.city || geo.locality || geo.principalSubdivision || 'Sua região',
+            uf: String(geo.principalSubdivisionCode || '').split('-').pop() || '',
+            tempAtual: typeof met?.current?.temperature_2m === 'number' ? Math.round(met.current.temperature_2m) : null,
+            dias,
+          });
+        } catch {
+          porIP();
+        }
+      },
+      () => porIP(),
+      { timeout: 8000, maximumAge: 10 * 60 * 1000 },
+    );
   }, []);
 
   if (!loc || loc.dias.length === 0) return null;

@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from 'next/font/google';
+import { Playfair_Display, Archivo, JetBrains_Mono } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { UtilityBar } from '@/components/redesign/UtilityBar';
 import { Masthead } from '@/components/redesign/Masthead';
 import { SiteFooter } from '@/components/redesign/SiteFooter';
 
-const fraunces = Fraunces({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-fraunces' });
-const hanken = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-hanken' });
-const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono' });
+// Nomes de var mantidos (--font-fraunces/hanken/plex-mono) para não churnar o CSS.
+const display = Playfair_Display({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-fraunces' });
+const sans = Archivo({ subsets: ['latin'], variable: '--font-hanken' });
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agroapp-bay.vercel.app'),
@@ -35,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={cn(fraunces.variable, hanken.variable, plexMono.variable)}>
+    <html lang="pt-BR" className={cn(display.variable, sans.variable, mono.variable)}>
       <body className="grain flex min-h-screen flex-col bg-bone font-sans text-ink antialiased">
         <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
           <defs>
