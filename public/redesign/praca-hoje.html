@@ -6,7 +6,7 @@
 <title>Praça Araguaia — redesign M1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
 :root{
   --bone:#F1EBDE; --paper:#FBF8F1; --paper-warm:#F6F0E2; --rule:#D9CDB2; --rule-strong:#B9A882;
@@ -14,7 +14,7 @@
   --olive:#3F4A24; --olive-deep:#26301A; --olive-ink:#1A2110; --leather:#6E3E1E; --ochre:#B4863B;
   --moss:#6B8339; --rust:#A63A26;
   --shadow:0 1px 0 rgba(27,25,19,.04), 0 20px 40px -28px rgba(38,48,26,.18);
-  --serif:'Instrument Serif',serif; --sans:'IBM Plex Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  --serif:'Fraunces',serif; --sans:'Hanken Grotesk',sans-serif; --mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -44,7 +44,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .masthead .row{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
 .brand{display:flex;align-items:center;gap:14px}
 .brand svg{width:44px;height:44px;flex:none}
-.brand .word{font-family:var(--serif);font-size:26px;line-height:1;color:#F6EFD8}
+.brand .word{font-family:var(--serif);font-size:27px;line-height:1;color:#F6EFD8;font-variation-settings:'opsz' 110,'wght' 470}
 .brand .sub{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#BBB18C;margin-top:4px}
 .nav{justify-self:center;display:flex;gap:2px;background:rgba(0,0,0,.14);border-radius:2px;padding:4px}
 .nav a{font-family:var(--sans);font-size:13px;font-weight:500;color:#D8D2B8;text-decoration:none;padding:7px 12px;border-radius:2px;white-space:nowrap}
@@ -63,8 +63,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .hero .text{padding:56px 52px 44px}
 .kicker{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .kicker::before{content:"";width:24px;height:1px;background:var(--olive)}
-.hero h1{font-family:var(--serif);font-weight:400;font-size:82px;line-height:.92;letter-spacing:-.01em;color:var(--ink);margin-top:22px}
-.hero h1 em{font-style:italic;color:var(--leather)}
+.hero h1{font-family:var(--serif);font-size:88px;line-height:.9;letter-spacing:-.015em;color:var(--ink);margin-top:22px;font-variation-settings:'opsz' 144,'wght' 480,'SOFT' 0,'WONK' 0}
+.hero h1 em{font-style:italic;color:var(--leather);font-variation-settings:'opsz' 144,'wght' 480,'SOFT' 0,'WONK' 1}
 .lede{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.4;color:var(--ink-2);margin-top:20px;max-width:30ch}
 .hero .meta{margin-top:38px;display:flex;flex-direction:column;gap:6px}
 .hero .meta .big{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
@@ -116,14 +116,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 <header class="masthead">
   <div class="row">
     <div class="brand">
-      <svg viewBox="0 0 64 64" fill="none">
-        <circle cx="32" cy="32" r="30" stroke="#B4863B" stroke-width="0.8"/>
-        <circle cx="32" cy="32" r="26.5" stroke="#B4863B" stroke-width="0.4"/>
-        <g stroke="#B4863B" stroke-width="0.6">
-          <line x1="32" y1="3" x2="32" y2="7"/><line x1="32" y1="57" x2="32" y2="61"/>
-          <line x1="3" y1="32" x2="7" y2="32"/><line x1="57" y1="32" x2="61" y2="32"/>
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#586a34"/>
+        <g stroke="#F1EBDE" stroke-width="2.2" stroke-linecap="round" fill="none">
+          <path d="M15 29a9 9 0 0 1 18 0"/>
+          <line x1="10" y1="33" x2="38" y2="33"/>
+          <line x1="24" y1="12" x2="24" y2="15.5"/>
+          <line x1="15.5" y1="15.5" x2="17.8" y2="18.4"/>
+          <line x1="32.5" y1="15.5" x2="30.2" y2="18.4"/>
         </g>
-        <text x="32" y="41" font-family="Instrument Serif, serif" font-size="28" fill="#F6EFD8" text-anchor="middle" font-style="italic">PA</text>
+        <path d="M10 33 q7 4 14 0 t14 0" stroke="#D9A85A" stroke-width="1.6" fill="none" stroke-linecap="round"/>
       </svg>
       <div>
         <div class="word">Praça Araguaia</div>
@@ -144,7 +146,6 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
         <input placeholder="Buscar praça, produto…" />
       </div>
-      <button class="cta">Assinar boletim</button>
     </div>
   </div>
   <div class="goldrule"></div>
@@ -168,24 +169,6 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
       <span class="tag">Nelore · PO</span>
       <span class="credit">Vale do Araguaia · Fazenda de cria</span>
     </div>
-    <svg class="seal" viewBox="0 0 120 120">
-      <defs>
-        <path id="topArc" d="M 20 60 A 40 40 0 0 1 100 60" fill="none"/>
-        <path id="botArc" d="M 22 66 A 38 38 0 0 0 98 66" fill="none"/>
-      </defs>
-      <circle cx="60" cy="60" r="56" fill="#F1EBDE" stroke="#6E3E1E" stroke-width="1"/>
-      <circle cx="60" cy="60" r="52" fill="none" stroke="#B4863B" stroke-width=".6"/>
-      <circle cx="60" cy="60" r="34" fill="none" stroke="#6E3E1E" stroke-width=".5" stroke-dasharray="1 2"/>
-      <text font-family="JetBrains Mono, monospace" font-size="7.2" letter-spacing="2.4" fill="#3F4A24">
-        <textPath href="#topArc" startOffset="50%" text-anchor="middle">EDIÇÃO Nº 0428</textPath>
-      </text>
-      <text font-family="JetBrains Mono, monospace" font-size="6.6" letter-spacing="2" fill="#6E3E1E">
-        <textPath href="#botArc" startOffset="50%" text-anchor="middle">MT · PA · TO · GO</textPath>
-      </text>
-      <text x="60" y="56" font-family="Instrument Serif, serif" font-style="italic" font-size="26" fill="#1B1913" text-anchor="middle">05</text>
-      <line x1="42" y1="62" x2="78" y2="62" stroke="#6E3E1E" stroke-width=".5"/>
-      <text x="60" y="76" font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="1.6" fill="#3F4A24" text-anchor="middle">JUL·2026</text>
-    </svg>
   </section>
 </div>
 
