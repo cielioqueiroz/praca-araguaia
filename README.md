@@ -8,7 +8,7 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-177_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-282_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com seis cotações, boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -23,16 +23,32 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 
 | Página | O que oferece |
 |---|---|
-| **`/`** — painel | Seis cotações: **boi gordo, soja, milho** (CONAB) + **dólar, euro, ouro** (câmbio/mercado), agrupadas em "Na porteira" e "Mercado", com variação e selo de "desatualizado" por tipo. |
+| **`/`** — a praça hoje | Seis cotações: **boi gordo, soja, milho** (CONAB) + **dólar, euro, ouro** (câmbio/mercado), em cards editoriais com **mini-tendência (sparkline)**, máx/mín, variação e selo de "desatualizado". Topo com **ticker** de mercado e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
-| **`/boletim`** | Card-resumo do dia em **PNG 1080×1080** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. |
-| **`/chuva`** | Previsão de **7 dias** (chuva, probabilidade, temperatura) para 5 municípios da praça, via Open-Meteo. |
+| **`/boletim`** | Card-resumo do dia em **PNG 1080×1080** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. Enviado também no **Telegram** todo dia. |
+| **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). |
 | **`/termometro`** | **Termômetro da Praça**: o "valor típico" (mediana) dos preços reportados por produtores nos últimos 7 dias, por produto e município, contrastado com a referência CONAB. |
 | **`/termometro/reportar`** | Reporte de preço **anônimo** (sem cadastro), com faixa de plausibilidade, honeypot e limite por IP. |
-| **`/termometro/[produto]`** | Histórico da praça: gráfico da tendência da **mediana diária** do produto. |
-| **`/moderar`** | Moderação da fila de reportes **pelo celular**, protegida por senha (aprovar/rejeitar sem abrir o banco). |
+| **`/fornecedores`** | Vitrine de fornecedores da praça (contato direto por WhatsApp). Qualquer um se cadastra em **`/fornecedores/anunciar`**; só entra no ar depois da moderação. |
+| **`/calculadora`** | Calculadora do produtor: valor do lote de boi (peso + rendimento) e da colheita de grãos, com o preço da praça já preenchido. |
+| **`/moderar`** | Moderação **pelo celular** (senha): abas de **preços** e **fornecedores** — aprovar/rejeitar/remover sem abrir o banco. |
 
-Tudo apoiado em **fontes públicas e gratuitas** (CONAB, BCB, Frankfurter, gold-api, Open-Meteo) — sem provedores pagos e sem dados pessoais.
+Tudo apoiado em **fontes públicas e gratuitas** (CONAB, BCB, Frankfurter, gold-api, Open-Meteo, Vercel Geo) — sem provedores pagos e sem dados pessoais. Alertas e boletim também chegam pelo bot **[@pracaaraguaia_bot](https://t.me/pracaaraguaia_bot)** no Telegram.
+
+---
+
+## Identidade visual
+
+Direção **"fazenda moderna premium"** — editorial, paleta terra, sem cara de dashboard genérico.
+
+| Elemento | Escolha |
+|---|---|
+| **Tipografia** | **Fraunces** (display serifada, com caráter) · **Hanken Grotesk** (UI) · **IBM Plex Mono** (dados, ticker, timestamps) — via `next/font` |
+| **Paleta** | Areia (`bone` `#F1EBDE`), papel (`#FBF8F1`), oliva (`#3F4A24`), couro (`#6E3E1E`), ocre (`#B4863B`); alta em **musgo** (`#6B8339`) e baixa em **tijolo** (`#A63A26`) — nunca neon |
+| **Marca** | Logo "Ferro" (marca de gado), favicon e banner OG próprios |
+| **Assinatura** | Grão de papel sutil, filetes finos, cards com filete duplo interno, ticker de pregão rolante e o hero com foto real de Nelore |
+
+Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); os componentes do sistema estão em `components/redesign/`.
 
 ---
 
@@ -94,11 +110,14 @@ timeline
 | Camada | Tecnologia |
 |---|---|
 | Front + back | Next.js 15 (App Router), TypeScript (strict), Tailwind CSS v4 |
+| Tipografia | Fraunces · Hanken Grotesk · IBM Plex Mono (via `next/font`) |
 | Banco / Auth | Supabase (PostgreSQL + Row Level Security) |
-| Gráficos | Recharts (via shadcn/ui Chart) |
-| Imagem do boletim | `next/og` (Satori) — PNG gerado no servidor |
-| Coleta agendada | Route Handler + Vercel Cron |
-| Testes | Vitest + Testing Library (177 testes) |
+| Gráficos | Sparklines em SVG puro · Recharts (detalhe) |
+| Imagem do boletim / OG | `next/og` (Satori) — PNG gerado no servidor |
+| Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
+| Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
+| Bot | Telegram Bot API (inscrição, boletim, alertas) |
+| Testes | Vitest + Testing Library (282 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -132,7 +151,8 @@ agro_app/
 │  └─ supabase/{server,public,repo}.ts
 ├─ components/                     # Apresentação (cards, gráficos, formulários)
 ├─ supabase/migrations/            # DDL + RLS versionado
-├─ tests/                          # 177 testes unitários e de componente
+├─ components/redesign/            # Sistema visual novo (masthead, cards, ticker…)
+├─ tests/                          # 282 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
@@ -239,9 +259,11 @@ reportes              -- Termômetro da Praça: preços reportados, moderados
 - [x] Redesign com identidade visual própria
 - [x] Termômetro da Praça: reporte anônimo + moderação pelo celular
 - [x] Mediana + faixa (robustez) e histórico do Termômetro
+- [x] Calculadora do produtor (lote de boi + colheita)
+- [x] Bot de Telegram: inscrição, boletim diário e alertas de movimento (gratuito)
+- [x] Vitrine de fornecedores com submissão pública + moderação
+- [x] Redesign "fazenda moderna premium" + geolocalização do usuário
 - [ ] Verificação do produtor (OTP) e reputação — *dependem de provedor pago; em avaliação*
-- [ ] Vitrine de insumos e fornecedores
-- [ ] Alertas e boletim por bot de Telegram (gratuito)
 
 Cada fatia segue o ciclo spec → plano → implementação, documentado em [`docs/superpowers/`](docs/superpowers/).
 
