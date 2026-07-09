@@ -69,13 +69,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .hero .meta{margin-top:38px;display:flex;flex-direction:column;gap:6px}
 .hero .meta .big{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
 .hero .meta .mono{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.hero .photo{position:relative;overflow:hidden;border-left:1px solid var(--rule);
-  background:linear-gradient(135deg,#2c3a1c 0%,#3f4a24 42%,#5c4326 100%)}
-.hero .photo .fallback{position:absolute;inset:0;background:
-  radial-gradient(120% 80% at 70% 20%,rgba(180,134,59,.18),transparent 60%),
-  radial-gradient(100% 100% at 20% 90%,rgba(38,48,26,.6),transparent 60%)}
-.hero .photo .grainy{position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.14) 1px,transparent 1px);background-size:4px 4px;opacity:.5}
-.hero .photo .note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(246,239,216,.5)}
+.hero .photo{position:relative;overflow:hidden;border-left:1px solid var(--rule);background:var(--olive-deep)}
+.hero .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:60% 40%;filter:saturate(.72) contrast(1.04) sepia(.1) brightness(.98)}
+.hero .photo .overlay{position:absolute;inset:0;background:
+  linear-gradient(90deg, var(--paper) 0%, rgba(251,248,241,0) 24%),
+  linear-gradient(0deg, rgba(38,48,26,.5) 0%, rgba(38,48,26,0) 42%)}
 .tag{position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#F6EFD8;border:1px solid rgba(246,239,216,.35);border-radius:2px;padding:4px 8px;backdrop-filter:blur(2px)}
 .credit{position:absolute;left:18px;bottom:16px;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(246,239,216,.85)}
 .credit::before{content:"";width:22px;height:1px;background:rgba(246,239,216,.6)}
@@ -165,9 +163,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
       </div>
     </div>
     <div class="photo">
-      <div class="fallback"></div>
-      <div class="grainy"></div>
-      <div class="note">[ foto do Nelore — placeholder ]</div>
+      <img src="../assets/hero-nelore.jpg" alt="Nelore no pasto do Vale do Araguaia" />
+      <div class="overlay"></div>
       <span class="tag">Nelore · PO</span>
       <span class="credit">Vale do Araguaia · Fazenda de cria</span>
     </div>
