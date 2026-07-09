@@ -11,7 +11,7 @@ const fornecedores: Fornecedor[] = [
 describe('VitrineFornecedores', () => {
   it('lista vazia mostra o estado "em breve" e não mostra chips', () => {
     render(<VitrineFornecedores fornecedores={[]} />);
-    expect(screen.getByText(/Vitrine em breve/)).toBeInTheDocument();
+    expect(screen.getByText(/Ainda não há fornecedores/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ração e sal' })).not.toBeInTheDocument();
   });
 

@@ -28,7 +28,7 @@ export function GraficoCotacao({
   const [periodo, setPeriodo] = useState<Periodo>(30);
 
   const config = useMemo(
-    () => ({ valor: { label: `${titulo} (${unidade})`, color: 'hsl(142 71% 45%)' } }) satisfies ChartConfig,
+    () => ({ valor: { label: `${titulo} (${unidade})`, color: '#15803d' } }) satisfies ChartConfig,
     [titulo, unidade],
   );
 

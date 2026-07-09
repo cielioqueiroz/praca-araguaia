@@ -8,6 +8,11 @@ describe('Calculadora', () => {
     expect((screen.getByLabelText(/preço.*R\$\/@/i) as HTMLInputElement).value).toBe('320');
   });
 
+  it('pré-preenche preço decimal no formato pt-BR (vírgula)', () => {
+    render(<Calculadora precos={{ boi: 321.26 }} />);
+    expect((screen.getByLabelText(/preço.*R\$\/@/i) as HTMLInputElement).value).toBe('321,26');
+  });
+
   it('calcula arrobas e valor do lote de boi', () => {
     render(<Calculadora precos={{ boi: 320 }} />);
     fireEvent.change(screen.getByLabelText(/peso vivo/i), { target: { value: '480' } });

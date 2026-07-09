@@ -10,8 +10,8 @@ export function VitrineFornecedores({ fornecedores }: { fornecedores: Fornecedor
   if (fornecedores.length === 0) {
     return (
       <div className="mt-10 rounded-xl border border-dashed border-linha bg-papel/60 p-8 text-center">
-        <p className="font-display text-lg font-bold text-mata">Vitrine em breve — estamos reunindo os fornecedores da praça.</p>
-        <p className="mt-1 text-sm text-tinta/50">Volte logo: a lista da praça está sendo montada.</p>
+        <p className="font-display text-lg font-bold text-mata">Ainda não há fornecedores na vitrine.</p>
+        <p className="mt-1 text-sm text-tinta/50">É o primeiro da praça? Use o botão &quot;Anuncie aqui&quot; acima e apareça aqui.</p>
       </div>
     );
   }
