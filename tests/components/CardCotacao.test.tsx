@@ -46,4 +46,12 @@ describe('CardCotacao', () => {
     );
     expect(screen.getByText('média MT/PA/TO/GO · CONAB')).toBeInTheDocument();
   });
+
+  it('mostra o sparkline quando recebe historico com ≥2 pontos', () => {
+    const { container } = render(
+      <CardCotacao titulo="Dólar" valor={5.43} unidade="R$" variacaoPct={1.2}
+        dataReferencia="2026-06-19T12:00:00.000Z" desatualizado={false} historico={[5.1, 5.2, 5.43]} />
+    );
+    expect(container.querySelector('svg polyline')).toBeTruthy();
+  });
 });

@@ -1,3 +1,5 @@
+import { Sparkline } from '@/components/Sparkline';
+
 export type CardCotacaoProps = {
   titulo: string;
   valor: number;
@@ -6,12 +8,13 @@ export type CardCotacaoProps = {
   dataReferencia: string;
   desatualizado: boolean;
   legenda?: string;
+  historico?: number[];
 };
 
 const fmtValor = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 const fmtData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
-export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferencia, desatualizado, legenda }: CardCotacaoProps) {
+export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferencia, desatualizado, legenda, historico }: CardCotacaoProps) {
   const subiu = (variacaoPct ?? 0) >= 0;
   return (
     <div className="relative h-full overflow-hidden rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)] transition group-hover:border-pasto/40 group-hover:shadow-md">
@@ -28,6 +31,7 @@ export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferenci
       <p className="font-display text-4xl font-bold tabular-nums tracking-tight text-tinta">
         {fmtValor.format(valor)}
       </p>
+      {historico && historico.length >= 2 && <Sparkline valores={historico} />}
       <p className="mt-4 text-xs text-tinta/40">
         {fmtData.format(new Date(dataReferencia))}
         {desatualizado && <span className="ml-2 font-semibold text-amber-600">desatualizado</span>}

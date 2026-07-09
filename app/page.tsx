@@ -16,7 +16,7 @@ const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 
 
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
 
-function CardLink({ c }: { c: Cotacao }) {
+function CardLink({ c, historico }: { c: Cotacao; historico?: number[] }) {
   return (
     <Link
       href={`/cotacao/${c.tipo}`}
@@ -29,6 +29,7 @@ function CardLink({ c }: { c: Cotacao }) {
         variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
         dataReferencia={c.data_referencia}
         desatualizado={Date.now() - new Date(c.data_referencia).getTime() > prazoDesatualizadoMs(c.tipo)}
+        historico={historico}
       />
     </Link>
   );
@@ -43,6 +44,21 @@ export default async function Home() {
   const cotacoes = ((data ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
   const porteira = cotacoes.filter((c) => TIPOS_PORTEIRA.has(c.tipo));
   const mercado = cotacoes.filter((c) => !TIPOS_PORTEIRA.has(c.tipo));
+
+  // Histórico de 30 dias para a mini-tendência de cada card (mesma leitura pública do detalhe).
+  const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: hist } = await supabase
+    .from('cotacoes_historico')
+    .select('tipo, valor, data_referencia')
+    .gte('data_referencia', desde)
+    .order('data_referencia', { ascending: true });
+  const historicoPorTipo = new Map<string, number[]>();
+  for (const h of hist ?? []) {
+    const t = h.tipo as string;
+    const arr = historicoPorTipo.get(t) ?? [];
+    arr.push(Number(h.valor));
+    historicoPorTipo.set(t, arr);
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -63,7 +79,7 @@ export default async function Home() {
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {porteira.map((c) => (
-              <CardLink key={c.tipo} c={c} />
+              <CardLink key={c.tipo} c={c} historico={historicoPorTipo.get(c.tipo)} />
             ))}
           </div>
         </section>
@@ -77,7 +93,7 @@ export default async function Home() {
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {mercado.map((c) => (
-              <CardLink key={c.tipo} c={c} />
+              <CardLink key={c.tipo} c={c} historico={historicoPorTipo.get(c.tipo)} />
             ))}
           </div>
         </section>
