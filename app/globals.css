@@ -25,14 +25,14 @@
   --color-moss: #6b8339;        /* alta (verde-musgo, nunca neon) */
   --color-rust: #a63a26;        /* baixa (vermelho-tijolo) */
 
-  /* legado (páginas ainda não migradas — remover ao fim do redesign) */
-  --color-mata: #1c3a2b;
-  --color-pasto: #15803d;
-  --color-palha: #f6f4ec;
-  --color-papel: #fffdf7;
-  --color-linha: #e7e3d6;
-  --color-tinta: #20241f;
-  --color-rio: #0e7490;
+  /* legado remapeado para a paleta terra (páginas herdam o novo visual) */
+  --color-mata: #3f4a24;   /* → olive */
+  --color-pasto: #586a34;  /* → olive claro (ações/acentos) */
+  --color-palha: #f1ebde;  /* → bone */
+  --color-papel: #fbf8f1;  /* → paper */
+  --color-linha: #d9cdb2;  /* → rule */
+  --color-tinta: #1b1913;  /* → ink */
+  --color-rio: #6e3e1e;    /* → leather (acento de chuva) */
 
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-hanken);
