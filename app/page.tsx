@@ -1,51 +1,33 @@
-import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
-import { CardCotacao } from '@/components/CardCotacao';
 import { TITULOS, ORDEM_PAINEL, prazoDesatualizadoMs } from '@/lib/tipos-ui';
+import { CardCommodity } from '@/components/redesign/CardCommodity';
 
 export const dynamic = 'force-dynamic';
 
+type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
+
+const CONFIG: Record<string, { unLabel: string; fonteLabel: string; casas: number; grupo: 'porteira' | 'mercado' }> = {
+  boi: { unLabel: 'R$ / arroba · @', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  soja: { unLabel: 'R$ / saca 60 kg', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  milho: { unLabel: 'R$ / saca 60 kg', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  dolar: { unLabel: 'R$ · comercial', fonteLabel: 'B3 · PTAX', casas: 4, grupo: 'mercado' },
+  euro: { unLabel: 'R$ · comercial', fonteLabel: 'B3 · PTAX', casas: 4, grupo: 'mercado' },
+  ouro: { unLabel: 'R$ / grama · BCB', fonteLabel: 'BCB · ouro ativo', casas: 2, grupo: 'mercado' },
+};
+
+const cfg = (tipo: string) => CONFIG[tipo] ?? { unLabel: '', fonteLabel: '', casas: 2, grupo: 'mercado' as const };
 const posicao = (tipo: string) => {
   const i = ORDEM_PAINEL.indexOf(tipo);
   return i === -1 ? ORDEM_PAINEL.length : i;
 };
 
-// Duas naturezas de dado: regional-semanal (porteira) e global-diário (mercado).
-const TIPOS_PORTEIRA = new Set(['boi', 'soja', 'milho']);
 const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
-
-type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
-
-function CardLink({ c, historico }: { c: Cotacao; historico?: number[] }) {
-  return (
-    <Link
-      href={`/cotacao/${c.tipo}`}
-      className="group block rounded-xl transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
-    >
-      <CardCotacao
-        titulo={TITULOS[c.tipo] ?? c.tipo}
-        valor={Number(c.valor)}
-        unidade={c.unidade}
-        variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
-        dataReferencia={c.data_referencia}
-        desatualizado={Date.now() - new Date(c.data_referencia).getTime() > prazoDesatualizadoMs(c.tipo)}
-        historico={historico}
-      />
-    </Link>
-  );
-}
+const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from('cotacoes')
-    .select('tipo, valor, unidade, variacao_pct, data_referencia');
+  const { data } = await supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct, data_referencia');
 
-  const cotacoes = ((data ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
-  const porteira = cotacoes.filter((c) => TIPOS_PORTEIRA.has(c.tipo));
-  const mercado = cotacoes.filter((c) => !TIPOS_PORTEIRA.has(c.tipo));
-
-  // Histórico de 30 dias para a mini-tendência de cada card (mesma leitura pública do detalhe).
   const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: hist } = await supabase
     .from('cotacoes_historico')
@@ -60,44 +42,81 @@ export default async function Home() {
     historicoPorTipo.set(t, arr);
   }
 
-  return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Cotações de referência</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">A praça hoje</h1>
-      <p className="mt-1 text-sm text-tinta/50">{fmtHoje.format(new Date())}</p>
+  const cotacoes = ((data ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
+  const porteira = cotacoes.filter((c) => cfg(c.tipo).grupo === 'porteira');
+  const mercado = cotacoes.filter((c) => cfg(c.tipo).grupo === 'mercado');
 
-      {error && <p className="mt-8 text-red-600">Erro ao carregar cotações.</p>}
-      {!error && cotacoes.length === 0 && (
-        <p className="mt-8 text-tinta/50">Ainda sem cotação — rode a coleta (/api/coletar).</p>
-      )}
+  const card = (c: Cotacao) => (
+    <CardCommodity
+      key={c.tipo}
+      tipo={c.tipo}
+      titulo={TITULOS[c.tipo] ?? c.tipo}
+      unLabel={cfg(c.tipo).unLabel}
+      fonteLabel={cfg(c.tipo).fonteLabel}
+      valor={Number(c.valor)}
+      variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
+      historico={historicoPorTipo.get(c.tipo) ?? []}
+      dataReferencia={c.data_referencia}
+      desatualizado={Date.now() - new Date(c.data_referencia).getTime() > prazoDesatualizadoMs(c.tipo)}
+      casas={cfg(c.tipo).casas}
+      variante={cfg(c.tipo).grupo}
+    />
+  );
+
+  const agora = new Date();
+
+  return (
+    <div className="wrap">
+      <section className="hero">
+        <div className="text">
+          <div className="kicker">Cotações de referência</div>
+          <h1>
+            A praça
+            <br />
+            <em>hoje</em>.
+          </h1>
+          <p className="lede">Preços de referência da porteira ao mercado — as praças do Vale do Araguaia, hoje.</p>
+          <div className="meta">
+            <div className="big">{fmtHoje.format(agora)}</div>
+            <div className="mono">Atualizado {fmtHora.format(agora)} · fontes CONAB · B3 · BCB</div>
+          </div>
+        </div>
+        <div className="photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/hero-nelore.jpg" alt="Nelore no pasto do Vale do Araguaia" />
+          <div className="overlay" />
+          <span className="tag">Nelore · PO</span>
+          <span className="credit">Vale do Araguaia · Fazenda de cria</span>
+        </div>
+      </section>
 
       {porteira.length > 0 && (
-        <section className="mt-8">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-linha pb-2">
-            <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-tinta/70">Na porteira</h2>
-            <p className="text-xs text-tinta/45">média MT/PA/TO/GO · CONAB · semanal</p>
+        <section className="section">
+          <div className="section-head">
+            <div className="t">Na porteira</div>
+            <div className="line" />
+            <div className="meta">
+              Média MT · PA · TO · GO<span className="pill">Fonte · CONAB</span>Semanal
+            </div>
           </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {porteira.map((c) => (
-              <CardLink key={c.tipo} c={c} historico={historicoPorTipo.get(c.tipo)} />
-            ))}
-          </div>
+          <div className="cards">{porteira.map(card)}</div>
         </section>
       )}
 
       {mercado.length > 0 && (
-        <section className="mt-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-linha pb-2">
-            <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-tinta/70">Mercado</h2>
-            <p className="text-xs text-tinta/45">câmbio e reservas · diário</p>
+        <section className="section">
+          <div className="section-head">
+            <div className="t">Mercado</div>
+            <div className="line" />
+            <div className="meta">
+              Câmbio e reservas<span className="pill">Fonte · B3 · BCB</span>Diário
+            </div>
           </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {mercado.map((c) => (
-              <CardLink key={c.tipo} c={c} historico={historicoPorTipo.get(c.tipo)} />
-            ))}
-          </div>
+          <div className="cards">{mercado.map(card)}</div>
         </section>
       )}
-    </main>
+
+      {cotacoes.length === 0 && <p className="mono" style={{ marginTop: 48 }}>Ainda sem cotação — rode a coleta.</p>}
+    </div>
   );
 }

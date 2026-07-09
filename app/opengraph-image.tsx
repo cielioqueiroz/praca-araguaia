@@ -17,23 +17,22 @@ export default function OgImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#1c3a2b',
+          backgroundColor: '#3f4a24',
           padding: 80,
         }}
       >
-        <svg width="150" height="150" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="7" fill="#15803d" />
-          <line x1="16" y1="25.5" x2="16" y2="13" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
-          <path d="M16 17.5c-.7-3.6-3.5-5.6-7.2-5.6-.4 3.9 2.5 6.8 7.2 6.8z" fill="#bbf7d0" />
-          <path d="M16 14.2c.7-3.6 3.5-5.6 7.2-5.6.4 3.9-2.5 6.8-7.2 6.8z" fill="#ffffff" />
+        <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#586a34" />
+          <path d="M24 12 C16 12 12 17 12 24 C12 31 16 36 24 36 C29 36 32 33.5 33.5 30" fill="none" stroke="#f1ebde" strokeWidth="3.2" strokeLinecap="round" />
+          <path d="M24 19 L24 29 M24 24 L33 24" fill="none" stroke="#d9a85a" strokeWidth="3.2" strokeLinecap="round" />
         </svg>
-        <div style={{ display: 'flex', marginTop: 40, fontSize: 88, fontWeight: 700, color: '#ffffff' }}>
+        <div style={{ display: 'flex', marginTop: 40, fontSize: 90, fontWeight: 600, color: '#f6efd8', letterSpacing: -1 }}>
           Praça Araguaia
         </div>
-        <div style={{ display: 'flex', marginTop: 18, fontSize: 36, color: '#bbf7d0', textAlign: 'center' }}>
+        <div style={{ display: 'flex', marginTop: 18, fontSize: 34, color: '#d9cdb2', textAlign: 'center' }}>
           Cotações do agro para o produtor do Araguaia
         </div>
-        <div style={{ display: 'flex', marginTop: 48, fontSize: 26, color: '#8bb39b' }}>
+        <div style={{ display: 'flex', marginTop: 48, fontSize: 24, color: '#b4863b', letterSpacing: 2, textTransform: 'uppercase' }}>
           cotações · boletim · chuva · termômetro · calculadora
         </div>
       </div>

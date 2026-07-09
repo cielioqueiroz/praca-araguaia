@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Geist, Bricolage_Grotesque } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { UtilityBar } from '@/components/redesign/UtilityBar';
+import { Masthead } from '@/components/redesign/Masthead';
+import { SiteFooter } from '@/components/redesign/SiteFooter';
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
-const bricolage = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-bricolage' });
+const fraunces = Fraunces({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-fraunces' });
+const hanken = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-hanken' });
+const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agroapp-bay.vercel.app'),
@@ -33,11 +35,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={cn('font-sans', geist.variable, bricolage.variable)}>
-      <body className="flex min-h-screen flex-col bg-palha text-tinta antialiased">
-        <Header />
+    <html lang="pt-BR" className={cn(fraunces.variable, hanken.variable, plexMono.variable)}>
+      <body className="grain flex min-h-screen flex-col bg-bone font-sans text-ink antialiased">
+        <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+          <defs>
+            <linearGradient id="gU" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#6b8339" stopOpacity=".18" />
+              <stop offset="1" stopColor="#6b8339" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#a63a26" stopOpacity=".16" />
+              <stop offset="1" stopColor="#a63a26" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <UtilityBar />
+        <Masthead />
         <div className="flex-1">{children}</div>
-        <Footer />
+        <SiteFooter />
       </body>
     </html>
   );
