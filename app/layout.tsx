@@ -9,8 +9,22 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 const bricolage = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-bricolage' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://agroapp-bay.vercel.app'),
   title: 'Praça Araguaia — cotações do agro',
   description: 'Cotações agropecuárias diárias para o produtor rural do Araguaia.',
+  openGraph: {
+    title: 'Praça Araguaia — cotações do agro',
+    description: 'Cotações agropecuárias diárias para o produtor rural do Araguaia.',
+    url: 'https://agroapp-bay.vercel.app',
+    siteName: 'Praça Araguaia',
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Praça Araguaia — cotações do agro',
+    description: 'Cotações agropecuárias diárias para o produtor rural do Araguaia.',
+  },
 };
 
 export default function RootLayout({
