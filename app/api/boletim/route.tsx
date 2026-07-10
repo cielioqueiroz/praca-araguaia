@@ -4,11 +4,11 @@ import { montarBoletim, type Boletim } from '@/lib/boletim';
 
 export const dynamic = 'force-dynamic';
 
-const ALTA = '#059669';
-const BAIXA = '#dc2626';
+const ALTA = '#6b8339'; // musgo
+const BAIXA = '#a63a26'; // tijolo
 
-// Card 1080×1080 no subconjunto flexbox do Satori (estilos inline; todo div
-// com múltiplos filhos-elemento precisa de display flex explícito).
+// Card 1080×1080 no subconjunto flexbox do Satori — mesma linguagem editorial da
+// página (paleta terra, selo "PA", filetes, variação em musgo/tijolo).
 function CardBoletim({ boletim }: { boletim: Boletim }) {
   return (
     <div
@@ -17,49 +17,76 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#fffdf7',
-        padding: 64,
+        backgroundColor: '#f1ebde',
+        padding: 72,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        <svg width="88" height="88" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="7" fill="#15803d" />
-          <line x1="16" y1="25.5" x2="16" y2="13" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
-          <path d="M16 17.5c-.7-3.6-3.5-5.6-7.2-5.6-.4 3.9 2.5 6.8 7.2 6.8z" fill="#bbf7d0" />
-          <path d="M16 14.2c.7-3.6 3.5-5.6 7.2-5.6.4 3.9-2.5 6.8-7.2 6.8z" fill="#ffffff" />
-        </svg>
+      <div style={{ display: 'flex', fontSize: 24, letterSpacing: 6, color: '#7a6f58' }}>COTAÇÕES DE REFERÊNCIA</div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 26, marginTop: 18 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 92,
+            height: 92,
+            backgroundColor: '#3f4a24',
+            border: '2px solid #b4863b',
+            fontSize: 50,
+            fontWeight: 700,
+            color: '#f1ebde',
+          }}
+        >
+          PA
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 52, color: '#14532d' }}>Praça Araguaia</div>
-          <div style={{ fontSize: 27, color: '#525252' }}>{boletim.dataExtenso}</div>
+          <div style={{ fontSize: 60, fontWeight: 700, color: '#1b1913' }}>Praça Araguaia</div>
+          <div style={{ fontSize: 28, color: '#6e3e1e' }}>{boletim.dataExtenso}</div>
         </div>
       </div>
 
+      <div style={{ display: 'flex', height: 2, backgroundColor: '#c9a86a', marginTop: 20, marginBottom: 4 }} />
+
       {boletim.itens.length === 0 ? (
-        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', fontSize: 38, color: '#525252' }}>
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', fontSize: 38, color: '#7a6f58' }}>
           Ainda sem cotações hoje
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', gap: 20 }}>
-          {boletim.itens.map((item) => (
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
+          {boletim.itens.map((item, i) => (
             <div
               key={item.titulo}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '2px solid #e5e5e5',
-                paddingBottom: 16,
+                paddingTop: 17,
+                paddingBottom: 17,
+                borderTop: i === 0 ? '0px solid #d9cdb2' : '1px solid #d9cdb2',
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 36, color: '#171717' }}>{item.titulo}</div>
-                {item.legenda && <div style={{ fontSize: 21, color: '#737373' }}>{item.legenda}</div>}
+                <div style={{ fontSize: 42, fontWeight: 600, color: '#1b1913' }}>{item.titulo}</div>
+                {item.legenda && <div style={{ display: 'flex', fontSize: 22, color: '#7a6f58', marginTop: 4 }}>{item.legenda}</div>}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-                <div style={{ fontSize: 42, color: '#171717' }}>{item.valorFmt}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div style={{ fontSize: 52, fontWeight: 700, color: '#1b1913' }}>{item.valorFmt}</div>
                 {item.variacao && (
-                  <div style={{ display: 'flex', alignItems: 'center', fontSize: 29, color: item.variacao.direcao === 'alta' ? ALTA : BAIXA }}>
-                    <svg width="26" height="26" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 28,
+                      fontWeight: 600,
+                      color: item.variacao.direcao === 'alta' ? ALTA : BAIXA,
+                      border: `2px solid ${item.variacao.direcao === 'alta' ? '#b8c58f' : '#d6a99b'}`,
+                      padding: '8px 14px',
+                      minWidth: 128,
+                    }}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
                       <path
                         d={item.variacao.direcao === 'alta' ? 'M12 5l8 13H4z' : 'M12 19L4 6h16z'}
                         fill={item.variacao.direcao === 'alta' ? ALTA : BAIXA}
@@ -74,9 +101,10 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 23, color: '#737373' }}>
-        <div style={{ display: 'flex' }}>fontes: CONAB · BCB · BCE</div>
-        <div style={{ display: 'flex' }}>agroapp-bay.vercel.app</div>
+      <div style={{ display: 'flex', height: 1, backgroundColor: '#d9cdb2', marginBottom: 20 }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 23, letterSpacing: 2, color: '#7a6f58' }}>
+        <div style={{ display: 'flex' }}>FONTES · CONAB · B3 · BCB</div>
+        <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
     </div>
   );

@@ -21,11 +21,22 @@ export default function OgImage() {
           padding: 80,
         }}
       >
-        <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
-          <rect width="48" height="48" rx="12" fill="#586a34" />
-          <path d="M24 12 C16 12 12 17 12 24 C12 31 16 36 24 36 C29 36 32 33.5 33.5 30" fill="none" stroke="#f1ebde" strokeWidth="3.2" strokeLinecap="round" />
-          <path d="M24 19 L24 29 M24 24 L33 24" fill="none" stroke="#d9a85a" strokeWidth="3.2" strokeLinecap="round" />
-        </svg>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 148,
+            height: 148,
+            backgroundColor: '#586a34',
+            border: '2px solid #b4863b',
+            fontSize: 80,
+            fontWeight: 700,
+            color: '#f1ebde',
+          }}
+        >
+          PA
+        </div>
         <div style={{ display: 'flex', marginTop: 40, fontSize: 90, fontWeight: 600, color: '#f6efd8', letterSpacing: -1 }}>
           Praça Araguaia
         </div>
