@@ -8,7 +8,7 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-282_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-281_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com seis cotações, boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -16,6 +16,42 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 - 🟢 **Estado atual e ponto de retomada:** [`ESTADO-DO-PROJETO.md`](ESTADO-DO-PROJETO.md)
 - 📄 Conceito completo do produto: [`conceito-praca-araguaia.md`](conceito-praca-araguaia.md)
 - 🧭 Specs e planos de cada fatia: [`docs/superpowers/`](docs/superpowers/)
+
+---
+
+## Prévia
+
+<p align="center">
+  <img src="docs/screenshots/home.jpg" alt="A praça hoje — painel de cotações da Praça Araguaia" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/cards.jpg" alt="Cards de cotação com foto do produto"><br>
+      <sub><b>Na porteira</b> — cada card abre com a foto do produto, que escurece e revela preço, variação e tendência.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/chuva.jpg" alt="Previsão de chuva da região"><br>
+      <sub><b>Chuva</b> — a sua região primeiro e depois os municípios da praça, 7 dias.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/mercado.jpg" alt="Câmbio e reservas: dólar, euro e ouro"><br>
+      <sub><b>Mercado</b> — dólar, euro e ouro, com mini-tendência de 30 dias.</sub>
+    </td>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/screenshots/boletim.png" alt="Boletim do dia em PNG" width="72%"><br>
+      <sub><b>Boletim do dia</b> — card PNG pronto para o Telegram/WhatsApp.</sub>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="Versão mobile da Praça Araguaia" width="250"><br>
+  <sub>Responsivo do celular à mesa.</sub>
+</p>
 
 ---
 
@@ -43,10 +79,10 @@ Direção **"fazenda moderna premium"** — editorial, paleta terra, sem cara de
 
 | Elemento | Escolha |
 |---|---|
-| **Tipografia** | **Fraunces** (display serifada, com caráter) · **Hanken Grotesk** (UI) · **IBM Plex Mono** (dados, ticker, timestamps) — via `next/font` |
-| **Paleta** | Areia (`bone` `#F1EBDE`), papel (`#FBF8F1`), oliva (`#3F4A24`), couro (`#6E3E1E`), ocre (`#B4863B`); alta em **musgo** (`#6B8339`) e baixa em **tijolo** (`#A63A26`) — nunca neon |
-| **Marca** | Logo "Ferro" (marca de gado), favicon e banner OG próprios |
-| **Assinatura** | Grão de papel sutil, filetes finos, cards com filete duplo interno, ticker de pregão rolante e o hero com foto real de Nelore |
+| **Tipografia** | **Playfair Display** (display serifada, títulos) · **Archivo** (UI e números) · **JetBrains Mono** (dados, ticker, timestamps) — via `next/font` |
+| **Paleta** | Areia (`bone` `#F1EBDE`), papel (`#FBF8F1`), oliva (`#3F4A24`), couro (`#6E3E1E`), ocre (`#B4863B`); alta em **musgo** (`#6B8339`), baixa em **tijolo** (`#A63A26`) e chuva em **água** (`#45707C`) — nunca neon |
+| **Marca** | Monograma **PA**, favicon e banner OG próprios |
+| **Assinatura** | Cards que abrem com a **foto do produto** (escurece e revela os dados), grão de papel sutil, filetes finos, ticker de pregão rolante e o hero com foto real de Nelore |
 
 Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); os componentes do sistema estão em `components/redesign/`.
 
@@ -110,14 +146,14 @@ timeline
 | Camada | Tecnologia |
 |---|---|
 | Front + back | Next.js 15 (App Router), TypeScript (strict), Tailwind CSS v4 |
-| Tipografia | Fraunces · Hanken Grotesk · IBM Plex Mono (via `next/font`) |
+| Tipografia | Playfair Display · Archivo · JetBrains Mono (via `next/font`) |
 | Banco / Auth | Supabase (PostgreSQL + Row Level Security) |
 | Gráficos | Sparklines em SVG puro · Recharts (detalhe) |
 | Imagem do boletim / OG | `next/og` (Satori) — PNG gerado no servidor |
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
 | Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
 | Bot | Telegram Bot API (inscrição, boletim, alertas) |
-| Testes | Vitest + Testing Library (282 testes) |
+| Testes | Vitest + Testing Library (281 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -152,7 +188,7 @@ agro_app/
 ├─ components/                     # Apresentação (cards, gráficos, formulários)
 ├─ supabase/migrations/            # DDL + RLS versionado
 ├─ components/redesign/            # Sistema visual novo (masthead, cards, ticker…)
-├─ tests/                          # 282 testes unitários e de componente
+├─ tests/                          # 281 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
