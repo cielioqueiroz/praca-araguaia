@@ -24,7 +24,8 @@ const previsao: PrevisaoMunicipio = {
 describe('CardChuva', () => {
   it('mostra município, UF e as 7 linhas de dias', () => {
     render(<CardChuva previsao={previsao} />);
-    expect(screen.getByText('Redenção · PA')).toBeInTheDocument();
+    expect(screen.getByText('Redenção')).toBeInTheDocument();
+    expect(screen.getByText('PA')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(7);
   });
 
@@ -34,13 +35,8 @@ describe('CardChuva', () => {
     expect(screen.getByText('1,5 mm')).not.toHaveClass('font-semibold');
   });
 
-  it('mostra travessão quando a probabilidade é null', () => {
+  it('mostra temperaturas mín/máx arredondadas', () => {
     render(<CardChuva previsao={previsao} />);
-    expect(screen.getByText('—')).toBeInTheDocument();
-  });
-
-  it('mostra temperaturas mín–máx arredondadas', () => {
-    render(<CardChuva previsao={previsao} />);
-    expect(screen.getAllByText('20–33°C')).toHaveLength(7);
+    expect(screen.getAllByText('20°/33°')).toHaveLength(7);
   });
 });

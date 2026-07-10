@@ -24,7 +24,7 @@ export function Masthead() {
           <Logo />
           <div>
             <div className="word">Praça Araguaia</div>
-            <div className="sub">Cotações do agro · Est. 2024</div>
+            <div className="sub">Cotações do agro, 2024</div>
           </div>
         </Link>
 

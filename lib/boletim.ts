@@ -5,7 +5,7 @@ export type LinhaCotacao = { tipo: string; valor: number; unidade: string; varia
 
 export type ItemBoletim = {
   titulo: string;
-  valorFmt: string; // ex.: "R$/@ 326,96"
+  valorFmt: string; // ex.: "326,96 @", "113,70 SC 60kg", "R$ 5,1945"
   variacao?: { texto: string; direcao: 'alta' | 'baixa' };
   legenda?: string;
 };
@@ -22,6 +22,17 @@ const posicao = (tipo: string) => {
   return i === -1 ? ORDEM_PAINEL.length : i;
 };
 
+// Unidade compacta depois do número, para o valor não ficar poluído.
+// Ex.: boi "321,26 @", soja "113,70 SC 60kg", ouro "R$ 21.222,30 /g".
+const SUFIXO: Record<string, string> = { boi: '@', soja: 'SC 60kg', milho: 'SC 60kg', ouro: '/g' };
+const COM_RS = new Set(['dolar', 'euro', 'ouro']);
+
+function formatarValor(tipo: string, valor: number): string {
+  const prefixo = COM_RS.has(tipo) ? 'R$ ' : '';
+  const sufixo = SUFIXO[tipo] ? ` ${SUFIXO[tipo]}` : '';
+  return `${prefixo}${fmtValor.format(valor)}${sufixo}`;
+}
+
 export function montarBoletim(linhas: LinhaCotacao[], agora: Date = new Date()): Boletim {
   const itens = linhas
     .slice()
@@ -29,7 +40,7 @@ export function montarBoletim(linhas: LinhaCotacao[], agora: Date = new Date()):
     .map((l) => {
       const item: ItemBoletim = {
         titulo: TITULOS[l.tipo] ?? l.tipo,
-        valorFmt: `${l.unidade} ${fmtValor.format(l.valor)}`,
+        valorFmt: formatarValor(l.tipo, l.valor),
       };
       if (l.variacao_pct !== null) {
         item.variacao = {

@@ -15,10 +15,17 @@ describe('montarBoletim', () => {
     expect(b.itens.map((i) => i.titulo)).toEqual(['Boi gordo', 'Dólar', 'xpto']);
   });
 
-  it('formata valor pt-BR prefixado pela unidade', () => {
-    const b = montarBoletim([linha('boi', 326.96, 'R$/@', null), linha('dolar', 5.1945, 'R$', null)]);
-    expect(b.itens[0].valorFmt).toBe('R$/@ 326,96');
-    expect(b.itens[1].valorFmt).toBe('R$ 5,1945');
+  it('formata valor pt-BR com unidade compacta depois do número', () => {
+    const b = montarBoletim([
+      linha('boi', 326.96, 'R$/@', null),
+      linha('soja', 113.7, 'R$/sc', null),
+      linha('dolar', 5.1945, 'R$', null),
+      linha('ouro', 21222.3, 'R$', null),
+    ]);
+    expect(b.itens[0].valorFmt).toBe('326,96 @');
+    expect(b.itens[1].valorFmt).toBe('113,70 SC 60kg');
+    expect(b.itens[2].valorFmt).toBe('R$ 5,1945');
+    expect(b.itens[3].valorFmt).toBe('R$ 21.222,30 /g');
   });
 
   it('monta variação com direção e texto; null fica sem variação', () => {

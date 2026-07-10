@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
+import { LocalUsuario } from './LocalUsuario';
 
 const NAV = [
   { href: '/', rotulo: 'A praça hoje' },
@@ -11,17 +12,35 @@ const NAV = [
 ];
 
 const FONTES = [
-  'Cotações · CONAB · B3 · BCB',
-  'Chuva · INMET · CEMADEN · Open-Meteo',
-  'Termômetro · reportes da praça',
+  'Cotações: CONAB, B3, BCB',
+  'Chuva: INMET, CEMADEN, Open-Meteo',
+  'Termômetro: reportes da praça',
 ];
 
-// Rótulo mono reutilizado nas colunas.
+const SITE = 'https://cielio-portfolio.vercel.app/';
+
 function Titulo({ children }: { children: React.ReactNode }) {
   return <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-olive">{children}</div>;
 }
 
-// Rodapé editorial. Dados institucionais fictícios por enquanto (o dono ajusta depois).
+function IconeTelegram({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+    </svg>
+  );
+}
+
+function IconeSite({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9S9.5 5.4 12 3z" />
+    </svg>
+  );
+}
+
+// Rodapé editorial. Contato/e-mail fictícios por enquanto (o dono ajusta depois).
 export function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-rule">
@@ -32,21 +51,21 @@ export function SiteFooter() {
             <Logo size={42} />
             <div>
               <div className="font-display text-[26px] leading-none text-ink">Praça Araguaia</div>
-              <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                Cotações do agro · Est. 2024
-              </div>
+              <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Cotações do agro, 2024</div>
             </div>
           </div>
           <p className="mt-6 max-w-[44ch] text-sm leading-relaxed text-ink2/85">
-            A praça do Vale do Araguaia num lugar só — cotações que importam, chuva, o preço na voz de quem está na
-            lida e a conta da porteira. De graça, todo dia.
+            A praça do Vale do Araguaia num lugar só. Cotações que importam, chuva, o preço na voz de quem está na lida
+            e a conta da porteira. De graça, todo dia.
           </p>
           <a
             href="https://t.me/pracaaraguaia_bot"
-            className="mt-6 inline-flex items-center gap-2 border border-rule bg-paper px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-olive transition hover:border-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mt-6 inline-flex items-center gap-2.5 rounded-xl bg-olive px-5 py-3 font-sans text-sm font-semibold text-bone shadow-[0_2px_6px_rgba(38,48,26,0.2)] transition duration-200 hover:-translate-y-0.5 hover:bg-olive-deep hover:shadow-[0_10px_24px_-8px_rgba(38,48,26,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
           >
+            <IconeTelegram className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-0.5" />
             Boletim no Telegram
-            <span aria-hidden="true">→</span>
           </a>
         </div>
 
@@ -80,10 +99,13 @@ export function SiteFooter() {
           <div className="mt-7">
             <Titulo>Contato</Titulo>
             <a
-              href="mailto:contato@pracaaraguaia.com.br"
-              className="mt-4 inline-block font-mono text-[12px] tracking-[0.02em] text-ink2 transition hover:text-olive"
+              href={SITE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 font-mono text-[12px] tracking-[0.02em] text-ink2 transition hover:text-olive"
             >
-              contato@pracaaraguaia.com.br
+              <IconeSite className="h-4 w-4" />
+              Criado por Cielio Queiroz
             </a>
           </div>
         </div>
@@ -91,13 +113,16 @@ export function SiteFooter() {
 
       {/* Barra inferior */}
       <div className="border-t border-rule">
-        <div className="mx-auto flex max-w-[1280px] flex-col items-start gap-3 px-[26px] py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-[1280px] flex-col items-start gap-4 px-[26px] py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-display text-[15px] italic text-ink2">
-            “A boiada não olha o gráfico — mas quem cuida dela, sim.”
+            “A boiada não olha o gráfico, mas quem cuida dela, sim.”
           </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-            © 2026 Praça Araguaia · Barra do Garças · MT
-          </p>
+          <div className="flex flex-col items-start gap-1.5 sm:items-end">
+            <LocalUsuario />
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+              © 2026 Praça Araguaia
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -6,11 +6,26 @@ import { Ticker } from './Ticker';
 type Loc = { cidade: string; uf: string; temp: number | null; lat?: number; lon?: number; exata?: boolean };
 
 const fmtData = new Intl.DateTimeFormat('pt-BR', {
-  weekday: 'short',
-  day: '2-digit',
-  month: 'short',
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
   timeZone: 'America/Araguaina',
 });
+
+// Pregão regular da B3: segunda a sexta, 10h às 17h (horário de Brasília/São Paulo).
+function pregaoAberto(agora: Date): boolean {
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Sao_Paulo',
+    weekday: 'short',
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(agora);
+  const diaSemana = partes.find((p) => p.type === 'weekday')?.value ?? '';
+  const hora = Number(partes.find((p) => p.type === 'hour')?.value ?? '0');
+  const diaUtil = !['Sat', 'Sun'].includes(diaSemana);
+  return diaUtil && hora >= 10 && hora < 17;
+}
 
 export function UtilityBar() {
   const [loc, setLoc] = useState<Loc | null>(null);
@@ -70,15 +85,16 @@ export function UtilityBar() {
   }
 
   const texto = loc
-    ? `${loc.cidade}${loc.uf ? ` · ${loc.uf}` : ''}${loc.temp != null ? ` · ${loc.temp}°C` : ''}`
+    ? `${loc.cidade}${loc.uf ? `, ${loc.uf}` : ''}${loc.temp != null ? `, ${loc.temp}°C` : ''}`
     : 'Detectando região…';
+
+  const aberto = pregaoAberto(new Date());
 
   return (
     <div className="utility">
       <div className="left">
-        <span className="dot" />
-        <span>Pregão aberto · B3</span>
-        <span className="sep">·</span>
+        <span className={`dot${aberto ? '' : ' off'}`} />
+        <span>{aberto ? 'Pregão aberto B3' : 'Pregão fechado B3'}</span>
         <button className="loc" type="button" onClick={pedirExata} title="Atualizar minha localização exata">
           <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z" />
@@ -86,7 +102,6 @@ export function UtilityBar() {
           </svg>
           {texto}
         </button>
-        <span className="sep">·</span>
         <span>{fmtData.format(new Date())}</span>
       </div>
       <Ticker />

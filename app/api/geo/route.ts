@@ -1,8 +1,8 @@
 // Localização aproximada do usuário pelos headers de geo da Vercel (grátis, sem
-// pop-up) + temperatura atual via Open-Meteo. Fallback: Barra do Garças/MT.
+// pop-up) + temperatura atual via Open-Meteo. Fallback: Vale do Araguaia.
 export const dynamic = 'force-dynamic';
 
-const PADRAO = { cidade: 'Barra do Garças', uf: 'MT', lat: -15.89, lon: -52.26 };
+const PADRAO = { cidade: 'Vale do Araguaia', uf: '', lat: -15.89, lon: -52.26 };
 
 export async function GET(req: Request): Promise<Response> {
   const h = req.headers;

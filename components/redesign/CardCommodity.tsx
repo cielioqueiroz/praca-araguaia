@@ -1,5 +1,5 @@
 import { caminhoSparkline } from '@/lib/sparkline';
-import { IconeCommodity } from './iconesCommodity';
+import { IconeCommodity, FOTO_COMMODITY } from './iconesCommodity';
 
 export type CardCommodityProps = {
   tipo: string;
@@ -55,6 +55,7 @@ function Spark({ valores, subiu }: { valores: number[]; subiu: boolean }) {
 export function CardCommodity(p: CardCommodityProps) {
   const subiu = (p.variacaoPct ?? 0) >= 0;
   const { int, frac } = partes(p.valor, p.casas);
+  const foto = FOTO_COMMODITY[p.tipo];
 
   const delta =
     p.historico.length >= 2
@@ -67,65 +68,72 @@ export function CardCommodity(p: CardCommodityProps) {
   const min = p.historico.length ? Math.min(...p.historico) : p.valor;
 
   return (
-    <div className="ccard">
-      <div className="head">
-        <div className="id">
-          <IconeCommodity tipo={p.tipo} />
-          <div>
-            <div className="nm">{p.titulo}</div>
-            <div className="un">{p.unLabel}</div>
-          </div>
-        </div>
+    <article className={`ccard tipo-${p.tipo}`}>
+      {/* Faixa de foto: o recorte do produto escurece na base e revela as informações. */}
+      <div className="ph">
+        {foto && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="art" src={foto} alt="" loading="lazy" />
+        )}
+        <div className="shade" />
         {p.variacaoPct !== null && (
           <span className={`change ${subiu ? 'up' : 'down'}`}>
             <span className="ar">{subiu ? '▲' : '▼'}</span>
             {Math.abs(p.variacaoPct).toLocaleString('pt-BR')}%
           </span>
         )}
+        <div className="cap">
+          <IconeCommodity tipo={p.tipo} className="rIcon" />
+          <div className="nm">{p.titulo}</div>
+        </div>
       </div>
 
-      <div className="price">
-        <span className="cur">R$</span>
-        {int}
-        <span className="frac">{frac}</span>
-      </div>
+      <div className="cbody">
+        <div className="un">{p.unLabel}</div>
 
-      {p.variante === 'porteira' ? (
-        <div className="delta">
-          Variação&nbsp;&nbsp;
-          <b className={delta >= 0 ? 'pos' : 'neg'}>
-            {delta >= 0 ? '+' : '−'} R$ {brl(Math.abs(delta), 2)}
-          </b>{' '}
-          · na semana
+        <div className="price">
+          <span className="cur">R$</span>
+          {int}
+          <span className="frac">{frac}</span>
         </div>
-      ) : (
-        <div className="delta">
-          5D&nbsp;&nbsp;{brl(min, p.casas)} → {brl(p.valor, p.casas)}
-        </div>
-      )}
 
-      <Spark valores={p.historico} subiu={subiu} />
-
-      {p.variante === 'porteira' && (
-        <div className="mm">
-          <div className="cell">
-            <div className="l">Máxima 30D</div>
-            <div className="v">R$ {brl(max, 2)}</div>
+        {p.variante === 'porteira' ? (
+          <div className="delta">
+            Variação&nbsp;&nbsp;
+            <b className={delta >= 0 ? 'pos' : 'neg'}>
+              {delta >= 0 ? '+' : '−'} R$ {brl(Math.abs(delta), 2)}
+            </b>{' '}
+            na semana
           </div>
-          <div className="cell">
-            <div className="l">Mínima 30D</div>
-            <div className="v">R$ {brl(min, 2)}</div>
+        ) : (
+          <div className="delta">
+            5D&nbsp;&nbsp;{brl(min, p.casas)} → {brl(p.valor, p.casas)}
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="cfoot">
-        <span className="src">{p.fonteLabel}</span>
-        <span className={`ts ${p.desatualizado ? 'stale' : ''}`}>
-          {fmtData.format(new Date(p.dataReferencia))}
-          {p.desatualizado ? ' · desatualizado' : ''}
-        </span>
+        <Spark valores={p.historico} subiu={subiu} />
+
+        {p.variante === 'porteira' && (
+          <div className="mm">
+            <div className="cell">
+              <div className="l">Máxima 30D</div>
+              <div className="v">R$ {brl(max, 2)}</div>
+            </div>
+            <div className="cell">
+              <div className="l">Mínima 30D</div>
+              <div className="v">R$ {brl(min, 2)}</div>
+            </div>
+          </div>
+        )}
+
+        <div className="cfoot">
+          <span className="src">{p.fonteLabel}</span>
+          <span className={`ts ${p.desatualizado ? 'stale' : ''}`}>
+            {fmtData.format(new Date(p.dataReferencia))}
+            {p.desatualizado ? ', desatualizado' : ''}
+          </span>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

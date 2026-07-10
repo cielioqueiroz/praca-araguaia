@@ -1,18 +1,19 @@
 import { createPublicClient } from '@/lib/supabase/public';
 import { TITULOS, ORDEM_PAINEL, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 import { CardCommodity } from '@/components/redesign/CardCommodity';
+import { Revelar } from '@/components/redesign/Revelar';
 
 export const dynamic = 'force-dynamic';
 
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
 
 const CONFIG: Record<string, { unLabel: string; fonteLabel: string; casas: number; grupo: 'porteira' | 'mercado' }> = {
-  boi: { unLabel: 'R$ / arroba · @', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  soja: { unLabel: 'R$ / saca 60 kg', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  milho: { unLabel: 'R$ / saca 60 kg', fonteLabel: 'CONAB · MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  dolar: { unLabel: 'R$ · comercial', fonteLabel: 'B3 · PTAX', casas: 4, grupo: 'mercado' },
-  euro: { unLabel: 'R$ · comercial', fonteLabel: 'B3 · PTAX', casas: 4, grupo: 'mercado' },
-  ouro: { unLabel: 'R$ / grama · BCB', fonteLabel: 'BCB · ouro ativo', casas: 2, grupo: 'mercado' },
+  boi: { unLabel: 'R$ por arroba', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  soja: { unLabel: 'R$ por saca 60 kg', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  milho: { unLabel: 'R$ por saca 60 kg', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
+  dolar: { unLabel: 'R$ comercial', fonteLabel: 'B3 PTAX', casas: 4, grupo: 'mercado' },
+  euro: { unLabel: 'R$ comercial', fonteLabel: 'B3 PTAX', casas: 4, grupo: 'mercado' },
+  ouro: { unLabel: 'R$ por grama', fonteLabel: 'BCB, ouro', casas: 2, grupo: 'mercado' },
 };
 
 const cfg = (tipo: string) => CONFIG[tipo] ?? { unLabel: '', fonteLabel: '', casas: 2, grupo: 'mercado' as const };
@@ -75,10 +76,10 @@ export default async function Home() {
             <br />
             <em>hoje</em>.
           </h1>
-          <p className="lede">Preços de referência da porteira ao mercado — as praças do Vale do Araguaia, hoje.</p>
+          <p className="lede">Preços de referência da porteira ao mercado, nas praças do Vale do Araguaia.</p>
           <div className="meta">
             <div className="big">{fmtHoje.format(agora)}</div>
-            <div className="mono">Atualizado {fmtHora.format(agora)} · fontes CONAB · B3 · BCB</div>
+            <div className="mono">Atualizado {fmtHora.format(agora)}, fontes CONAB, B3, BCB</div>
           </div>
         </div>
         <div className="photo">
@@ -96,10 +97,16 @@ export default async function Home() {
             <div className="t">Na porteira</div>
             <div className="line" />
             <div className="meta">
-              Média MT · PA · TO · GO<span className="pill">Fonte · CONAB</span>Semanal
+              Média MT PA TO GO<span className="pill">CONAB</span>Semanal
             </div>
           </div>
-          <div className="cards">{porteira.map(card)}</div>
+          <div className="cards">
+            {porteira.map((c, i) => (
+              <Revelar key={c.tipo} delay={i * 0.08}>
+                {card(c)}
+              </Revelar>
+            ))}
+          </div>
         </section>
       )}
 
@@ -109,10 +116,16 @@ export default async function Home() {
             <div className="t">Mercado</div>
             <div className="line" />
             <div className="meta">
-              Câmbio e reservas<span className="pill">Fonte · B3 · BCB</span>Diário
+              Câmbio e reservas<span className="pill">B3 BCB</span>Diário
             </div>
           </div>
-          <div className="cards">{mercado.map(card)}</div>
+          <div className="cards">
+            {mercado.map((c, i) => (
+              <Revelar key={c.tipo} delay={i * 0.08}>
+                {card(c)}
+              </Revelar>
+            ))}
+          </div>
         </section>
       )}
 

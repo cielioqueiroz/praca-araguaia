@@ -1,8 +1,8 @@
 // Previsão da localização aproximada do usuário (Vercel geo + Open-Meteo), para
-// o card "sua região" no topo da página de chuva. Fallback: Barra do Garças/MT.
+// o card "sua região" no topo da página de chuva. Fallback: Vale do Araguaia.
 export const dynamic = 'force-dynamic';
 
-const PADRAO = { cidade: 'Barra do Garças', uf: 'MT', lat: -15.89, lon: -52.26 };
+const PADRAO = { cidade: 'Vale do Araguaia', uf: '', lat: -15.89, lon: -52.26 };
 const URL = 'https://api.open-meteo.com/v1/forecast';
 
 export async function GET(req: Request): Promise<Response> {
