@@ -8,7 +8,7 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
     <div className="rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)]">
       <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-tinta/60">{resumo.rotulo}</h2>
       <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-pasto">{resumo.unidade}</p>
-      <p className="font-display text-4xl font-bold tabular-nums tracking-tight text-tinta">{fmt.format(resumo.mediana)}</p>
+      <p className="font-sans text-4xl font-bold tabular-nums tracking-tight text-tinta">{fmt.format(resumo.mediana)}</p>
       <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-tinta/50">valor típico</p>
       <p className="mt-1 text-xs text-tinta/40">
         {resumo.contagem} {resumo.contagem === 1 ? 'reporte' : 'reportes'} · últimos 7 dias

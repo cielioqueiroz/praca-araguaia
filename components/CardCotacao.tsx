@@ -28,7 +28,7 @@ export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferenci
       </div>
       {legenda && <p className="mt-0.5 text-xs text-tinta/40">{legenda}</p>}
       <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-pasto">{unidade}</p>
-      <p className="font-display text-4xl font-bold tabular-nums tracking-tight text-tinta">
+      <p className="font-sans text-4xl font-bold tabular-nums tracking-tight text-tinta">
         {fmtValor.format(valor)}
       </p>
       {historico && historico.length >= 2 && <Sparkline valores={historico} />}

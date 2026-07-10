@@ -55,10 +55,10 @@ export function Calculadora({ precos }: { precos: Precos }) {
         </div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-8 gap-y-2">
           <p className="text-sm text-tinta/60">
-            Arrobas: <span data-testid="boi-arrobas" className="font-display text-xl font-bold tabular-nums text-tinta">{fmt.format(arrobas)}</span>
+            Arrobas: <span data-testid="boi-arrobas" className="font-sans text-xl font-bold tabular-nums text-tinta">{fmt.format(arrobas)}</span>
           </p>
           <p className="text-sm text-tinta/60">
-            Valor do lote: <span data-testid="boi-valor" className="font-display text-2xl font-bold tabular-nums text-mata">R$ {fmt.format(valorBoi)}</span>
+            Valor do lote: <span data-testid="boi-valor" className="font-sans text-2xl font-bold tabular-nums text-mata">R$ {fmt.format(valorBoi)}</span>
           </p>
         </div>
       </section>
@@ -87,7 +87,7 @@ export function Calculadora({ precos }: { precos: Precos }) {
             Equivale a <span data-testid="graos-kg" className="font-semibold tabular-nums text-tinta">{fmt.format(kg)}</span> kg
           </p>
           <p className="text-sm text-tinta/60">
-            Valor da colheita: <span data-testid="graos-valor" className="font-display text-2xl font-bold tabular-nums text-mata">R$ {fmt.format(valorGrao)}</span>
+            Valor da colheita: <span data-testid="graos-valor" className="font-sans text-2xl font-bold tabular-nums text-mata">R$ {fmt.format(valorGrao)}</span>
           </p>
         </div>
       </section>

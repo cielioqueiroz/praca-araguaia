@@ -62,7 +62,7 @@ export function FilaModeracao({ pendentes, agora }: { pendentes: ReportePendente
             <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-tinta/60">{r.rotulo}</h2>
             <span className="text-xs text-tinta/40">{tempoRelativo(r.criadoEm, agora)}</span>
           </div>
-          <p className="mt-2 font-display text-3xl font-bold tabular-nums tracking-tight text-tinta">
+          <p className="mt-2 font-sans text-3xl font-bold tabular-nums tracking-tight text-tinta">
             {fmt.format(r.valor)} <span className="text-sm font-semibold text-pasto">{r.unidade}</span>
           </p>
           <p className="mt-1 text-sm text-tinta/60">{r.municipio}</p>

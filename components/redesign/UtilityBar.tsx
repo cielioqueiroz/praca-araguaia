@@ -32,7 +32,6 @@ export function UtilityBar() {
     }
     // E pede a localização exata (em tempo real) automaticamente.
     pedirExata();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function pedirExata() {

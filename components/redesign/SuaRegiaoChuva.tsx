@@ -73,7 +73,9 @@ export function SuaRegiaoChuva() {
           {loc.uf ? ` · ${loc.uf}` : ''}
         </p>
         {loc.tempAtual != null && (
-          <p className="mt-4 font-display text-[64px] leading-none tabular-nums text-ink">{loc.tempAtual}°</p>
+          <p className="mt-4 font-sans text-[64px] font-bold leading-none tabular-nums tracking-tight text-ink">
+            {loc.tempAtual}°
+          </p>
         )}
         <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
           Hoje · {hoje.chuvaMm.toLocaleString('pt-BR')} mm
