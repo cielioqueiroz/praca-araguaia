@@ -22,9 +22,25 @@ import { GET } from '@/app/api/boletim/route';
 import { createPublicClient } from '@/lib/supabase/public';
 import { montarBoletim } from '@/lib/boletim';
 
-const mockClient = (retorno: { data: unknown; error: unknown }) => {
+// A rota faz 3 consultas: cotacoes (select), cotacoes_uf (select) e reportes
+// (select + eq + eq + gte). O mock encadeia os filtros e responde por tabela.
+const mockClient = (
+  cotacoes: { data: unknown; error: unknown },
+  cotacoesUf: unknown[] = [],
+  reportes: unknown[] = [],
+) => {
   (createPublicClient as ReturnType<typeof vi.fn>).mockReturnValue({
-    from: () => ({ select: async () => retorno }),
+    from: (tabela: string) => ({
+      select: () => {
+        if (tabela === 'cotacoes') return Promise.resolve(cotacoes);
+        if (tabela === 'cotacoes_uf') return Promise.resolve({ data: cotacoesUf, error: null });
+        const filtro = {
+          eq: () => filtro,
+          gte: () => Promise.resolve({ data: reportes, error: null }),
+        };
+        return filtro;
+      },
+    }),
   });
 };
 
@@ -33,7 +49,7 @@ beforeEach(() => vi.clearAllMocks());
 describe('GET /api/boletim', () => {
   it('200 com content-type de imagem quando há cotações', async () => {
     mockClient({
-      data: [{ tipo: 'boi', valor: 326.96, unidade: 'R$/@', variacao_pct: -1.54 }],
+      data: [{ tipo: 'dolar', valor: 5.1072, unidade: 'R$', variacao_pct: 0.11 }],
       error: null,
     });
     const res = await GET();
@@ -54,15 +70,39 @@ describe('GET /api/boletim', () => {
     expect(res.status).toBe(500);
   });
 
-  it('preserva variacao_pct null na conversão (não vira 0)', async () => {
-    mockClient({
-      data: [{ tipo: 'ouro', valor: 21000, unidade: 'R$', variacao_pct: null }],
-      error: null,
-    });
+  it('leva o preço por UF e as cidades do Termômetro para o card', async () => {
+    mockClient(
+      { data: [{ tipo: 'ouro', valor: 678.23, unidade: 'R$/g', variacao_pct: null }], error: null },
+      [
+        {
+          tipo: 'boi',
+          uf: 'PA',
+          valor: 329.55,
+          unidade: 'R$/@',
+          variacao_pct: -3,
+          data_referencia: '2026-07-03T03:00:00.000Z',
+        },
+      ],
+      [{ municipio: 'Redenção', valor: 305 }],
+    );
+
     const res = await GET();
     expect(res.status).toBe(200);
-    expect(montarBoletim).toHaveBeenCalledWith([
-      { tipo: 'ouro', valor: 21000, unidade: 'R$', variacao_pct: null },
+
+    const [linhas, precosUf, cidades] = (montarBoletim as ReturnType<typeof vi.fn>).mock.calls[0];
+    // variacao_pct null tem de continuar null (não virar 0).
+    expect(linhas).toEqual([{ tipo: 'ouro', valor: 678.23, unidade: 'R$/g', variacao_pct: null }]);
+    expect(precosUf).toEqual([
+      {
+        tipo: 'boi',
+        uf: 'PA',
+        valor: 329.55,
+        unidade: 'R$/@',
+        variacaoPct: -3,
+        dataReferencia: '2026-07-03T03:00:00.000Z',
+      },
     ]);
+    expect(cidades).toContainEqual({ municipio: 'Redenção', uf: 'PA', mediana: 305, contagem: 1 });
+    expect(cidades).toContainEqual({ municipio: 'Confresa', uf: 'MT', mediana: null, contagem: 0 });
   });
 });
