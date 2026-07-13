@@ -7,12 +7,14 @@ export const TITULOS: Record<string, string> = {
   dolar: 'Dólar',
   euro: 'Euro',
   ouro: 'Ouro',
+  bitcoin: 'Bitcoin',
+  ethereum: 'Ethereum',
 };
 
-export const ORDEM_PAINEL = ['boi', 'soja', 'milho', 'dolar', 'euro', 'ouro'];
+export const ORDEM_PAINEL = ['boi', 'soja', 'milho', 'dolar', 'euro', 'ouro', 'bitcoin', 'ethereum'];
 
-// Média regional calculada por nós — não é indicador oficial; o card deixa isso explícito.
-const LEGENDA_CONAB = 'média MT/PA/TO/GO · CONAB';
+// O preço é o de cada estado pesquisado pela CONAB — nunca uma média nossa.
+const LEGENDA_CONAB = 'preço por estado · CONAB';
 export const LEGENDAS: Record<string, string> = {
   boi: LEGENDA_CONAB,
   soja: LEGENDA_CONAB,
