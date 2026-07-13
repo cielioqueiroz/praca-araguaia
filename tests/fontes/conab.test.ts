@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { buscarBoi, buscarSoja, buscarMilho, resetCacheConab, buscarHistoricoConab } from '@/lib/fontes/conab';
+import {
+  buscarBoi,
+  buscarSoja,
+  buscarMilho,
+  resetCacheConab,
+  buscarHistoricoConab,
+  buscarPorUf,
+} from '@/lib/fontes/conab';
 
 // Monta uma linha no formato real do arquivo (campos com padding, decimal com vírgula).
 const linha = (produto: string, cls: string, uf: string, semana: string, nivel: string, valor: string) =>
@@ -80,6 +87,35 @@ describe('carregamento do arquivo', () => {
     resetCacheConab();
     await buscarMilho(f);
     expect(f).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('buscarPorUf', () => {
+  it('devolve o preço de cada UF, sem média, com a variação contra a semana anterior dela', async () => {
+    const precos = await buscarPorUf('boi', fetchConab());
+
+    expect(precos.map((p) => p.uf)).toEqual(['PA', 'MT']); // ordem de exibição; TO e GO não têm boi no fixture
+
+    const mt = precos.find((p) => p.uf === 'MT')!;
+    expect(mt.valor).toBe(330); // 22,00 × 15 — o valor do MT, não a média com o PA
+    expect(mt.variacaoPct).toBe(4.76); // 21,00 → 22,00
+    expect(mt.unidade).toBe('R$/@');
+    expect(mt.dataReferencia).toBe(new Date('2026-06-26T00:00:00-03:00').toISOString());
+
+    const pa = precos.find((p) => p.uf === 'PA')!;
+    expect(pa.valor).toBe(345); // 23,00 × 15
+    expect(pa.variacaoPct).toBeNull(); // só tem uma semana no fixture
+  });
+
+  it('usa a semana mais recente de cada UF (uma UF atrasada não puxa as outras)', async () => {
+    const precos = await buscarPorUf('milho', fetchConab());
+    expect(precos).toHaveLength(1);
+    expect(precos[0]).toMatchObject({ uf: 'MT', valor: 60, unidade: 'R$/sc 60kg' });
+    expect(precos[0].dataReferencia).toBe(new Date('2026-06-19T00:00:00-03:00').toISOString());
+  });
+
+  it('devolve lista vazia quando não há dado do tipo', async () => {
+    expect(await buscarPorUf('boi', fetchConab(HEADER))).toEqual([]);
   });
 });
 

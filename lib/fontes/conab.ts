@@ -1,11 +1,12 @@
-import type { Cotacao, PontoHistorico } from '@/types/cotacao';
+import type { Cotacao, PontoHistorico, PrecoUf } from '@/types/cotacao';
 
 // Brasil sem horário de verão desde 2019: offset fixo -03:00.
 const OFFSET_BRT = '-03:00';
 const URL_CONAB = 'https://portaldeinformacoes.conab.gov.br/downloads/arquivos/PrecosSemanalUF.txt';
 
-// Região do Araguaia: média das UFs na divisa.
-const UFS = new Set(['MT', 'PA', 'TO', 'GO']);
+// UFs da praça do Araguaia. A ordem é a de exibição (a região fica antes do resto).
+const ORDEM_UF = ['PA', 'MT', 'TO', 'GO'] as const;
+const UFS = new Set<string>(ORDEM_UF);
 const TTL_MS = 10 * 60 * 1000;
 
 export type TipoCommodity = 'boi' | 'soja' | 'milho';
@@ -21,7 +22,7 @@ const PRODUTOS: Record<string, TipoCommodity> = {
 const FATOR: Record<TipoCommodity, number> = { boi: 15, soja: 60, milho: 60 };
 const UNIDADE: Record<TipoCommodity, string> = { boi: 'R$/@', soja: 'R$/sc 60kg', milho: 'R$/sc 60kg' };
 
-type SemanaUf = { tipo: TipoCommodity; fimSemana: string; valorKg: number };
+type SemanaUf = { tipo: TipoCommodity; uf: string; fimSemana: string; valorKg: number };
 
 let cache: { quando: number; linhas: SemanaUf[] } | null = null;
 
@@ -45,14 +46,15 @@ function parse(texto: string): SemanaUf[] {
     if (c.length < 11) continue;
     const tipo = PRODUTOS[`${c[0].trim()}|${c[1].trim()}`];
     if (!tipo) continue;
-    if (!UFS.has(c[3].trim())) continue;
+    const uf = c[3].trim();
+    if (!UFS.has(uf)) continue;
     // Nível vem truncado no arquivo ('PREÇO RECEBIDO P/ PR'); comparar por prefixo.
     if (!c[9].trim().startsWith('PREÇO RECEBIDO')) continue;
     const fimSemana = fimDaSemanaIso(c[7].trim());
     if (!fimSemana) continue;
     const valorKg = Number(c[10].trim().replace(',', '.'));
     if (!Number.isFinite(valorKg) || valorKg <= 0) continue;
-    linhas.push({ tipo, fimSemana, valorKg });
+    linhas.push({ tipo, uf, fimSemana, valorKg });
   }
   return linhas;
 }
@@ -91,6 +93,41 @@ async function buscarCommodity(tipo: TipoCommodity, fetchImpl: typeof fetch): Pr
   const ultimo = pontos[pontos.length - 1];
   if (!ultimo) throw new Error(`CONAB sem dados de ${tipo} para MT/PA/TO/GO`);
   return { tipo, valor: ultimo.valor, unidade: UNIDADE[tipo], fonte: 'conab', dataReferencia: ultimo.data };
+}
+
+// Preço de CADA UF (sem média), com a variação contra a semana anterior daquela UF —
+// a série vem do próprio arquivo, então não depende do histórico no banco.
+export async function buscarPorUf(
+  tipo: TipoCommodity,
+  fetchImpl: typeof fetch = fetch,
+): Promise<PrecoUf[]> {
+  const linhas = (await carregar(fetchImpl)).filter((l) => l.tipo === tipo);
+  const fator = FATOR[tipo];
+
+  return ORDEM_UF.flatMap((uf) => {
+    const semanas = linhas
+      .filter((l) => l.uf === uf)
+      .sort((a, b) => a.fimSemana.localeCompare(b.fimSemana));
+
+    const atual = semanas[semanas.length - 1];
+    if (!atual) return []; // UF sem dado é omitida, nunca vira zero
+
+    const anterior = semanas[semanas.length - 2];
+    const variacaoPct = anterior
+      ? Math.round(((atual.valorKg - anterior.valorKg) / anterior.valorKg) * 100 * 100) / 100
+      : null;
+
+    return [
+      {
+        tipo,
+        uf,
+        valor: Math.round(atual.valorKg * fator * 100) / 100,
+        unidade: UNIDADE[tipo],
+        variacaoPct,
+        dataReferencia: atual.fimSemana,
+      },
+    ];
+  });
 }
 
 export const buscarBoi = (fetchImpl: typeof fetch = fetch) => buscarCommodity('boi', fetchImpl);

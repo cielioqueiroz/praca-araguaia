@@ -15,6 +15,21 @@ export interface CotacaoRepo {
   salvar(cotacao: Cotacao, variacaoPct: number | null): Promise<void>;
 }
 
+/** Preço de uma UF na semana mais recente dela — o que a praça vê, sem média. */
+export type PrecoUf = {
+  tipo: string;
+  uf: string;
+  valor: number; // já na unidade de mercado (@ ou sc 60kg)
+  unidade: string;
+  variacaoPct: number | null; // contra a semana anterior DAQUELA uf
+  dataReferencia: string; // ISO 8601 do fim da semana
+};
+
+export interface PrecoUfRepo {
+  /** Upsert por (tipo, uf). */
+  salvarPrecosUf(precos: PrecoUf[]): Promise<void>;
+}
+
 export type PontoHistorico = { data: string; valor: number }; // data ISO 8601, ordem asc
 
 export interface HistoricoRepo {

@@ -1,7 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Cotacao, CotacaoRepo, HistoricoRepo, PontoHistorico } from '@/types/cotacao';
+import type {
+  Cotacao,
+  CotacaoRepo,
+  HistoricoRepo,
+  PontoHistorico,
+  PrecoUf,
+  PrecoUfRepo,
+} from '@/types/cotacao';
 
-export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRepo {
+export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRepo & PrecoUfRepo {
   return {
     async ultimoValor(tipo, antesDe) {
       const { data, error } = await client
@@ -44,6 +51,23 @@ export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRep
         { onConflict: 'tipo,data_referencia', ignoreDuplicates: true },
       );
       if (ins.error) throw new Error(ins.error.message);
+    },
+
+    async salvarPrecosUf(precos: PrecoUf[]) {
+      if (precos.length === 0) return;
+      const { error } = await client.from('cotacoes_uf').upsert(
+        precos.map((p) => ({
+          tipo: p.tipo,
+          uf: p.uf,
+          valor: p.valor,
+          unidade: p.unidade,
+          variacao_pct: p.variacaoPct,
+          data_referencia: p.dataReferencia,
+          atualizado_em: new Date().toISOString(),
+        })),
+        { onConflict: 'tipo,uf' },
+      );
+      if (error) throw new Error(error.message);
     },
 
     async salvarHistoricoEmLote(tipo: string, fonte: string, pontos: PontoHistorico[]) {
