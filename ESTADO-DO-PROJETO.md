@@ -1,6 +1,6 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-04.
+> **Documento de retomada.** Última atualização: 2026-07-12.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
@@ -118,7 +118,19 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - `lib/calculadora.ts` puro (`arrobasDeBoi`, `valorEmReais`, `sacas↔kg`; arroba do boi = 15 kg carcaça, rendimento padrão 50; guarda NaN/negativo → 0, nunca mostra NaN). Reusa `normalizarValor`.
 - **Contexto:** substituiu a ideia de "cotações por município da CONAB", investigada e **descartada** — o arquivo municipal traz boi/soja/milho ~6 meses desatualizados (o estadual é fresco), e a CONAB quase não pesquisa os municípios da praça.
 
-**Estado atual:** 213 testes passando, build/lint limpos, no ar: 6 cotações + boletim + chuva + Termômetro completo + vitrine de fornecedores + calculadora do produtor; **bot de Telegram `@pracaaraguaia_bot` LIGADO** (inscrição/webhook funcionando). README profissional no GitHub (com diagramas Mermaid).
+### Fatia 15 — Cotações honestas: ouro, cripto e preço por praça
+- **Bug do ouro (fator 31) corrigido.** O gold-api cota a **onça troy**, e o painel/card rotulavam o número como `/g`: mostrávamos `R$ 21.095,39 /g` onde a grama vale ~R$ 678. `lib/fontes/ouro.ts` divide por `31,1034768` e grava `unidade: 'R$/g'`; a **migração 0005** converteu o que já estava em `cotacoes`/`cotacoes_historico` (guarda `valor > 5000` = idempotente), senão a coleta seguinte criaria um degrau falso de −96,8% no gráfico.
+- **Bitcoin e Ethereum** (`lib/fontes/cripto.ts`, CoinGecko grátis e sem chave): atual + backfill de 90 dias. As duas moedas dividem uma resposta por coleta (limite de req/min do plano free).
+- **Fim das médias.** A CONAB pesquisa **cada UF**, e a gente jogava fora essa granularidade. Nova tabela **`cotacoes_uf`** (migração 0006, upsert por `(tipo, uf)`) preenchida na mesma coleta, com a variação semana a semana calculada **do próprio arquivo** (não depende do banco). O spread era enorme: milho **PA 66,60 vs MT 40,20** — a "média" de 51,75 não era o preço de ninguém. A palavra "média" saiu da interface.
+- **Cidade de verdade só existe pelo Termômetro.** Reinspecionei o `PrecosSemanalMunicipio.txt` em 12/07/2026: o último boi por município em MT/PA/TO/GO é de **26/12/2025** (~7 meses), soja para em 02/01/2026 e o milho recente só tem nível ATACADO. Confirma a decisão da fatia 14. Por isso o card do boi lista as 5 cidades da praça com a **mediana dos reportes aprovados (7 dias)** e convida quem não tem reporte.
+- **Sua praça** (`lib/praca.ts` + `SuaPraca.tsx`): GPS do navegador com queda para os headers de geo da Vercel (padrão já validado no `SuaRegiaoChuva`); haversine roda no navegador, a coordenada não sai do dispositivo. Destaca a linha da UF/cidade via `data-uf`/`data-cidade` — **o painel continua Server Component**.
+- **Painel menos poluído:** porteira em cards-lista (boi ocupa a largura toda) e **Mercado virou tabela compacta** (dólar, euro, ouro, BTC, ETH) no lugar de 5 cards com foto/selo.
+- **Ticker do topo estava com preços FIXOS no código** (inclusive "OURO 21.699") — em todas as páginas. Agora lê `/api/ticker` das cotações reais.
+- **Card do Telegram** em 2 colunas, 1080×**1350** (o 1:1 estourava com 12 linhas de estado), com **ilustração por ativo** (data URI — o Satori não busca imagem externa) e o bloco "Boi nas cidades". As artes de bitcoin/ethereum foram **desenhadas em SVG e rasterizadas com o sharp** (a cota grátis da IA de imagem estava zerada). O envio diário não mudou: `/api/enviar-boletim` já usa este PNG.
+
+**Estado atual:** 305 testes passando, build/lint limpos, no ar: **8 cotações** (boi/soja/milho **por estado**, dólar, euro, ouro **em R$/g**, bitcoin, ethereum) + boletim + chuva + Termômetro completo + vitrine de fornecedores + calculadora do produtor; **bot de Telegram `@pracaaraguaia_bot` LIGADO** (inscrição, boletim diário e alertas).
+
+> **Pendência de verificação:** o envio do boletim novo pelo Telegram não foi disparado à mão (é broadcast irreversível); o cron das 12:20 UTC entrega o card novo. Se algo sair torto na imagem, olhar `app/api/boletim/route.tsx`.
 
 ---
 
@@ -181,9 +193,11 @@ O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do
 ### Dívidas técnicas pequenas (anotadas nas reviews)
 - Moderação (`/moderar`): botões Aprovar/Rejeitar sem `aria-label` por card e mensagens de erro sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente no repo); endurecer o HMAC do cookie (derivar chave de um segredo separado da senha) se um dia houver mais de um moderador.
 - Chuva: `AbortSignal.timeout` no fetch da Open-Meteo; `console.error` no catch da página (hoje a falha não deixa rastro nos logs); reter o último dado bom na revalidação (hoje um blip da API troca dados bons por "indisponível" por até 1h); validar temperaturas por elemento (`Number(null)` vira 0 silencioso); card com grid de colunas fixas.
-- Formatação de valor/variação duplicada entre `lib/boletim.ts` e `components/CardCotacao.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
-- Recorte **municipal** da CONAB (`PrecosSemanalMunicipio.txt`) para aproximar da "Praça Araguaia" de verdade.
+- Formatação de valor/variação duplicada entre `lib/boletim.ts`, `CardCotacao.tsx`, `CardPorteira.tsx` e `TabelaMercado.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
+- ~~Recorte **municipal** da CONAB~~ — **descartado de vez** (fatia 15): o arquivo está ~7 meses defasado para o boi. Cidade só pelo Termômetro.
 - Backfill de **ouro** (sem fonte histórica grátis definida ainda).
+- (removido) `CardCommodity.tsx` ficou órfão com o novo painel e foi apagado na fatia 15.
+- Histórico **por UF** não existe: o gráfico de `/cotacao/[tipo]` ainda mostra a série regional (média) — se o dono quiser gráfico por estado, precisa de `cotacoes_uf_historico`.
 - Tipos gerados do Supabase (`supabase gen types`) para tipar as queries.
 - `salvar` não é transacional (upsert em `cotacoes` + histórico em 2 chamadas) — risco baixo numa coleta diária.
 
