@@ -1,22 +1,33 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { TITULOS, ORDEM_PAINEL, prazoDesatualizadoMs } from '@/lib/tipos-ui';
-import { CardCommodity } from '@/components/redesign/CardCommodity';
+import { TITULOS, ORDEM_PAINEL } from '@/lib/tipos-ui';
+import { MUNICIPIOS } from '@/lib/fontes/chuva';
+import { mediana } from '@/lib/termometro';
+import { CardPorteira, type PrecoCidadeUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
+import { TabelaMercado, type ItemMercado } from '@/components/redesign/TabelaMercado';
+import { SuaPraca } from '@/components/redesign/SuaPraca';
 import { Revelar } from '@/components/redesign/Revelar';
 
 export const dynamic = 'force-dynamic';
 
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
+type LinhaUf = { tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string };
 
-const CONFIG: Record<string, { unLabel: string; fonteLabel: string; casas: number; grupo: 'porteira' | 'mercado' }> = {
-  boi: { unLabel: 'R$ por arroba', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  soja: { unLabel: 'R$ por saca 60 kg', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  milho: { unLabel: 'R$ por saca 60 kg', fonteLabel: 'CONAB, MT/PA/TO/GO', casas: 2, grupo: 'porteira' },
-  dolar: { unLabel: 'R$ comercial', fonteLabel: 'B3 PTAX', casas: 4, grupo: 'mercado' },
-  euro: { unLabel: 'R$ comercial', fonteLabel: 'B3 PTAX', casas: 4, grupo: 'mercado' },
-  ouro: { unLabel: 'R$ por grama', fonteLabel: 'BCB, ouro', casas: 2, grupo: 'mercado' },
+const PORTEIRA = ['boi', 'soja', 'milho'] as const;
+
+const UN_PORTEIRA: Record<string, string> = {
+  boi: 'R$ por arroba',
+  soja: 'R$ por saca de 60 kg',
+  milho: 'R$ por saca de 60 kg',
 };
 
-const cfg = (tipo: string) => CONFIG[tipo] ?? { unLabel: '', fonteLabel: '', casas: 2, grupo: 'mercado' as const };
+const MERCADO: Record<string, { unLabel: string; casas: number }> = {
+  dolar: { unLabel: 'comercial', casas: 4 },
+  euro: { unLabel: 'comercial', casas: 4 },
+  ouro: { unLabel: 'por grama', casas: 2 },
+  bitcoin: { unLabel: 'por unidade', casas: 2 },
+  ethereum: { unLabel: 'por unidade', casas: 2 },
+};
+
 const posicao = (tipo: string) => {
   const i = ORDEM_PAINEL.indexOf(tipo);
   return i === -1 ? ORDEM_PAINEL.length : i;
@@ -24,46 +35,88 @@ const posicao = (tipo: string) => {
 
 const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
 const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
+const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina' });
+
+// A CONAB publica a semana fechada: rotula com o intervalo (segunda a sexta).
+function rotuloSemana(iso: string | undefined): string {
+  if (!iso) return 'CONAB';
+  const fim = new Date(iso);
+  const inicio = new Date(fim.getTime() - 4 * 24 * 60 * 60 * 1000);
+  return `semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}`;
+}
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const { data } = await supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct, data_referencia');
 
-  const desde = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: hist } = await supabase
-    .from('cotacoes_historico')
-    .select('tipo, valor, data_referencia')
-    .gte('data_referencia', desde)
-    .order('data_referencia', { ascending: true });
+  const seteDias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const trintaDias = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [{ data: atuais }, { data: porUf }, { data: hist }, { data: reportes }] = await Promise.all([
+    supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct, data_referencia'),
+    supabase.from('cotacoes_uf').select('tipo, uf, valor, variacao_pct, data_referencia'),
+    supabase
+      .from('cotacoes_historico')
+      .select('tipo, valor, data_referencia')
+      .gte('data_referencia', trintaDias)
+      .order('data_referencia', { ascending: true }),
+    supabase
+      .from('reportes')
+      .select('produto, municipio, valor')
+      .eq('status', 'aprovado')
+      .eq('produto', 'boi')
+      .gte('criado_em', seteDias),
+  ]);
+
   const historicoPorTipo = new Map<string, number[]>();
   for (const h of hist ?? []) {
-    const t = h.tipo as string;
-    const arr = historicoPorTipo.get(t) ?? [];
+    const arr = historicoPorTipo.get(h.tipo as string) ?? [];
     arr.push(Number(h.valor));
-    historicoPorTipo.set(t, arr);
+    historicoPorTipo.set(h.tipo as string, arr);
   }
 
-  const cotacoes = ((data ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
-  const porteira = cotacoes.filter((c) => cfg(c.tipo).grupo === 'porteira');
-  const mercado = cotacoes.filter((c) => cfg(c.tipo).grupo === 'mercado');
+  const ufsPorTipo = new Map<string, PrecoUfUI[]>();
+  const semanaPorTipo = new Map<string, string>();
+  for (const l of ((porUf ?? []) as LinhaUf[])) {
+    const arr = ufsPorTipo.get(l.tipo) ?? [];
+    arr.push({ uf: l.uf, valor: Number(l.valor), variacaoPct: l.variacao_pct === null ? null : Number(l.variacao_pct) });
+    ufsPorTipo.set(l.tipo, arr);
+    const atual = semanaPorTipo.get(l.tipo);
+    if (!atual || l.data_referencia > atual) semanaPorTipo.set(l.tipo, l.data_referencia);
+  }
 
-  const card = (c: Cotacao) => (
-    <CardCommodity
-      key={c.tipo}
-      tipo={c.tipo}
-      titulo={TITULOS[c.tipo] ?? c.tipo}
-      unLabel={cfg(c.tipo).unLabel}
-      fonteLabel={cfg(c.tipo).fonteLabel}
-      valor={Number(c.valor)}
-      variacaoPct={c.variacao_pct === null ? null : Number(c.variacao_pct)}
-      historico={historicoPorTipo.get(c.tipo) ?? []}
-      dataReferencia={c.data_referencia}
-      desatualizado={Date.now() - new Date(c.data_referencia).getTime() > prazoDesatualizadoMs(c.tipo)}
-      casas={cfg(c.tipo).casas}
-      variante={cfg(c.tipo).grupo}
-    />
-  );
+  // Boi nas cidades da praça: valor típico (mediana) dos reportes aprovados de 7 dias.
+  // Cidade sem reporte continua na lista, como convite — não some.
+  const valoresPorCidade = new Map<string, number[]>();
+  for (const r of (reportes ?? []) as { municipio: string; valor: number }[]) {
+    const arr = valoresPorCidade.get(r.municipio) ?? [];
+    arr.push(Number(r.valor));
+    valoresPorCidade.set(r.municipio, arr);
+  }
+  const cidades: PrecoCidadeUI[] = MUNICIPIOS.map((m) => {
+    const valores = valoresPorCidade.get(m.nome) ?? [];
+    return {
+      municipio: m.nome,
+      uf: m.uf,
+      mediana: valores.length ? mediana(valores) : null,
+      contagem: valores.length,
+    };
+  }).sort((a, b) => (b.contagem > 0 ? 1 : 0) - (a.contagem > 0 ? 1 : 0));
 
+  const cotacoes = ((atuais ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
+
+  const mercado: ItemMercado[] = cotacoes
+    .filter((c) => c.tipo in MERCADO)
+    .map((c) => ({
+      tipo: c.tipo,
+      titulo: TITULOS[c.tipo] ?? c.tipo,
+      valor: Number(c.valor),
+      casas: MERCADO[c.tipo].casas,
+      unLabel: MERCADO[c.tipo].unLabel,
+      variacaoPct: c.variacao_pct === null ? null : Number(c.variacao_pct),
+      historico: historicoPorTipo.get(c.tipo) ?? [],
+    }));
+
+  const temPorteira = PORTEIRA.some((t) => (ufsPorTipo.get(t) ?? []).length > 0);
   const agora = new Date();
 
   return (
@@ -79,8 +132,9 @@ export default async function Home() {
           <p className="lede">Preços de referência da porteira ao mercado, nas praças do Vale do Araguaia.</p>
           <div className="meta">
             <div className="big">{fmtHoje.format(agora)}</div>
-            <div className="mono">Atualizado {fmtHora.format(agora)}, fontes CONAB, B3, BCB</div>
+            <div className="mono">Atualizado {fmtHora.format(agora)}, fontes CONAB, B3, BCB, CoinGecko</div>
           </div>
+          <SuaPraca />
         </div>
         <div className="photo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -91,21 +145,34 @@ export default async function Home() {
         </div>
       </section>
 
-      {porteira.length > 0 && (
+      {temPorteira && (
         <section className="section">
           <div className="section-head">
             <div className="t">Na porteira</div>
             <div className="line" />
             <div className="meta">
-              Média MT PA TO GO<span className="pill">CONAB</span>Semanal
+              Preço de cada estado<span className="pill">CONAB</span>Semanal
             </div>
           </div>
-          <div className="cards">
-            {porteira.map((c, i) => (
-              <Revelar key={c.tipo} delay={i * 0.08}>
-                {card(c)}
-              </Revelar>
-            ))}
+          <div className="pcards">
+            {PORTEIRA.map((tipo, i) => {
+              const precos = ufsPorTipo.get(tipo) ?? [];
+              if (precos.length === 0) return null;
+              return (
+                // O Revelar vira o filho do grid: a largura do boi tem de estar nele.
+                <Revelar key={tipo} delay={i * 0.08} className={tipo === 'boi' ? 'largo' : undefined}>
+                  <CardPorteira
+                    tipo={tipo}
+                    titulo={TITULOS[tipo] ?? tipo}
+                    unLabel={UN_PORTEIRA[tipo]}
+                    semana={rotuloSemana(semanaPorTipo.get(tipo))}
+                    precos={precos}
+                    cidades={tipo === 'boi' ? cidades : undefined}
+                    largo={tipo === 'boi'}
+                  />
+                </Revelar>
+              );
+            })}
           </div>
         </section>
       )}
@@ -116,20 +183,16 @@ export default async function Home() {
             <div className="t">Mercado</div>
             <div className="line" />
             <div className="meta">
-              Câmbio e reservas<span className="pill">B3 BCB</span>Diário
+              Câmbio, ouro e cripto<span className="pill">BCB · CoinGecko</span>Diário
             </div>
           </div>
-          <div className="cards">
-            {mercado.map((c, i) => (
-              <Revelar key={c.tipo} delay={i * 0.08}>
-                {card(c)}
-              </Revelar>
-            ))}
-          </div>
+          <TabelaMercado itens={mercado} />
         </section>
       )}
 
-      {cotacoes.length === 0 && <p className="mono" style={{ marginTop: 48 }}>Ainda sem cotação — rode a coleta.</p>}
+      {cotacoes.length === 0 && !temPorteira && (
+        <p className="mono" style={{ marginTop: 48 }}>Ainda sem cotação — rode a coleta.</p>
+      )}
     </div>
   );
 }

@@ -1,15 +1,22 @@
-export type TickerItem = { rotulo: string; valor: string; dir: 'up' | 'down'; pct: string };
+'use client';
 
-const PADRAO: TickerItem[] = [
-  { rotulo: 'BOI @', valor: '326,96', dir: 'down', pct: '1,54' },
-  { rotulo: 'SOJA', valor: '112,20', dir: 'up', pct: '0,54' },
-  { rotulo: 'MILHO', valor: '51,75', dir: 'down', pct: '1,99' },
-  { rotulo: 'USD', valor: '5,1717', dir: 'down', pct: '0,44' },
-  { rotulo: 'EUR', valor: '5,9486', dir: 'up', pct: '0,34' },
-  { rotulo: 'OURO', valor: '21.699', dir: 'up', pct: '0,24' },
-];
+import { useEffect, useState } from 'react';
+import type { TickerItem } from '@/lib/ticker';
 
-export function Ticker({ itens = PADRAO }: { itens?: TickerItem[] }) {
+// Preços reais das cotações gravadas (/api/ticker, cache de 5 min). Enquanto não
+// chegam, a faixa fica vazia — melhor nada do que número inventado.
+export function Ticker() {
+  const [itens, setItens] = useState<TickerItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/ticker')
+      .then((r) => r.json())
+      .then((d: { itens?: TickerItem[] }) => setItens(d.itens ?? []))
+      .catch(() => {});
+  }, []);
+
+  if (itens.length === 0) return <div className="ticker-strip" aria-hidden="true" />;
+
   const dobrado = [...itens, ...itens];
   return (
     <div className="ticker-strip" aria-hidden="true">
