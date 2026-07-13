@@ -11,15 +11,16 @@ function routedFetch(routes: Record<string, { ok?: boolean; status?: number; bod
 }
 
 describe('buscarOuro', () => {
-  it('converte o ouro de USD para R$ (price × USD-BRL)', async () => {
+  it('converte a onça troy (USD) em R$ por grama', async () => {
     const f = routedFetch({
       'gold-api': { body: { price: 4000, updatedAt: '2026-06-19T20:00:00Z' } },
       frankfurter: { body: { rates: { BRL: 5.0 } } },
     });
     const c = await buscarOuro(f);
     expect(c.tipo).toBe('ouro');
-    expect(c.valor).toBeCloseTo(20000);
-    expect(c.unidade).toBe('R$');
+    // 4000 USD/oz × 5 = R$ 20.000 a onça troy = R$ 643,02 a grama.
+    expect(c.valor).toBeCloseTo(20000 / 31.1034768, 2);
+    expect(c.unidade).toBe('R$/g');
     expect(c.fonte).toBe('gold-api');
     expect(c.dataReferencia).toBe('2026-06-19T20:00:00.000Z');
   });

@@ -3,7 +3,10 @@ import type { Cotacao } from '@/types/cotacao';
 const URL_OURO = 'https://api.gold-api.com/price/XAU';
 const URL_USD = 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=BRL';
 
-// Ouro em R$: preço da onça em USD (gold-api) × USD-BRL (Frankfurter).
+// O gold-api cota a ONÇA TROY; o mercado brasileiro fala em grama.
+const GRAMAS_POR_ONCA_TROY = 31.1034768;
+
+// Ouro em R$ por grama: (preço da onça em USD × USD-BRL) ÷ gramas da onça troy.
 // gold-api: { price (USD), updatedAt }. Frankfurter: { rates: { BRL } }.
 export async function buscarOuro(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
   const [resOuro, resUsd] = await Promise.all([fetchImpl(URL_OURO), fetchImpl(URL_USD)]);
@@ -22,11 +25,11 @@ export async function buscarOuro(fetchImpl: typeof fetch = fetch): Promise<Cotac
     throw new Error('USD-BRL inválido para converter o ouro');
   }
 
-  const valor = Math.round(precoUsd * usdBrl * 100) / 100;
+  const valor = Math.round(((precoUsd * usdBrl) / GRAMAS_POR_ONCA_TROY) * 100) / 100;
   return {
     tipo: 'ouro',
     valor,
-    unidade: 'R$',
+    unidade: 'R$/g',
     fonte: 'gold-api',
     dataReferencia: ouro.updatedAt ? new Date(ouro.updatedAt).toISOString() : new Date().toISOString(),
   };
