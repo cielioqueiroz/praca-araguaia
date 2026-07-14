@@ -11,16 +11,29 @@ export const TITULOS: Record<string, string> = {
   euro: 'Euro',
   ouro: 'Ouro 24k',
   ouro18k: 'Ouro 18k',
+  ibovespa: 'Ibovespa',
   bitcoin: 'Bitcoin',
   ethereum: 'Ethereum',
 };
+
+// O Ibovespa é medido em PONTOS. Tudo mais no mercado é dinheiro.
+export const NAO_E_MOEDA = new Set(['ibovespa']);
 
 // A porteira: o curral e a lavoura. Também é a ordem de exibição.
 export const PECUARIA = ['boi', 'vaca', 'novilha', 'bezerro'];
 export const LAVOURA = ['soja', 'milho'];
 export const PORTEIRA = [...PECUARIA, ...LAVOURA];
 
-export const ORDEM_PAINEL = [...PORTEIRA, 'dolar', 'euro', 'ouro', 'ouro18k', 'bitcoin', 'ethereum'];
+export const ORDEM_PAINEL = [
+  ...PORTEIRA,
+  'dolar',
+  'euro',
+  'ouro',
+  'ouro18k',
+  'ibovespa',
+  'bitcoin',
+  'ethereum',
+];
 
 export const UNIDADE_PORTEIRA: Record<string, string> = {
   boi: 'R$ por arroba',

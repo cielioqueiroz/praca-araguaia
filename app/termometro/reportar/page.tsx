@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { FormReporte } from '@/components/FormReporte';
 
@@ -11,8 +12,12 @@ export default function Reportar() {
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Qual o preço na sua praça?</h1>
       <p className="mt-1 text-sm text-tinta/50">Seu reporte é conferido antes de entrar na média da região.</p>
 
+      {/* O formulário lê ?produto= da URL (useSearchParams) — o Next exige a fronteira
+          de Suspense para não desistir da renderização estática da página inteira. */}
       <div className="mt-6">
-        <FormReporte />
+        <Suspense fallback={<div className="h-64 rounded-xl border border-linha bg-papel" />}>
+          <FormReporte />
+        </Suspense>
       </div>
     </main>
   );

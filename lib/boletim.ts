@@ -1,5 +1,12 @@
-import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, FONTE_PORTEIRA } from '@/lib/tipos-ui';
-import { NOME_UF } from '@/lib/praca';
+import {
+  TITULOS,
+  ORDEM_PAINEL,
+  PORTEIRA,
+  UNIDADE_PORTEIRA,
+  FONTE_PORTEIRA,
+  NAO_E_MOEDA,
+} from '@/lib/tipos-ui';
+import { NOME_UF, ordenarPorUf } from '@/lib/praca';
 import type { PrecoUf } from '@/types/cotacao';
 
 // Linha crua vinda de `cotacoes` (tipos já convertidos pelo chamador).
@@ -16,6 +23,10 @@ export type ItemPorteira = {
   unidade: string; // 'R$ por arroba'
   rodape: string; // 'CONAB · semana de 29/06 a 03/07' ou 'Datagro · 10/07'
   ufs: LinhaUfBoletim[];
+  /** O que os produtores reportaram nas cidades — só as que TÊM reporte.
+   *  No card, repetir as 5 cidades vazias em 6 produtos viraria 30 linhas de nada;
+   *  o convite a reportar vive no site, que tem espaço para ele. */
+  cidades: CidadeBoletim[];
 };
 
 export type ItemMercado = {
@@ -25,21 +36,28 @@ export type ItemMercado = {
   variacao?: Variacao;
 };
 
-/** Boi nas cidades da praça: o que os produtores reportaram no Termômetro. */
+/** Uma cidade da praça: o que os produtores reportaram no Termômetro. */
 export type CidadeBoletim = { municipio: string; uf: string; valorFmt: string | null; contagem: number };
 
 export type Boletim = {
   dataExtenso: string;
   porteira: ItemPorteira[];
   mercado: ItemMercado[];
-  cidades: CidadeBoletim[];
+  /** Nenhum produto teve reporte na semana: o card faz o convite em uma linha. */
+  semReportes: boolean;
 };
 
-export type ReporteCidade = { municipio: string; uf: string; mediana: number | null; contagem: number };
+export type ReporteCidade = {
+  produto: string;
+  municipio: string;
+  uf: string;
+  mediana: number | null;
+  contagem: number;
+};
 
 // Sufixo compacto depois do número, para o valor não ficar poluído.
 const SUFIXO: Record<string, string> = { ouro: '/g', ouro18k: '/g' };
-const CASAS: Record<string, number> = { dolar: 4, euro: 4 };
+const CASAS: Record<string, number> = { dolar: 4, euro: 4, ibovespa: 0 };
 
 // Araguaia fica no fuso -03:00 sem horário de verão; fixar o fuso torna a data
 // determinística no serverless (relógio UTC) e nos testes.
@@ -88,7 +106,8 @@ export function montarBoletim(
   // Porteira: só entra a commodity que tem preço por estado — sem estado, sem linha
   // (a média antiga não volta disfarçada).
   const porteira: ItemPorteira[] = PORTEIRA.flatMap((tipo) => {
-    const ufs = precosUf.filter((p) => p.tipo === tipo);
+    // Ordem fixa da praça (PA/MT/TO/GO): o banco não garante nenhuma.
+    const ufs = ordenarPorUf(precosUf.filter((p) => p.tipo === tipo));
     if (ufs.length === 0) return [];
     const maisRecente = ufs.reduce((a, b) => (a.dataReferencia >= b.dataReferencia ? a : b));
     return [
@@ -102,6 +121,14 @@ export function montarBoletim(
           valorFmt: numero(p.valor, 2),
           variacao: variacaoDe(p.variacaoPct),
         })),
+        cidades: reportes
+          .filter((r) => r.produto === tipo && r.mediana !== null)
+          .map((r) => ({
+            municipio: r.municipio,
+            uf: r.uf,
+            valorFmt: numero(r.mediana as number, 2),
+            contagem: r.contagem,
+          })),
       },
     ];
   });
@@ -109,19 +136,21 @@ export function montarBoletim(
   const mercado: ItemMercado[] = linhas
     .filter((l) => !PORTEIRA.includes(l.tipo))
     .sort((a, b) => posicao(a.tipo) - posicao(b.tipo))
-    .map((l) => ({
-      tipo: l.tipo,
-      titulo: TITULOS[l.tipo] ?? l.tipo,
-      valorFmt: `R$ ${numero(l.valor, CASAS[l.tipo] ?? 2)}${SUFIXO[l.tipo] ? ` ${SUFIXO[l.tipo]}` : ''}`,
-      variacao: variacaoDe(l.variacao_pct),
-    }));
+    .map((l) => {
+      const n = numero(l.valor, CASAS[l.tipo] ?? 2);
+      // O Ibovespa é ponto: escrever "R$ 176.617" seria mentira.
+      const valorFmt = NAO_E_MOEDA.has(l.tipo)
+        ? `${n} pts`
+        : `R$ ${n}${SUFIXO[l.tipo] ? ` ${SUFIXO[l.tipo]}` : ''}`;
+      return {
+        tipo: l.tipo,
+        titulo: TITULOS[l.tipo] ?? l.tipo,
+        valorFmt,
+        variacao: variacaoDe(l.variacao_pct),
+      };
+    });
 
-  const cidades: CidadeBoletim[] = reportes.map((r) => ({
-    municipio: r.municipio,
-    uf: r.uf,
-    valorFmt: r.mediana === null ? null : numero(r.mediana, 2),
-    contagem: r.contagem,
-  }));
+  const semReportes = reportes.every((r) => r.mediana === null);
 
-  return { dataExtenso: fmtDataExtenso.format(agora), porteira, mercado, cidades };
+  return { dataExtenso: fmtDataExtenso.format(agora), porteira, mercado, semReportes };
 }

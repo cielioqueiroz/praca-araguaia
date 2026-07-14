@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validarReporte, resumirReportes, mediana, normalizarValor, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
+import { validarReporte, resumirReportes, mediana, normalizarValor, cidadesDoProduto, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
+import { PORTEIRA } from '@/lib/tipos-ui';
 
 const corpo = (extra: Record<string, unknown> = {}) => ({
   produto: 'boi', municipio: 'Redenção', valor: 320, contato: '', ...extra,
@@ -129,11 +130,45 @@ describe('normalizarValor', () => {
 });
 
 describe('constantes', () => {
-  it('produtos e municípios na ordem certa', () => {
-    expect(ORDEM_PRODUTOS).toEqual(['boi', 'bezerro', 'vaca', 'soja', 'milho']);
+  it('cobre as 6 categorias da porteira, na mesma ordem dela', () => {
+    expect(ORDEM_PRODUTOS).toEqual(['boi', 'vaca', 'novilha', 'bezerro', 'soja', 'milho']);
     expect(PRODUTOS.bezerro.unidade).toBe('R$/cabeça');
+    expect(PRODUTOS.novilha.unidade).toBe('R$/@');
+  });
+
+  it('o Termômetro cobre exatamente o que a porteira publica', () => {
+    expect([...ORDEM_PRODUTOS].sort()).toEqual([...PORTEIRA].sort());
+  });
+
+  it('municípios na ordem certa', () => {
     expect(MUNICIPIOS_TERMOMETRO).toEqual([
       'Redenção', 'Santana do Araguaia', 'Vila Rica', 'Confresa', 'São Félix do Araguaia',
     ]);
+  });
+});
+
+describe('cidadesDoProduto', () => {
+  const reportes = [
+    { produto: 'novilha', municipio: 'Redenção', valor: 300 },
+    { produto: 'novilha', municipio: 'Redenção', valor: 310 },
+    { produto: 'boi', municipio: 'Confresa', valor: 320 },
+  ];
+
+  it('separa por produto e tira a mediana por cidade', () => {
+    const novilha = cidadesDoProduto(reportes, 'novilha');
+    const redencao = novilha.find((c) => c.municipio === 'Redenção');
+    expect(redencao).toMatchObject({ mediana: 305, contagem: 2, uf: 'PA' });
+    // O boi de Confresa não pode vazar para a novilha.
+    expect(novilha.find((c) => c.municipio === 'Confresa')?.mediana).toBeNull();
+  });
+
+  it('cidade sem reporte fica na lista (é convite), com mediana nula', () => {
+    const milho = cidadesDoProduto(reportes, 'milho');
+    expect(milho).toHaveLength(5);
+    expect(milho.every((c) => c.mediana === null && c.contagem === 0)).toBe(true);
+  });
+
+  it('quem tem reporte vem primeiro', () => {
+    expect(cidadesDoProduto(reportes, 'boi')[0].municipio).toBe('Confresa');
   });
 });

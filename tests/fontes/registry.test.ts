@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { FONTES, FONTES_HISTORICO } from '@/lib/fontes/registry';
 
 describe('registry de fontes', () => {
-  it('tem as 12 cotações na coleta diária', () => {
+  it('tem as 13 cotações na coleta diária', () => {
     expect(Object.keys(FONTES).sort()).toEqual([
-      'bezerro', 'bitcoin', 'boi', 'dolar', 'ethereum', 'euro',
+      'bezerro', 'bitcoin', 'boi', 'dolar', 'ethereum', 'euro', 'ibovespa',
       'milho', 'novilha', 'ouro', 'ouro18k', 'soja', 'vaca',
     ]);
   });
@@ -14,7 +14,7 @@ describe('registry de fontes', () => {
   // histórico a partir da primeira coleta.
   it('backfill só tem quem tem série histórica de graça', () => {
     expect(FONTES_HISTORICO.map((f) => f.tipo).sort()).toEqual([
-      'bitcoin', 'boi', 'dolar', 'ethereum', 'euro', 'milho', 'soja',
+      'bitcoin', 'boi', 'dolar', 'ethereum', 'euro', 'ibovespa', 'milho', 'soja',
     ]);
   });
 

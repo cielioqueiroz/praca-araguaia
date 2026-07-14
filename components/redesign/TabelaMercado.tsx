@@ -10,6 +10,8 @@ export type ItemMercado = {
   unLabel: string; // 'por grama', 'comercial', 'por unidade'
   variacaoPct: number | null;
   historico: number[];
+  /** false = não é dinheiro (o Ibovespa é ponto): sai o R$, entra o 'pts'. */
+  moeda?: boolean;
 };
 
 function brl(n: number, casas: number): string {
@@ -58,9 +60,11 @@ export function TabelaMercado({ itens }: { itens: ItemMercado[] }) {
               <b>{i.titulo}</b>
               <i>{i.unLabel}</i>
             </span>
+            {/* O Ibovespa é PONTO, não real: prefixar R$ nele seria mentira. */}
             <span className="valor tnum">
-              <em>R$</em>
+              {i.moeda === false ? null : <em>R$</em>}
               {brl(i.valor, i.casas)}
+              {i.moeda === false && <em style={{ marginLeft: 6 }}>pts</em>}
             </span>
             {i.variacaoPct === null ? (
               <span className="var-vazia">—</span>

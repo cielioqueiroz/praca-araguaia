@@ -10,6 +10,18 @@ export const NOME_UF: Record<string, string> = {
   GO: 'Goiás',
 };
 
+// A ordem em que a praça lê os estados. O banco não garante ordem nenhuma: sem isto,
+// um card lista PA/MT/TO/GO e o do lado GO/PA/MT/TO, e o olho perde a comparação.
+export const ORDEM_UF = ['PA', 'MT', 'TO', 'GO'];
+
+export function ordenarPorUf<T extends { uf: string }>(itens: T[]): T[] {
+  const pos = (uf: string) => {
+    const i = ORDEM_UF.indexOf(uf);
+    return i === -1 ? ORDEM_UF.length : i;
+  };
+  return [...itens].sort((a, b) => pos(a.uf) - pos(b.uf));
+}
+
 const RAIO_TERRA_KM = 6371;
 // Fora deste raio o usuário não está na praça — melhor não fingir que está.
 const LIMITE_KM = 400;

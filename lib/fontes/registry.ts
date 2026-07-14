@@ -5,6 +5,7 @@ import { buscarOuro, buscarOuro18k } from './ouro';
 import { buscarBitcoin, buscarEthereum, buscarHistoricoCripto } from './cripto';
 import { buscarBoi, buscarSoja, buscarMilho, buscarHistoricoConab } from './conab';
 import { buscarVaca, buscarNovilha, buscarBezerro } from './pecuaria';
+import { buscarIbovespa, buscarHistoricoIbovespa } from './ibovespa';
 
 // Fontes da coleta diária: tipo -> função que devolve a cotação atual.
 export const FONTES: Record<string, () => Promise<Cotacao>> = {
@@ -12,6 +13,7 @@ export const FONTES: Record<string, () => Promise<Cotacao>> = {
   euro: () => buscarEuro(),
   ouro: () => buscarOuro(),
   ouro18k: () => buscarOuro18k(),
+  ibovespa: () => buscarIbovespa(),
   bitcoin: () => buscarBitcoin(),
   ethereum: () => buscarEthereum(),
   boi: () => buscarBoi(),
@@ -30,6 +32,7 @@ export const FONTES_HISTORICO: Array<{
 }> = [
   { tipo: 'dolar', fonte: 'bcb', buscar: () => buscarHistoricoDolarBcb(90) },
   { tipo: 'euro', fonte: 'frankfurter', buscar: () => buscarHistoricoEuroFrankfurter(90) },
+  { tipo: 'ibovespa', fonte: 'b3/yahoo', buscar: () => buscarHistoricoIbovespa() },
   { tipo: 'bitcoin', fonte: 'coingecko', buscar: () => buscarHistoricoCripto('bitcoin') },
   { tipo: 'ethereum', fonte: 'coingecko', buscar: () => buscarHistoricoCripto('ethereum') },
   { tipo: 'boi', fonte: 'conab', buscar: () => buscarHistoricoConab('boi') },

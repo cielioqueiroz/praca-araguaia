@@ -1,17 +1,21 @@
 import { MUNICIPIOS } from '@/lib/fontes/chuva';
 
-export type ProdutoTermometro = 'boi' | 'bezerro' | 'vaca' | 'soja' | 'milho';
+// Os mesmos 6 tipos da porteira: todo preço que o painel publica, o produtor pode
+// confrontar com o que está sendo pago na cidade dele.
+export type ProdutoTermometro = 'boi' | 'vaca' | 'novilha' | 'bezerro' | 'soja' | 'milho';
 
 // Faixas plausíveis: bloqueiam erro de digitação/troll, não a variação real de mercado.
 export const PRODUTOS: Record<ProdutoTermometro, { rotulo: string; unidade: string; min: number; max: number }> = {
   boi: { rotulo: 'Boi gordo', unidade: 'R$/@', min: 150, max: 600 },
-  bezerro: { rotulo: 'Bezerro', unidade: 'R$/cabeça', min: 800, max: 6000 },
   vaca: { rotulo: 'Vaca gorda', unidade: 'R$/@', min: 130, max: 550 },
+  novilha: { rotulo: 'Novilha', unidade: 'R$/@', min: 130, max: 550 },
+  bezerro: { rotulo: 'Bezerro', unidade: 'R$/cabeça', min: 800, max: 6000 },
   soja: { rotulo: 'Soja', unidade: 'R$/sc 60kg', min: 40, max: 300 },
   milho: { rotulo: 'Milho', unidade: 'R$/sc 60kg', min: 20, max: 200 },
 };
 
-export const ORDEM_PRODUTOS: ProdutoTermometro[] = ['boi', 'bezerro', 'vaca', 'soja', 'milho'];
+// Mesma ordem da porteira (gado e depois lavoura).
+export const ORDEM_PRODUTOS: ProdutoTermometro[] = ['boi', 'vaca', 'novilha', 'bezerro', 'soja', 'milho'];
 
 export const MUNICIPIOS_TERMOMETRO: string[] = MUNICIPIOS.map((m) => m.nome);
 
@@ -73,6 +77,31 @@ export function mediana(valores: number[]): number {
   const bruta =
     ordenados.length % 2 === 0 ? (ordenados[meio - 1] + ordenados[meio]) / 2 : ordenados[meio];
   return Math.round(bruta * 100) / 100;
+}
+
+export type CidadeDoProduto = { municipio: string; uf: string; mediana: number | null; contagem: number };
+
+// As cidades da praça para UM produto: o valor típico (mediana) do que os produtores
+// reportaram. Cidade sem reporte NÃO some — fica como convite ("seja o primeiro").
+// Usada pelo painel e pelo card do boletim, para os dois contarem a mesma história.
+export function cidadesDoProduto(reportes: ReporteAprovado[], produto: string): CidadeDoProduto[] {
+  const valores = new Map<string, number[]>();
+  for (const r of reportes) {
+    if (r.produto !== produto) continue;
+    const arr = valores.get(r.municipio) ?? [];
+    arr.push(Number(r.valor));
+    valores.set(r.municipio, arr);
+  }
+
+  return MUNICIPIOS.map((m) => {
+    const v = valores.get(m.nome) ?? [];
+    return {
+      municipio: m.nome,
+      uf: m.uf,
+      mediana: v.length ? mediana(v) : null,
+      contagem: v.length,
+    };
+  }).sort((a, b) => (b.contagem > 0 ? 1 : 0) - (a.contagem > 0 ? 1 : 0)); // quem tem reporte primeiro
 }
 
 // Agrega reportes JÁ filtrados (aprovados, últimos 7 dias — responsabilidade da query).

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TITULOS, ORDEM_PAINEL, PORTEIRA, PECUARIA, LEGENDAS, prazoDesatualizadoMs } from '@/lib/tipos-ui';
+import { TITULOS, ORDEM_PAINEL, PORTEIRA, PECUARIA, LEGENDAS, NAO_E_MOEDA, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 
 describe('tipos-ui', () => {
   it('tem título para os 12 tipos', () => {
@@ -20,8 +20,14 @@ describe('tipos-ui', () => {
   it('ordena o painel com a porteira primeiro e cripto ao fim do mercado', () => {
     expect(ORDEM_PAINEL).toEqual([
       'boi', 'vaca', 'novilha', 'bezerro', 'soja', 'milho',
-      'dolar', 'euro', 'ouro', 'ouro18k', 'bitcoin', 'ethereum',
+      'dolar', 'euro', 'ouro', 'ouro18k', 'ibovespa', 'bitcoin', 'ethereum',
     ]);
+  });
+
+  it('o Ibovespa é o único que não é dinheiro (é ponto)', () => {
+    expect(NAO_E_MOEDA.has('ibovespa')).toBe(true);
+    expect(NAO_E_MOEDA.has('dolar')).toBe(false);
+    expect(NAO_E_MOEDA.has('bitcoin')).toBe(false);
   });
 
   it('legenda da porteira aponta o preço por estado e credita quem apurou', () => {

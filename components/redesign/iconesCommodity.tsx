@@ -1,6 +1,6 @@
 import type { IconType } from 'react-icons';
 import { GiCow, GiBull, GiCorn, GiPlantSeed, GiGoldBar } from 'react-icons/gi';
-import { FaDollarSign, FaEuroSign, FaBitcoin, FaEthereum } from 'react-icons/fa';
+import { FaDollarSign, FaEuroSign, FaBitcoin, FaEthereum, FaChartLine } from 'react-icons/fa';
 import { PiCow } from 'react-icons/pi';
 
 // Ícones de marca (react-icons) para identificar cada cotação de relance.
@@ -18,21 +18,26 @@ const ICONES: Record<string, IconType> = {
   euro: FaEuroSign,
   ouro: GiGoldBar,
   ouro18k: GiGoldBar,
+  ibovespa: FaChartLine,
   bitcoin: FaBitcoin,
   ethereum: FaEthereum,
 };
 
-// Recortes (PNG/JPG transparentes) usados na faixa de foto de cada card.
-// Vaca, novilha e bezerro ainda não têm recorte próprio — sem foto, o card mostra
-// só a faixa com o ícone. Usar a foto do nelore para as três seria mentir na imagem.
+// Recortes (PNG transparentes) usados na faixa de foto de cada card. Os do gado saem
+// das fotos que o dono do projeto escolheu, com o fundo removido (rembg) — cada
+// categoria tem o SEU animal: bezerro é bezerro, não touro adulto.
 export const FOTO_COMMODITY: Record<string, string> = {
   boi: '/assets/cards/boi.png',
+  vaca: '/assets/cards/vaca.png',
+  novilha: '/assets/cards/novilha.png',
+  bezerro: '/assets/cards/bezerro.png',
   soja: '/assets/cards/soja.png',
   milho: '/assets/cards/milho.png',
   dolar: '/assets/cards/dolar.png',
   euro: '/assets/cards/euro.png',
   ouro: '/assets/cards/ouro.png',
   ouro18k: '/assets/cards/ouro.png', // mesmo metal, outra liga
+  ibovespa: '/assets/cards/ibovespa.png', // um índice não tem foto: é a linha do pregão
   bitcoin: '/assets/cards/bitcoin.png',
   ethereum: '/assets/cards/ethereum.png',
 };

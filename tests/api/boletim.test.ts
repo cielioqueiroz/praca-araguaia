@@ -83,7 +83,7 @@ describe('GET /api/boletim', () => {
           data_referencia: '2026-07-03T03:00:00.000Z',
         },
       ],
-      [{ municipio: 'Redenção', valor: 305 }],
+      [{ produto: 'boi', municipio: 'Redenção', valor: 305 }],
     );
 
     const res = await GET();
@@ -102,7 +102,13 @@ describe('GET /api/boletim', () => {
         dataReferencia: '2026-07-03T03:00:00.000Z',
       },
     ]);
-    expect(cidades).toContainEqual({ municipio: 'Redenção', uf: 'PA', mediana: 305, contagem: 1 });
-    expect(cidades).toContainEqual({ municipio: 'Confresa', uf: 'MT', mediana: null, contagem: 0 });
+    // As cidades vão etiquetadas por produto — o card pendura cada uma no seu.
+    expect(cidades).toContainEqual({ produto: 'boi', municipio: 'Redenção', uf: 'PA', mediana: 305, contagem: 1 });
+    // O reporte de boi não pode aparecer como se fosse de vaca.
+    expect(cidades).toContainEqual({ produto: 'vaca', municipio: 'Redenção', uf: 'PA', mediana: null, contagem: 0 });
+    // Cidade sem reporte continua na lista (é convite), com mediana nula.
+    expect(cidades).toContainEqual({ produto: 'boi', municipio: 'Confresa', uf: 'MT', mediana: null, contagem: 0 });
+    // 6 produtos da porteira × 5 cidades da praça.
+    expect(cidades).toHaveLength(30);
   });
 });

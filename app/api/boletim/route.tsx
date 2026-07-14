@@ -1,12 +1,11 @@
 import { ImageResponse } from 'next/og';
 import { createPublicClient } from '@/lib/supabase/public';
 import { montarBoletim, type Boletim, type ItemPorteira, type Variacao, type ReporteCidade } from '@/lib/boletim';
-import { PECUARIA } from '@/lib/tipos-ui';
+import { PECUARIA, PORTEIRA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
 import { programadorDataUri } from '@/lib/autor';
-import { MUNICIPIOS } from '@/lib/fontes/chuva';
-import { mediana } from '@/lib/termometro';
+import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
 import type { PrecoUf } from '@/types/cotacao';
 
 export const dynamic = 'force-dynamic';
@@ -123,6 +122,39 @@ function ItemDaPorteira({ item }: { item: ItemPorteira }) {
       ))}
 
       <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 4 }}>{item.rodape}</div>
+
+      {/* O que os produtores reportaram nas cidades — o dado que só existe porque
+          alguém na lida digitou. Só aparece o que tem reporte. */}
+      {item.cidades.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginTop: 6 }}>
+          <div style={{ display: 'flex', fontSize: 13, color: '#8a7d61', marginBottom: 2 }}>
+            NAS CIDADES · TERMÔMETRO
+          </div>
+          {item.cidades.map((c) => (
+            <div
+              key={c.municipio}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingTop: 5,
+                paddingBottom: 5,
+                borderTop: `1px dashed ${LINHA}`,
+              }}
+            >
+              <div style={{ display: 'flex', fontSize: 18, color: '#3a3428' }}>
+                {c.municipio}, {c.uf}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontSize: 21, fontWeight: 700, color: TINTA }}>{c.valorFmt}</div>
+                <div style={{ display: 'flex', fontSize: 13, color: MUTED, width: 70, justifyContent: 'flex-end' }}>
+                  {c.contagem} {c.contagem === 1 ? 'reporte' : 'reportes'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -169,45 +201,6 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
               <ItemDaPorteira key={item.tipo} item={item} />
             ))}
 
-            {/* Boi nas cidades da praça — o dado que só existe porque o produtor reporta.
-                Fica junto do gado: é boi, e equilibra a altura das duas colunas. */}
-            {boletim.cidades.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginTop: 8 }}>
-                <div style={{ display: 'flex', fontSize: 20, letterSpacing: 4, color: MUTED }}>
-                  BOI NAS CIDADES
-                </div>
-                <div style={{ display: 'flex', fontSize: 15, color: MUTED, marginTop: 3, marginBottom: 4 }}>
-                  Termômetro · reportes de produtores
-                </div>
-                {boletim.cidades.map((c, i) => (
-                  <div
-                    key={c.municipio}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingTop: 7,
-                      paddingBottom: 7,
-                      borderTop: i === 0 ? `1px solid ${LINHA}` : `1px dashed ${LINHA}`,
-                    }}
-                  >
-                    <div style={{ display: 'flex', fontSize: 20, color: '#3a3428' }}>
-                      {c.municipio}, {c.uf}
-                    </div>
-                    {c.valorFmt === null ? (
-                      <div style={{ display: 'flex', fontSize: 16, color: '#b9a882' }}>sem reporte</div>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ fontSize: 24, fontWeight: 700, color: TINTA }}>{c.valorFmt}</div>
-                        <div style={{ display: 'flex', fontSize: 15, color: MUTED, width: 78, justifyContent: 'flex-end' }}>
-                          {c.contagem} {c.contagem === 1 ? 'reporte' : 'reportes'}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
           </Coluna>
 
           <div style={{ display: 'flex', width: 1, backgroundColor: LINHA }} />
@@ -246,9 +239,18 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         </div>
       )}
 
+      {/* Sem nenhum reporte na semana, o card chama o produtor — em uma linha, não em
+          30 de "sem reporte". Havendo reporte, ele aparece dentro do produto. */}
+      {boletim.semReportes && (
+        <div style={{ display: 'flex', fontSize: 19, color: '#6e3e1e', marginBottom: 12 }}>
+          Termômetro da praça: diga por quanto estão pagando na sua cidade em
+          agroapp-bay.vercel.app/termometro
+        </div>
+      )}
+
       <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 19, letterSpacing: 2, color: MUTED }}>
-        <div style={{ display: 'flex' }}>CONAB · DATAGRO · SCOT · BCB · GOLD-API · COINGECKO</div>
+        <div style={{ display: 'flex' }}>CONAB · DATAGRO · SCOT · BCB · B3 · GOLD-API · COINGECKO</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
@@ -271,30 +273,23 @@ export async function GET() {
     supabase.from('cotacoes_uf').select('tipo, uf, valor, unidade, variacao_pct, data_referencia'),
     supabase
       .from('reportes')
-      .select('municipio, valor')
+      .select('produto, municipio, valor')
       .eq('status', 'aprovado')
-      .eq('produto', 'boi')
       .gte('criado_em', seteDias),
   ]);
   if (error) {
     return new Response('Erro ao carregar cotações', { status: 500 });
   }
 
-  const valoresPorCidade = new Map<string, number[]>();
-  for (const r of (reportes ?? []) as { municipio: string; valor: number }[]) {
-    const arr = valoresPorCidade.get(r.municipio) ?? [];
-    arr.push(Number(r.valor));
-    valoresPorCidade.set(r.municipio, arr);
-  }
-  const cidades: ReporteCidade[] = MUNICIPIOS.map((m) => {
-    const valores = valoresPorCidade.get(m.nome) ?? [];
-    return {
-      municipio: m.nome,
-      uf: m.uf,
-      mediana: valores.length ? mediana(valores) : null,
-      contagem: valores.length,
-    };
-  });
+  // As cidades de CADA produto da porteira (antes: só do boi).
+  const aprovados = ((reportes ?? []) as ReporteAprovado[]).map((r) => ({
+    produto: r.produto,
+    municipio: r.municipio,
+    valor: Number(r.valor),
+  }));
+  const cidades: ReporteCidade[] = PORTEIRA.flatMap((produto) =>
+    cidadesDoProduto(aprovados, produto).map((c) => ({ produto, ...c })),
+  );
 
   const precosUf: PrecoUf[] = (ufs ?? []).map((u) => ({
     tipo: u.tipo as string,

@@ -83,22 +83,50 @@ describe('montarBoletim', () => {
     expect(b.dataExtenso).toBe('sexta-feira, 3 de julho de 2026');
   });
 
-  it('leva as cidades do Termômetro para o card; sem reporte vira valor nulo', () => {
-    const b = montarBoletim([], [], [
-      { municipio: 'Redenção', uf: 'PA', mediana: 305, contagem: 3 },
-      { municipio: 'Confresa', uf: 'MT', mediana: null, contagem: 0 },
+  // O Postgres devolve as linhas na ordem que quiser.
+  it('lista os estados sempre na ordem da praça (PA/MT/TO/GO), venha o banco como vier', () => {
+    const b = montarBoletim([], [
+      uf('vaca', 'GO', 297.64, 0.14),
+      uf('vaca', 'TO', 291.32, -0.03),
+      uf('vaca', 'PA', 298.36, 0.13),
+      uf('vaca', 'MT', 286.16, -0.25),
     ]);
-    expect(b.cidades).toEqual([
+    expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Pará', 'Mato Grosso', 'Tocantins', 'Goiás']);
+  });
+
+  // O Termômetro agora vale para toda a porteira, não só para o boi.
+  it('pendura as cidades no produto certo, e só as que têm reporte', () => {
+    const b = montarBoletim([], [uf('vaca', 'PA', 298.36, 0.13), uf('boi', 'PA', 325.95, -1.09)], [
+      { produto: 'vaca', municipio: 'Redenção', uf: 'PA', mediana: 305, contagem: 3 },
+      { produto: 'vaca', municipio: 'Confresa', uf: 'MT', mediana: null, contagem: 0 },
+      { produto: 'boi', municipio: 'Vila Rica', uf: 'MT', mediana: 318.5, contagem: 2 },
+    ]);
+
+    const vaca = b.porteira.find((p) => p.tipo === 'vaca')!;
+    // Confresa não tem reporte de vaca: não entra no card (lá o convite não cabe).
+    expect(vaca.cidades).toEqual([
       { municipio: 'Redenção', uf: 'PA', valorFmt: '305,00', contagem: 3 },
-      { municipio: 'Confresa', uf: 'MT', valorFmt: null, contagem: 0 },
     ]);
+
+    // O reporte do boi não vaza para a vaca.
+    expect(b.porteira.find((p) => p.tipo === 'boi')!.cidades).toEqual([
+      { municipio: 'Vila Rica', uf: 'MT', valorFmt: '318,50', contagem: 2 },
+    ]);
+    expect(b.semReportes).toBe(false);
+  });
+
+  it('sem nenhum reporte, marca semReportes (o card faz o convite em uma linha)', () => {
+    const b = montarBoletim([], [uf('boi', 'PA', 325.95, null)], [
+      { produto: 'boi', municipio: 'Redenção', uf: 'PA', mediana: null, contagem: 0 },
+    ]);
+    expect(b.semReportes).toBe(true);
+    expect(b.porteira[0].cidades).toEqual([]);
   });
 
   it('sem dado nenhum devolve as colunas vazias sem quebrar', () => {
     const b = montarBoletim([], []);
     expect(b.porteira).toEqual([]);
     expect(b.mercado).toEqual([]);
-    expect(b.cidades).toEqual([]);
     expect(b.dataExtenso.length).toBeGreaterThan(0);
   });
 });

@@ -7,3 +7,13 @@ next-env.d.ts
 # build cache
 *.tsbuildinfo
 next-env.d.ts
+
+# Fotos de origem do gado: ficam no disco só como fonte do recorte.
+# O que o site usa são os PNGs sem fundo em public/assets/cards/.
+/public/assets/boi.jpg
+/public/assets/vaca-gorda.jpg
+/public/assets/novilha.jpg
+/public/assets/bezerro.jpg
+
+# Imagem que o site não usa mais (o hero é o hero-cebu.jpg).
+/public/assets/lavoura-dourada.jpg

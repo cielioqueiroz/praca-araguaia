@@ -86,7 +86,8 @@ export function CardPorteira(p: CardPorteiraProps) {
                       <b className="badge">você</b>
                     </span>
                     {c.mediana === null ? (
-                      <Link className="convite" href="/termometro/reportar">
+                      // Leva o produto do card: o formulário já abre no item certo.
+                      <Link className="convite" href={`/termometro/reportar?produto=${p.tipo}`}>
                         seja o primeiro a reportar
                       </Link>
                     ) : (

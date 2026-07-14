@@ -1,8 +1,8 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA } from '@/lib/tipos-ui';
+import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA } from '@/lib/tipos-ui';
 import { rodapeDaFonte } from '@/lib/boletim';
-import { MUNICIPIOS } from '@/lib/fontes/chuva';
-import { mediana } from '@/lib/termometro';
+import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
+import { ordenarPorUf } from '@/lib/praca';
 import { CardPorteira, type PrecoCidadeUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
 import { TabelaMercado, type ItemMercado } from '@/components/redesign/TabelaMercado';
 import { SuaPraca } from '@/components/redesign/SuaPraca';
@@ -18,6 +18,7 @@ const MERCADO: Record<string, { unLabel: string; casas: number }> = {
   euro: { unLabel: 'comercial', casas: 4 },
   ouro: { unLabel: 'por grama · 999', casas: 2 },
   ouro18k: { unLabel: 'por grama · 750', casas: 2 },
+  ibovespa: { unLabel: 'índice B3 · pontos', casas: 0 },
   bitcoin: { unLabel: 'por unidade', casas: 2 },
   ethereum: { unLabel: 'por unidade', casas: 2 },
 };
@@ -48,7 +49,6 @@ export default async function Home() {
       .from('reportes')
       .select('produto, municipio, valor')
       .eq('status', 'aprovado')
-      .eq('produto', 'boi')
       .gte('criado_em', seteDias),
   ]);
 
@@ -68,24 +68,20 @@ export default async function Home() {
     const atual = refPorTipo.get(l.tipo);
     if (!atual || l.data_referencia > atual) refPorTipo.set(l.tipo, l.data_referencia);
   }
+  // O Postgres devolve na ordem que quiser: sem isto, um card lista PA/MT/TO/GO e o
+  // do lado GO/PA/MT/TO — e o produtor perde a comparação entre categorias.
+  for (const [tipo, ufs] of ufsPorTipo) ufsPorTipo.set(tipo, ordenarPorUf(ufs));
 
-  // Boi nas cidades da praça: valor típico (mediana) dos reportes aprovados de 7 dias.
-  // Cidade sem reporte continua na lista, como convite — não some.
-  const valoresPorCidade = new Map<string, number[]>();
-  for (const r of (reportes ?? []) as { municipio: string; valor: number }[]) {
-    const arr = valoresPorCidade.get(r.municipio) ?? [];
-    arr.push(Number(r.valor));
-    valoresPorCidade.set(r.municipio, arr);
-  }
-  const cidades: PrecoCidadeUI[] = MUNICIPIOS.map((m) => {
-    const valores = valoresPorCidade.get(m.nome) ?? [];
-    return {
-      municipio: m.nome,
-      uf: m.uf,
-      mediana: valores.length ? mediana(valores) : null,
-      contagem: valores.length,
-    };
-  }).sort((a, b) => (b.contagem > 0 ? 1 : 0) - (a.contagem > 0 ? 1 : 0));
+  // As cidades da praça, agora para TODA a porteira (antes: só o boi). Valor típico
+  // (mediana) dos reportes aprovados de 7 dias; cidade sem reporte vira convite.
+  const aprovados = ((reportes ?? []) as ReporteAprovado[]).map((r) => ({
+    produto: r.produto,
+    municipio: r.municipio,
+    valor: Number(r.valor),
+  }));
+  const cidadesPorTipo = new Map<string, PrecoCidadeUI[]>(
+    PORTEIRA.map((tipo) => [tipo, cidadesDoProduto(aprovados, tipo)]),
+  );
 
   const cotacoes = ((atuais ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
 
@@ -99,6 +95,7 @@ export default async function Home() {
       unLabel: MERCADO[c.tipo].unLabel,
       variacaoPct: c.variacao_pct === null ? null : Number(c.variacao_pct),
       historico: historicoPorTipo.get(c.tipo) ?? [],
+      moeda: !NAO_E_MOEDA.has(c.tipo),
     }));
 
   const temPorteira = PORTEIRA.some((t) => (ufsPorTipo.get(t) ?? []).length > 0);
@@ -156,7 +153,7 @@ export default async function Home() {
                     unLabel={UNIDADE_PORTEIRA[tipo]}
                     rodape={rodapeDaFonte(tipo, ref)}
                     precos={precos}
-                    cidades={tipo === 'boi' ? cidades : undefined}
+                    cidades={cidadesPorTipo.get(tipo)}
                     largo={tipo === 'boi'}
                   />
                 </Revelar>
@@ -172,7 +169,7 @@ export default async function Home() {
             <div className="t">Mercado</div>
             <div className="line" />
             <div className="meta">
-              Câmbio, ouro e cripto<span className="pill">BCB · CoinGecko</span>Diário
+              Câmbio, ouro, bolsa e cripto<span className="pill">BCB · B3 · CoinGecko</span>Diário
             </div>
           </div>
           <TabelaMercado itens={mercado} />

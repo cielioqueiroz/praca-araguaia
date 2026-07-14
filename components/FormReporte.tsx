@@ -1,10 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO, normalizarValor, type ProdutoTermometro } from '@/lib/termometro';
 
 export function FormReporte() {
-  const [produto, setProduto] = useState<ProdutoTermometro>('boi');
+  // O card da porteira manda ?produto=<tipo>: o formulário já abre no item certo.
+  // (Fora do router — em teste de unidade — o hook devolve null; cai no boi.)
+  const params = useSearchParams();
+  const pedido = params?.get('produto');
+  const inicial: ProdutoTermometro = pedido && pedido in PRODUTOS ? (pedido as ProdutoTermometro) : 'boi';
+
+  const [produto, setProduto] = useState<ProdutoTermometro>(inicial);
   const [municipio, setMunicipio] = useState(MUNICIPIOS_TERMOMETRO[0]);
   const [valor, setValor] = useState('');
   const [enviando, setEnviando] = useState(false);
