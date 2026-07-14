@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
-import { enviarFoto } from '@/lib/telegram';
+import { enviarFotoArquivo } from '@/lib/telegram';
 import { legendaBoletim, urlFotoBoletim } from '@/lib/telegram-boletim';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
 
@@ -27,12 +27,21 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const agora = new Date();
-  const url = urlFotoBoletim(agora);
   const caption = legendaBoletim(agora);
+
+  // Renderiza o card UMA vez e envia os bytes para todo mundo. Antes mandávamos a URL,
+  // e o Telegram tinha de buscá-la: como o card leva ~10s para desenhar, ele desistia
+  // e o envio falhava (e, quando dava certo, servia a foto do cache dele).
+  const resposta = await fetch(urlFotoBoletim(agora));
+  if (!resposta.ok) {
+    console.error('enviar-boletim: card não renderizou', resposta.status);
+    return new Response('card indisponivel', { status: 502 });
+  }
+  const imagem = await resposta.blob();
 
   const { enviados, bloqueados, falhas } = await enviarEmMassa({
     chatIds,
-    enviar: (chatId) => enviarFoto(token, chatId, url, caption),
+    enviar: (chatId) => enviarFotoArquivo(token, chatId, imagem, caption),
   });
 
   if (bloqueados.length > 0) {

@@ -74,3 +74,31 @@ export async function enviarFoto(
   console.error('Telegram sendPhoto falhou', res.status);
   return { ok: false, bloqueado: false };
 }
+
+// Envia a foto como ARQUIVO (multipart), em vez de mandar a URL.
+//
+// Por que não a URL: o card é renderizado sob demanda (Satori) e leva ~10s. Quando o
+// Telegram vai buscar a URL, ele desiste antes de a imagem ficar pronta e o envio
+// falha. Além disso, ele cacheia foto remota por URL — o que já nos fez reentregar o
+// card do dia anterior. Enviando os bytes, os dois problemas somem.
+export async function enviarFotoArquivo(
+  token: string,
+  chatId: number,
+  imagem: Blob,
+  caption: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ResultadoEnvio> {
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  form.append('caption', caption);
+  form.append('photo', imagem, 'boletim.png');
+
+  const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendPhoto`, {
+    method: 'POST',
+    body: form, // sem content-type na mão: o boundary vem do FormData
+  });
+  if (res.ok) return { ok: true };
+  if (res.status === 403) return { ok: false, bloqueado: true };
+  console.error('Telegram sendPhoto (arquivo) falhou', res.status);
+  return { ok: false, bloqueado: false };
+}

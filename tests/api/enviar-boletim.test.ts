@@ -3,14 +3,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }));
 vi.mock('@/lib/telegram', async (orig) => {
   const real = await orig<typeof import('@/lib/telegram')>();
-  return { ...real, enviarFoto: vi.fn(async () => ({ ok: true })) };
+  return { ...real, enviarFotoArquivo: vi.fn(async () => ({ ok: true })) };
 });
 
 import { GET } from '@/app/api/enviar-boletim/route';
 import { createServerClient } from '@/lib/supabase/server';
-import { enviarFoto } from '@/lib/telegram';
+import { enviarFotoArquivo } from '@/lib/telegram';
 
 const SECRET = 'segredo';
+const enviar = enviarFotoArquivo as ReturnType<typeof vi.fn>;
 
 function mockSupabase(chatIds: number[], selectError: unknown = null) {
   const inFn = vi.fn(async () => ({ error: null }));
@@ -25,6 +26,17 @@ function mockSupabase(chatIds: number[], selectError: unknown = null) {
   return { select, del, inFn };
 }
 
+// A rota agora BAIXA o card e envia os bytes (o Telegram não aguentava esperar o
+// Satori desenhar a imagem quando ia buscar a URL sozinho).
+function mockCard(ok = true) {
+  const blob = new Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({ ok, status: ok ? 200 : 500, blob: async () => blob })),
+  );
+  return blob;
+}
+
 const req = (auth: string | null = `Bearer ${SECRET}`) =>
   new Request('http://localhost/api/enviar-boletim', {
     headers: auth !== null ? { authorization: auth } : {},
@@ -34,8 +46,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv('CRON_SECRET', SECRET);
   vi.stubEnv('TELEGRAM_BOT_TOKEN', 'TOKEN123');
+  mockCard();
 });
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 
 describe('GET /api/enviar-boletim', () => {
   it('401 com bearer errado/ausente, sem tocar no banco', async () => {
@@ -43,40 +59,51 @@ describe('GET /api/enviar-boletim', () => {
     expect((await GET(req('Bearer errado'))).status).toBe(401);
     expect((await GET(req(null))).status).toBe(401);
     expect(select).not.toHaveBeenCalled();
-    expect(enviarFoto).not.toHaveBeenCalled();
+    expect(enviar).not.toHaveBeenCalled();
   });
 
   it('500 quando falta TELEGRAM_BOT_TOKEN', async () => {
     mockSupabase([1]);
     vi.stubEnv('TELEGRAM_BOT_TOKEN', '');
     expect((await GET(req())).status).toBe(500);
-    expect(enviarFoto).not.toHaveBeenCalled();
+    expect(enviar).not.toHaveBeenCalled();
   });
 
   it('500 quando a leitura dos inscritos falha', async () => {
     mockSupabase([], { message: 'boom' });
     expect((await GET(req())).status).toBe(500);
-    expect(enviarFoto).not.toHaveBeenCalled();
+    expect(enviar).not.toHaveBeenCalled();
   });
 
-  it('caminho feliz: envia por inscrito e responde com o resumo', async () => {
-    const { del, inFn } = mockSupabase([10, 20, 30]);
+  it('caminho feliz: renderiza o card UMA vez e manda os bytes a cada inscrito', async () => {
+    const { del } = mockSupabase([10, 20, 30]);
     const res = await GET(req());
     expect(res.status).toBe(200);
-    expect(enviarFoto).toHaveBeenCalledTimes(3);
-    // chama com token, chatId, url do boletim e legenda
-    const [token, id, url, caption] = (enviarFoto as ReturnType<typeof vi.fn>).mock.calls[0];
+
+    // O card é buscado uma única vez, não uma vez por inscrito.
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect((fetch as ReturnType<typeof vi.fn>).mock.calls[0][0]).toContain('/api/boletim?d=');
+
+    expect(enviar).toHaveBeenCalledTimes(3);
+    const [token, id, imagem, caption] = enviar.mock.calls[0];
     expect(token).toBe('TOKEN123');
     expect(id).toBe(10);
-    expect(url).toContain('/api/boletim?d=');
+    expect(imagem).toBeInstanceOf(Blob); // são os bytes, não a URL
     expect(caption).toContain('Praça Araguaia');
     expect(await res.json()).toEqual({ enviados: 3, removidos: 0, falhas: 0 });
     expect(del).not.toHaveBeenCalled();
   });
 
+  it('502 quando o card não renderiza — não manda foto quebrada', async () => {
+    mockSupabase([1]);
+    mockCard(false);
+    expect((await GET(req())).status).toBe(502);
+    expect(enviar).not.toHaveBeenCalled();
+  });
+
   it('apaga os bloqueados (403) via .in ao fim', async () => {
     const { del, inFn } = mockSupabase([1, 2, 3]);
-    (enviarFoto as ReturnType<typeof vi.fn>)
+    enviar
       .mockResolvedValueOnce({ ok: true })
       .mockResolvedValueOnce({ ok: false, bloqueado: true })
       .mockResolvedValueOnce({ ok: true });
@@ -87,11 +114,11 @@ describe('GET /api/enviar-boletim', () => {
     expect(await res.json()).toEqual({ enviados: 2, removidos: 1, falhas: 0 });
   });
 
-  it('lista vazia responde 200 zerado, sem enviar nem apagar', async () => {
+  it('lista vazia responde 200 zerado, sem renderizar card nem enviar', async () => {
     const { del } = mockSupabase([]);
     const res = await GET(req());
     expect(res.status).toBe(200);
-    expect(enviarFoto).not.toHaveBeenCalled();
+    expect(enviar).not.toHaveBeenCalled();
     expect(del).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ enviados: 0, removidos: 0, falhas: 0 });
   });
