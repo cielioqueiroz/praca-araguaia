@@ -124,11 +124,12 @@ export default async function Home() {
           <SuaPraca />
         </div>
         <div className="photo">
+          {/* Foto de terceiro: o crédito ao Asocebu Bolivia fica na imagem, não é decorativo. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/hero-nelore.jpg" alt="Nelore no pasto do Vale do Araguaia" />
+          <img src="/assets/hero-cebu.jpg" alt="Rhaya FIV Moxos, touro cebu nascido na Bolívia" />
           <div className="overlay" />
-          <span className="tag">Nelore · PO</span>
-          <span className="credit">Vale do Araguaia · Fazenda de cria</span>
+          <span className="tag">Cebu · Rhaya FIV Moxos</span>
+          <span className="credit">Foto: Asocebu Bolivia</span>
         </div>
       </section>
 

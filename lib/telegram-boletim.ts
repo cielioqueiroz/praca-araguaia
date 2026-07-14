@@ -15,6 +15,10 @@ export function legendaBoletim(agora: Date): string {
 }
 
 export function urlFotoBoletim(agora: Date): string {
-  // ?d=<data local> é cache-buster: garante o boletim fresco do dia (CDN 1h).
-  return `${SITE}/api/boletim?d=${fmtDataIso.format(agora)}`;
+  // O Telegram cacheia foto remota POR URL: reenviar a mesma URL devolve o arquivo
+  // que ele já baixou, não o card novo. Com só ?d=<data>, um segundo envio no mesmo
+  // dia (depois de um deploy, por exemplo) reentregava o card velho. O minuto do
+  // envio torna a URL única — e também fura o cache do CDN (s-maxage 1h).
+  const minuto = Math.floor(agora.getTime() / 60_000);
+  return `${SITE}/api/boletim?d=${fmtDataIso.format(agora)}&t=${minuto}`;
 }

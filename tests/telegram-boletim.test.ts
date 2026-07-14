@@ -17,14 +17,21 @@ describe('legendaBoletim', () => {
 });
 
 describe('urlFotoBoletim', () => {
-  it('aponta pro boletim com cache-buster ?d= na data local', () => {
-    expect(urlFotoBoletim(AGORA)).toBe('https://agroapp-bay.vercel.app/api/boletim?d=2026-07-05');
+  it('aponta pro boletim com a data local', () => {
+    expect(urlFotoBoletim(AGORA)).toContain('https://agroapp-bay.vercel.app/api/boletim?d=2026-07-05');
   });
 
   it('usa a data no fuso America/Araguaina, não UTC', () => {
     // 01:00 UTC ainda é 04/07 22:00 no Araguaia (-03:00)
-    expect(urlFotoBoletim(new Date('2026-07-05T01:00:00Z'))).toBe(
-      'https://agroapp-bay.vercel.app/api/boletim?d=2026-07-04',
-    );
+    expect(urlFotoBoletim(new Date('2026-07-05T01:00:00Z'))).toContain('?d=2026-07-04');
+  });
+
+  // O Telegram cacheia foto remota por URL: sem isto, um reenvio no mesmo dia
+  // devolvia o card antigo que ele já tinha baixado.
+  it('a URL muda a cada envio, para o Telegram não servir o card do cache', () => {
+    const a = urlFotoBoletim(new Date('2026-07-05T13:00:00Z'));
+    const b = urlFotoBoletim(new Date('2026-07-05T13:05:00Z'));
+    expect(a).not.toBe(b);
+    expect(a).toMatch(/&t=\d+$/);
   });
 });

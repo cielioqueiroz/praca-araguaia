@@ -70,7 +70,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
   <tr>
     <td width="34%" valign="top" align="center">
       <img src="docs/screenshots/boletim.png" alt="Boletim do dia em PNG, enviado no Telegram" width="100%"><br>
-      <sub><b>Boletim</b> — PNG gerado no servidor (Satori) e disparado todo dia no Telegram: gado à esquerda, lavoura e mercado à direita.</sub>
+      <sub><b>Boletim</b> — PNG gerado no servidor (Satori) e disparado todo dia no Telegram: gado à esquerda, lavoura e mercado à direita. A URL da foto muda a cada envio, senão o Telegram reentrega o card que já tem em cache.</sub>
     </td>
     <td width="33%" valign="top" align="center">
       <img src="docs/screenshots/mobile.png" alt="Painel no celular" width="62%"><br>
@@ -128,7 +128,7 @@ Direção **"fazenda moderna premium"** — editorial, paleta terra, sem cara de
 | **Paleta** | Areia (`bone` `#F1EBDE`), papel (`#FBF8F1`), oliva (`#3F4A24`), couro (`#6E3E1E`), ocre (`#B4863B`); alta em **musgo** (`#6B8339`), baixa em **tijolo** (`#A63A26`) e chuva em **água** (`#45707C`) — nunca neon |
 | **Marca** | **"Broto no sulco"** — a folha nascendo da terra lavrada, num selo de osso com o anel oliva. Ela balança de leve no vento (some em `prefers-reduced-motion`) e fica parada no favicon, no card do bot e no OG. Desenho único em [`lib/marca.ts`](lib/marca.ts), consumido pelos quatro. |
 | **Navegação** | Menu inline no desktop; abaixo de 900px, **hambúrguer + gaveta lateral** (fecha no Esc, no fundo e ao navegar; trava o scroll enquanto aberta) |
-| **Assinatura** | Cards que abrem com a **foto do produto** (escurece e revela os dados), grão de papel sutil, filetes finos, ticker de pregão rolante e o hero com foto real de Nelore |
+| **Assinatura** | Cards que abrem com a **foto do produto** (escurece e revela os dados), grão de papel sutil, filetes finos, ticker de pregão rolante e o hero com o touro cebu **Rhaya FIV Moxos** (foto: [Asocebu Bolivia](https://www.facebook.com/asocebu.bolivia), creditada na própria imagem) |
 
 Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); os componentes do sistema estão em `components/redesign/`.
 
