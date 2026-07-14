@@ -145,8 +145,9 @@ export default async function Home() {
               const ref = refPorTipo.get(tipo);
               if (precos.length === 0 || !ref) return null;
               return (
-                // O Revelar vira o filho do grid: a largura do boi tem de estar nele.
-                <Revelar key={tipo} delay={i * 0.08} className={tipo === 'boi' ? 'largo' : undefined}>
+                // Todos os seis têm o mesmo tamanho e ficam lado a lado: preços em cima,
+                // Termômetro embaixo. O boi não é mais a faixa larga da linha inteira.
+                <Revelar key={tipo} delay={i * 0.08}>
                   <CardPorteira
                     tipo={tipo}
                     titulo={TITULOS[tipo] ?? tipo}
@@ -154,7 +155,6 @@ export default async function Home() {
                     rodape={rodapeDaFonte(tipo, ref)}
                     precos={precos}
                     cidades={cidadesPorTipo.get(tipo)}
-                    largo={tipo === 'boi'}
                   />
                 </Revelar>
               );

@@ -11,8 +11,7 @@ export type CardPorteiraProps = {
   unLabel: string; // 'R$ por arroba'
   rodape: string; // 'CONAB · semana de 27/06 a 03/07' ou 'Datagro · 10/07'
   precos: PrecoUfUI[];
-  cidades?: PrecoCidadeUI[]; // só o boi mostra as cidades da praça
-  largo?: boolean;
+  cidades?: PrecoCidadeUI[]; // o que os produtores reportaram nas cidades da praça
 };
 
 function brl(n: number): string {
@@ -30,14 +29,14 @@ function Variacao({ pct }: { pct: number | null }) {
   );
 }
 
-// Card da porteira: o preço de CADA estado (nunca uma média) e, no boi, o que os
+// Card da porteira: o preço de CADA estado (nunca uma média) e, embaixo, o que os
 // produtores reportaram nas cidades da praça. O destaque da praça do usuário é
 // aplicado no cliente (SuaPraca) via data-uf / data-cidade.
 export function CardPorteira(p: CardPorteiraProps) {
   const foto = FOTO_COMMODITY[p.tipo];
 
   return (
-    <article className={`pcard tipo-${p.tipo} ${p.largo ? 'largo' : ''}`}>
+    <article className={`pcard tipo-${p.tipo}`}>
       <div className="ph">
         {foto && (
           // eslint-disable-next-line @next/next/no-img-element

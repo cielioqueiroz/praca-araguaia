@@ -19,14 +19,34 @@ function iconeDoDia(chuvaMm: number, probMax: number | null): { Icone: IconType;
   return { Icone: LuSun, rotulo: 'sem chuva' };
 }
 
-export function CardChuva({ previsao }: { previsao: PrevisaoMunicipio }) {
+// `etiqueta` e `tempAtual` só existem no card da região do usuário — que fora isso é
+// exatamente este card, para as linhas dos 7 dias serem lidas do mesmo jeito em todos.
+export function CardChuva({
+  previsao,
+  etiqueta,
+  tempAtual,
+}: {
+  previsao: PrevisaoMunicipio;
+  etiqueta?: string;
+  tempAtual?: number | null;
+}) {
   return (
     <div className="group rounded-2xl border border-rule bg-paper p-5 shadow-[0_1px_2px_rgba(28,38,32,0.04)] transition duration-200 hover:-translate-y-1 hover:border-rule-strong hover:shadow-[0_18px_40px_-24px_rgba(38,48,26,0.35)]">
-      <div className="flex items-center justify-between">
+      {etiqueta && (
+        <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-agua">{etiqueta}</p>
+      )}
+      <div className="flex items-center justify-between gap-2">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink2/70">{previsao.municipio}</h2>
-        <span className="rounded-md bg-paper-warm px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-          {previsao.uf}
-        </span>
+        <div className="flex items-center gap-2">
+          {tempAtual != null && (
+            <span className="font-sans text-lg font-bold tabular-nums leading-none text-ink">{tempAtual}°</span>
+          )}
+          {previsao.uf && (
+            <span className="rounded-md bg-paper-warm px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+              {previsao.uf}
+            </span>
+          )}
+        </div>
       </div>
 
       <ul className="mt-3">

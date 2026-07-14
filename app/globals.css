@@ -306,12 +306,16 @@ body { font-size: 14px; }
 .praca-tag .dica{color:var(--rule-strong);border-left:1px solid var(--rule);padding-left:10px;margin-left:4px}
 
 /* ---------- Card da porteira: preço por estado + cidades ---------- */
+/* Os seis cards têm o mesmo tamanho e ficam lado a lado: preços em cima, Termômetro
+   embaixo. O boi já foi a faixa larga da linha inteira — não é mais. */
 .pcards{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .pcards>*{min-width:0}
-.pcards>.largo{grid-column:1/-1}  /* o filho do grid é o wrapper do Revelar, não o card */
 .pcard{--band:#34421f;display:flex;flex-direction:column;height:100%;background:var(--paper);border:1px solid var(--rule);border-radius:18px;overflow:hidden;transition:border-color .28s,box-shadow .28s}
 .pcard:hover{border-color:var(--rule-strong);box-shadow:0 24px 50px -30px rgba(38,48,26,.35)}
 .pcard.tipo-boi{--band:#34421f}
+.pcard.tipo-vaca{--band:#39421d}
+.pcard.tipo-novilha{--band:#3d451f}
+.pcard.tipo-bezerro{--band:#414722}
 .pcard.tipo-soja{--band:#3a441c}
 .pcard.tipo-milho{--band:#45431a}
 .pcard .ph{position:relative;height:104px;overflow:hidden;background:radial-gradient(120% 135% at 72% 6%, color-mix(in srgb, var(--band) 74%, #7c8a44) 0%, var(--band) 44%, #14180d 100%)}
@@ -323,7 +327,6 @@ body { font-size: 14px; }
 .pcard .pbody{padding:16px 22px 20px;flex:1}
 .pcard .phead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--rule)}
 .pcard .phead .sem{color:var(--olive)}
-.pcard.largo .listas{display:grid;grid-template-columns:1fr 1fr;gap:0 34px}
 .pcard ul{list-style:none;margin:0;padding:0}
 .pcard .ufs li{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;padding:11px 0;border-bottom:1px dashed var(--rule)}
 .pcard .ufs li:last-child{border-bottom:none}
@@ -333,7 +336,6 @@ body { font-size: 14px; }
 .pcard .n{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:74px;text-align:right}
 .pcard .vazio{padding:14px 0;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .pcard .cidades{margin-top:2px}
-.pcard.largo .cidades{margin-top:0;padding-left:34px;border-left:1px solid var(--rule)}
 .pcard .ctit{display:flex;flex-direction:column;gap:3px;padding:11px 0 9px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
 .pcard .ctit .fonte{color:var(--muted);letter-spacing:.1em}
 .pcard .cidades li{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--rule)}
@@ -382,8 +384,6 @@ a.mrow:hover{background:var(--paper-warm)}
   .hero{grid-template-columns:1fr}
   .hero .photo{min-height:240px;border-left:none;border-top:1px solid var(--rule)}
   .cards{grid-template-columns:1fr 1fr}
-  .pcard.largo .listas{grid-template-columns:1fr;gap:0}
-  .pcard.largo .cidades{margin-top:12px;padding-left:0;padding-top:6px;border-left:none;border-top:1px solid var(--rule)}
   .mrow{grid-template-columns:1.4fr 1fr .8fr;gap:12px}
   .mrow .mspk,.mrow.h span:last-child{display:none}
   .efoot{grid-template-columns:1fr;gap:18px}

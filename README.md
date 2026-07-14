@@ -31,7 +31,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
   <img src="docs/screenshots/cards.jpg" alt="Cards da porteira: boi gordo, vaca gorda, novilha, bezerro, soja e milho, com o preço de PA, MT, TO e GO" width="100%">
 </p>
 
-<sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg). Cada card mostra o preço das quatro praças (PA, MT, TO, GO), sempre na mesma ordem, e credita **quem apurou e quando**: a CONAB fecha a semana, Datagro e Scot fecham o dia. Todos os seis trazem também o **Termômetro** — o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
+<sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg) — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. Cada um mostra o preço das quatro praças (PA, MT, TO, GO), sempre na mesma ordem, e credita **quem apurou e quando**: a CONAB fecha a semana, Datagro e Scot fecham o dia. O **Termômetro** traz o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
 
 ### Mercado — câmbio, ouro, bolsa e cripto
 
@@ -92,7 +92,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 | **`/`** — a praça hoje | **Na porteira**, o preço de **cada estado** (PA/MT/TO/GO) de 6 categorias: **boi gordo, soja e milho** (CONAB), **vaca gorda e novilha** (Datagro) e **bezerro** (Scot) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 7 cotações com mini-tendência de 30 dias: **dólar, euro, ouro 24k, ouro 18k, Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
 | **`/boletim`** | Card-resumo do dia em **PNG 1080×1800** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. Enviado também no **Telegram** todo dia. |
-| **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). |
+| **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
 | **`/termometro`** | **Termômetro da Praça**: o "valor típico" (mediana) dos preços reportados por produtores nos últimos 7 dias, **nas 6 categorias da porteira**, por município, contrastado com a referência oficial. |
 | **`/termometro/reportar`** | Reporte de preço **anônimo** (sem cadastro), com faixa de plausibilidade, honeypot e limite por IP. O convite no card já abre no produto certo (`?produto=`). |
 | **`/fornecedores`** | Vitrine de fornecedores da praça (contato direto por WhatsApp). Qualquer um se cadastra em **`/fornecedores/anunciar`**; só entra no ar depois da moderação. |
