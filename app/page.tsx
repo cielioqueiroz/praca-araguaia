@@ -1,5 +1,6 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { TITULOS, ORDEM_PAINEL } from '@/lib/tipos-ui';
+import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA } from '@/lib/tipos-ui';
+import { rodapeDaFonte } from '@/lib/boletim';
 import { MUNICIPIOS } from '@/lib/fontes/chuva';
 import { mediana } from '@/lib/termometro';
 import { CardPorteira, type PrecoCidadeUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
@@ -12,18 +13,11 @@ export const dynamic = 'force-dynamic';
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
 type LinhaUf = { tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string };
 
-const PORTEIRA = ['boi', 'soja', 'milho'] as const;
-
-const UN_PORTEIRA: Record<string, string> = {
-  boi: 'R$ por arroba',
-  soja: 'R$ por saca de 60 kg',
-  milho: 'R$ por saca de 60 kg',
-};
-
 const MERCADO: Record<string, { unLabel: string; casas: number }> = {
   dolar: { unLabel: 'comercial', casas: 4 },
   euro: { unLabel: 'comercial', casas: 4 },
-  ouro: { unLabel: 'por grama', casas: 2 },
+  ouro: { unLabel: 'por grama · 999', casas: 2 },
+  ouro18k: { unLabel: 'por grama · 750', casas: 2 },
   bitcoin: { unLabel: 'por unidade', casas: 2 },
   ethereum: { unLabel: 'por unidade', casas: 2 },
 };
@@ -35,15 +29,6 @@ const posicao = (tipo: string) => {
 
 const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
 const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
-const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina' });
-
-// A CONAB publica a semana fechada: rotula com o intervalo (segunda a sexta).
-function rotuloSemana(iso: string | undefined): string {
-  if (!iso) return 'CONAB';
-  const fim = new Date(iso);
-  const inicio = new Date(fim.getTime() - 4 * 24 * 60 * 60 * 1000);
-  return `semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}`;
-}
 
 export default async function Home() {
   const supabase = createPublicClient();
@@ -75,13 +60,13 @@ export default async function Home() {
   }
 
   const ufsPorTipo = new Map<string, PrecoUfUI[]>();
-  const semanaPorTipo = new Map<string, string>();
+  const refPorTipo = new Map<string, string>();
   for (const l of ((porUf ?? []) as LinhaUf[])) {
     const arr = ufsPorTipo.get(l.tipo) ?? [];
     arr.push({ uf: l.uf, valor: Number(l.valor), variacaoPct: l.variacao_pct === null ? null : Number(l.variacao_pct) });
     ufsPorTipo.set(l.tipo, arr);
-    const atual = semanaPorTipo.get(l.tipo);
-    if (!atual || l.data_referencia > atual) semanaPorTipo.set(l.tipo, l.data_referencia);
+    const atual = refPorTipo.get(l.tipo);
+    if (!atual || l.data_referencia > atual) refPorTipo.set(l.tipo, l.data_referencia);
   }
 
   // Boi nas cidades da praça: valor típico (mediana) dos reportes aprovados de 7 dias.
@@ -132,7 +117,9 @@ export default async function Home() {
           <p className="lede">Preços de referência da porteira ao mercado, nas praças do Vale do Araguaia.</p>
           <div className="meta">
             <div className="big">{fmtHoje.format(agora)}</div>
-            <div className="mono">Atualizado {fmtHora.format(agora)}, fontes CONAB, B3, BCB, CoinGecko</div>
+            <div className="mono">
+              Atualizado {fmtHora.format(agora)}, fontes CONAB, Datagro, Scot, BCB, CoinGecko
+            </div>
           </div>
           <SuaPraca />
         </div>
@@ -151,21 +138,22 @@ export default async function Home() {
             <div className="t">Na porteira</div>
             <div className="line" />
             <div className="meta">
-              Preço de cada estado<span className="pill">CONAB</span>Semanal
+              Preço de cada estado<span className="pill">CONAB · Datagro · Scot</span>Gado e grão
             </div>
           </div>
           <div className="pcards">
             {PORTEIRA.map((tipo, i) => {
               const precos = ufsPorTipo.get(tipo) ?? [];
-              if (precos.length === 0) return null;
+              const ref = refPorTipo.get(tipo);
+              if (precos.length === 0 || !ref) return null;
               return (
                 // O Revelar vira o filho do grid: a largura do boi tem de estar nele.
                 <Revelar key={tipo} delay={i * 0.08} className={tipo === 'boi' ? 'largo' : undefined}>
                   <CardPorteira
                     tipo={tipo}
                     titulo={TITULOS[tipo] ?? tipo}
-                    unLabel={UN_PORTEIRA[tipo]}
-                    semana={rotuloSemana(semanaPorTipo.get(tipo))}
+                    unLabel={UNIDADE_PORTEIRA[tipo]}
+                    rodape={rodapeDaFonte(tipo, ref)}
                     precos={precos}
                     cidades={tipo === 'boi' ? cidades : undefined}
                     largo={tipo === 'boi'}

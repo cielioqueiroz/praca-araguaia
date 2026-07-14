@@ -12,7 +12,10 @@ const NAV = [
 ];
 
 const FONTES = [
-  'Cotações: CONAB, B3, BCB',
+  'Grãos e boi: CONAB',
+  'Vaca e novilha: Datagro',
+  'Bezerro: Scot Consultoria',
+  'Câmbio e ouro: BCB, gold-api',
   'Chuva: INMET, CEMADEN, Open-Meteo',
   'Termômetro: reportes da praça',
 ];

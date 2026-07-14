@@ -1,4 +1,4 @@
-import { TITULOS, ORDEM_PAINEL } from '@/lib/tipos-ui';
+import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, FONTE_PORTEIRA } from '@/lib/tipos-ui';
 import { NOME_UF } from '@/lib/praca';
 import type { PrecoUf } from '@/types/cotacao';
 
@@ -14,7 +14,7 @@ export type ItemPorteira = {
   tipo: string;
   titulo: string;
   unidade: string; // 'R$ por arroba'
-  semana: string; // 'semana de 29/06 a 03/07'
+  rodape: string; // 'CONAB · semana de 29/06 a 03/07' ou 'Datagro · 10/07'
   ufs: LinhaUfBoletim[];
 };
 
@@ -37,16 +37,8 @@ export type Boletim = {
 
 export type ReporteCidade = { municipio: string; uf: string; mediana: number | null; contagem: number };
 
-const PORTEIRA = ['boi', 'soja', 'milho'];
-
-const UNIDADE_PORTEIRA: Record<string, string> = {
-  boi: 'R$ por arroba',
-  soja: 'R$ por saca de 60 kg',
-  milho: 'R$ por saca de 60 kg',
-};
-
 // Sufixo compacto depois do número, para o valor não ficar poluído.
-const SUFIXO: Record<string, string> = { ouro: '/g' };
+const SUFIXO: Record<string, string> = { ouro: '/g', ouro18k: '/g' };
 const CASAS: Record<string, number> = { dolar: 4, euro: 4 };
 
 // Araguaia fica no fuso -03:00 sem horário de verão; fixar o fuso torna a data
@@ -69,11 +61,17 @@ function variacaoDe(pct: number | null): Variacao | undefined {
   };
 }
 
-// A CONAB publica a semana fechada (segunda a sexta): o rótulo mostra o intervalo.
-function rotuloSemana(iso: string): string {
+// A CONAB fecha a semana (segunda a sexta) — mostra o intervalo. Datagro e Scot
+// publicam por dia — mostram o dia. O nome da fonte vem junto: o produtor precisa
+// saber quem apurou aquele preço.
+export function rodapeDaFonte(tipo: string, iso: string): string {
+  const fonte = FONTE_PORTEIRA[tipo];
   const fim = new Date(iso);
+  if (!fonte) return fmtDia.format(fim);
+  if (!fonte.semanal) return `${fonte.nome} · ${fmtDia.format(fim)}`;
+
   const inicio = new Date(fim.getTime() - 4 * 24 * 60 * 60 * 1000);
-  return `semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}`;
+  return `${fonte.nome} · semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}`;
 }
 
 const posicao = (tipo: string) => {
@@ -98,7 +96,7 @@ export function montarBoletim(
         tipo,
         titulo: TITULOS[tipo] ?? tipo,
         unidade: UNIDADE_PORTEIRA[tipo] ?? '',
-        semana: rotuloSemana(maisRecente.dataReferencia),
+        rodape: rodapeDaFonte(tipo, maisRecente.dataReferencia),
         ufs: ufs.map((p) => ({
           nome: NOME_UF[p.uf] ?? p.uf,
           valorFmt: numero(p.valor, 2),

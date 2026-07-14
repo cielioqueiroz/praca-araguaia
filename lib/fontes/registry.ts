@@ -1,18 +1,23 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
 import { buscarDolar, buscarHistoricoDolarBcb } from './dolar';
 import { buscarEuro, buscarHistoricoEuroFrankfurter } from './euro';
-import { buscarOuro } from './ouro';
+import { buscarOuro, buscarOuro18k } from './ouro';
 import { buscarBitcoin, buscarEthereum, buscarHistoricoCripto } from './cripto';
 import { buscarBoi, buscarSoja, buscarMilho, buscarHistoricoConab } from './conab';
+import { buscarVaca, buscarNovilha, buscarBezerro } from './pecuaria';
 
 // Fontes da coleta diária: tipo -> função que devolve a cotação atual.
 export const FONTES: Record<string, () => Promise<Cotacao>> = {
   dolar: () => buscarDolar(),
   euro: () => buscarEuro(),
   ouro: () => buscarOuro(),
+  ouro18k: () => buscarOuro18k(),
   bitcoin: () => buscarBitcoin(),
   ethereum: () => buscarEthereum(),
   boi: () => buscarBoi(),
+  vaca: () => buscarVaca(),
+  novilha: () => buscarNovilha(),
+  bezerro: () => buscarBezerro(),
   soja: () => buscarSoja(),
   milho: () => buscarMilho(),
 };

@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { createPublicClient } from '@/lib/supabase/public';
-import { montarBoletim, type Boletim, type Variacao, type ReporteCidade } from '@/lib/boletim';
+import { montarBoletim, type Boletim, type ItemPorteira, type Variacao, type ReporteCidade } from '@/lib/boletim';
+import { PECUARIA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
 import { programadorDataUri } from '@/lib/autor';
@@ -55,10 +56,14 @@ function Arte({ tipo, tamanho }: { tipo: string; tamanho: number }) {
   return <img src={src} width={tamanho} height={tamanho} alt="" style={{ objectFit: 'contain' }} />;
 }
 
+// flexShrink: 0 em tudo que é bloco. Sem isso, quando o conteúdo passa da altura o
+// Satori encolhe os filhos em vez de transbordar, e os textos se sobrepõem.
 function Coluna({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-      <div style={{ display: 'flex', fontSize: 20, letterSpacing: 4, color: MUTED, marginBottom: 6 }}>
+      <div
+        style={{ display: 'flex', flexShrink: 0, fontSize: 20, letterSpacing: 4, color: MUTED, marginBottom: 6 }}
+      >
         {titulo}
       </div>
       {children}
@@ -66,10 +71,69 @@ function Coluna({ titulo, children }: { titulo: string; children: React.ReactNod
   );
 }
 
-// Card 1080×1080 no subconjunto flexbox do Satori: duas colunas (porteira | mercado),
-// cada linha com a ilustração do ativo. O boi traz o preço de cada estado.
+function Secao({ titulo }: { titulo: string }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexShrink: 0,
+        fontSize: 20,
+        letterSpacing: 4,
+        color: MUTED,
+        marginTop: 22,
+        marginBottom: 6,
+      }}
+    >
+      {titulo}
+    </div>
+  );
+}
+
+// Um item da porteira: a ilustração (quando existe), a unidade, o preço de CADA
+// estado e o rodapé com quem apurou — CONAB fecha semana, Datagro/Scot fecham dia.
+function ItemDaPorteira({ item }: { item: ItemPorteira }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+        <Arte tipo={item.tipo} tamanho={44} />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: 27, fontWeight: 700, color: TINTA }}>{item.titulo}</div>
+          <div style={{ display: 'flex', fontSize: 14, color: MUTED }}>{item.unidade}</div>
+        </div>
+      </div>
+
+      {item.ufs.map((u, i) => (
+        <div
+          key={u.nome}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: 6,
+            paddingBottom: 6,
+            borderTop: i === 0 ? `1px solid ${LINHA}` : `1px dashed ${LINHA}`,
+          }}
+        >
+          <div style={{ display: 'flex', fontSize: 20, color: '#3a3428' }}>{u.nome}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ fontSize: 25, fontWeight: 700, color: TINTA }}>{u.valorFmt}</div>
+            <Variacao v={u.variacao} tamanho={17} />
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 4 }}>{item.rodape}</div>
+    </div>
+  );
+}
+
+// Card no subconjunto flexbox do Satori: duas colunas — o gado (boi, vaca, novilha,
+// bezerro) de um lado; a lavoura, o mercado e as cidades do outro. Cada categoria
+// mostra o preço de CADA estado, nunca uma média.
 function CardBoletim({ boletim }: { boletim: Boletim }) {
   const vazio = boletim.porteira.length === 0 && boletim.mercado.length === 0;
+  const gado = boletim.porteira.filter((p) => PECUARIA.includes(p.tipo));
+  const lavoura = boletim.porteira.filter((p) => !PECUARIA.includes(p.tipo));
 
   return (
     <div
@@ -99,75 +163,16 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         </div>
       ) : (
         <div style={{ display: 'flex', flex: 1, gap: 34 }}>
-          {/* ---------- Na porteira: preço de cada estado ---------- */}
-          <Coluna titulo="NA PORTEIRA">
-            {boletim.porteira.map((item) => (
-              <div key={item.tipo} style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                  <Arte tipo={item.tipo} tamanho={48} />
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: TINTA }}>{item.titulo}</div>
-                    <div style={{ display: 'flex', fontSize: 15, color: MUTED }}>{item.unidade}</div>
-                  </div>
-                </div>
-
-                {item.ufs.map((u, i) => (
-                  <div
-                    key={u.nome}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingTop: 7,
-                      paddingBottom: 7,
-                      borderTop: i === 0 ? `1px solid ${LINHA}` : `1px dashed ${LINHA}`,
-                    }}
-                  >
-                    <div style={{ display: 'flex', fontSize: 21, color: '#3a3428' }}>{u.nome}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ fontSize: 26, fontWeight: 700, color: TINTA }}>{u.valorFmt}</div>
-                      <Variacao v={u.variacao} tamanho={18} />
-                    </div>
-                  </div>
-                ))}
-
-                <div style={{ display: 'flex', fontSize: 14, color: MUTED, marginTop: 4 }}>
-                  CONAB · {item.semana}
-                </div>
-              </div>
-            ))}
-          </Coluna>
-
-          <div style={{ display: 'flex', width: 1, backgroundColor: LINHA }} />
-
-          {/* ---------- Mercado ---------- */}
-          <Coluna titulo="MERCADO">
-            {boletim.mercado.map((item, i) => (
-              <div
-                key={item.tipo}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: 15,
-                  paddingBottom: 15,
-                  borderTop: i === 0 ? '0px solid transparent' : `1px solid ${LINHA}`,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Arte tipo={item.tipo} tamanho={46} />
-                  <div style={{ display: 'flex', fontSize: 28, fontWeight: 600, color: TINTA }}>{item.titulo}</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: TINTA }}>{item.valorFmt}</div>
-                  <Variacao v={item.variacao} tamanho={19} />
-                </div>
-              </div>
+          {/* ---------- Gado: boi, vaca, novilha e bezerro, preço de cada estado ---------- */}
+          <Coluna titulo="NA PORTEIRA · GADO">
+            {gado.map((item) => (
+              <ItemDaPorteira key={item.tipo} item={item} />
             ))}
 
-            {/* Boi nas cidades da praça — o dado que só existe porque o produtor reporta. */}
+            {/* Boi nas cidades da praça — o dado que só existe porque o produtor reporta.
+                Fica junto do gado: é boi, e equilibra a altura das duas colunas. */}
             {boletim.cidades.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', marginTop: 26 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginTop: 8 }}>
                 <div style={{ display: 'flex', fontSize: 20, letterSpacing: 4, color: MUTED }}>
                   BOI NAS CIDADES
                 </div>
@@ -204,12 +209,46 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
               </div>
             )}
           </Coluna>
+
+          <div style={{ display: 'flex', width: 1, backgroundColor: LINHA }} />
+
+          {/* ---------- Lavoura + mercado ---------- */}
+          <Coluna titulo="NA PORTEIRA · LAVOURA">
+            {lavoura.map((item) => (
+              <ItemDaPorteira key={item.tipo} item={item} />
+            ))}
+
+            <Secao titulo="MERCADO" />
+            {boletim.mercado.map((item, i) => (
+              <div
+                key={item.tipo}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: 11,
+                  paddingBottom: 11,
+                  borderTop: i === 0 ? `1px solid ${LINHA}` : `1px solid ${LINHA}`,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Arte tipo={item.tipo} tamanho={40} />
+                  <div style={{ display: 'flex', fontSize: 25, fontWeight: 600, color: TINTA }}>{item.titulo}</div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', fontSize: 27, fontWeight: 700, color: TINTA }}>{item.valorFmt}</div>
+                  <Variacao v={item.variacao} tamanho={18} />
+                </div>
+              </div>
+            ))}
+
+          </Coluna>
         </div>
       )}
 
       <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 19, letterSpacing: 2, color: MUTED }}>
-        <div style={{ display: 'flex' }}>FONTES · CONAB · BCB · GOLD-API · COINGECKO</div>
+        <div style={{ display: 'flex' }}>CONAB · DATAGRO · SCOT · BCB · GOLD-API · COINGECKO</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
@@ -277,10 +316,11 @@ export async function GET() {
     cidades,
   );
 
-  // Retrato 4:5: com 12 linhas de estado + 5 de mercado, o quadrado 1:1 estourava.
+  // Retrato alto: são 6 categorias na porteira (24 linhas de estado), 6 de mercado
+  // e as 5 cidades. Medido no render: abaixo de 1800 a coluna do gado invade o rodapé.
   return new ImageResponse(<CardBoletim boletim={boletim} />, {
     width: 1080,
-    height: 1350,
+    height: 1800,
     headers: { 'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
   });
 }

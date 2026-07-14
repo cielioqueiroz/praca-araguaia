@@ -9,7 +9,7 @@ export type CardPorteiraProps = {
   tipo: string;
   titulo: string;
   unLabel: string; // 'R$ por arroba'
-  semana: string; // 'semana de 27/06 a 03/07'
+  rodape: string; // 'CONAB · semana de 27/06 a 03/07' ou 'Datagro · 10/07'
   precos: PrecoUfUI[];
   cidades?: PrecoCidadeUI[]; // só o boi mostra as cidades da praça
   largo?: boolean;
@@ -53,7 +53,7 @@ export function CardPorteira(p: CardPorteiraProps) {
       <div className="pbody">
         <div className="phead">
           <span className="un">{p.unLabel}</span>
-          <span className="sem">{p.semana}</span>
+          <span className="sem">{p.rodape}</span>
         </div>
 
         <div className="listas">

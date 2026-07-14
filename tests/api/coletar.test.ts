@@ -6,15 +6,18 @@ vi.mock('@/lib/coleta', () => ({ coletarCotacao: vi.fn() }));
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn(() => ({})) }));
 vi.mock('@/lib/fontes/registry', () => ({ FONTES: { dolar: vi.fn(), euro: vi.fn() } }));
 vi.mock('@/lib/fontes/conab', () => ({ buscarPorUf: vi.fn() }));
+vi.mock('@/lib/fontes/pecuaria', () => ({ buscarPorUfPecuaria: vi.fn() }));
 
 import { GET } from '@/app/api/coletar/route';
 import { coletarCotacao } from '@/lib/coleta';
 import { buscarPorUf } from '@/lib/fontes/conab';
+import { buscarPorUfPecuaria } from '@/lib/fontes/pecuaria';
 
 vi.mock('@/lib/supabase/repo', () => ({ supabaseRepo: vi.fn(() => ({ salvarPrecosUf })) }));
 
 const mock = coletarCotacao as ReturnType<typeof vi.fn>;
 const mockUf = buscarPorUf as ReturnType<typeof vi.fn>;
+const mockUfPec = buscarPorUfPecuaria as ReturnType<typeof vi.fn>;
 
 const PRECOS_UF = [
   { tipo: 'boi', uf: 'PA', valor: 298.05, unidade: 'R$/@', variacaoPct: 0.8, dataReferencia: '2026-07-10T03:00:00.000Z' },
@@ -25,6 +28,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.CRON_SECRET = 'segredo';
   mockUf.mockResolvedValue(PRECOS_UF);
+  mockUfPec.mockResolvedValue(PRECOS_UF);
 });
 
 function req(auth?: string) {
@@ -45,17 +49,20 @@ describe('GET /api/coletar', () => {
     const body = await res.json();
     expect(body.coletadas).toHaveLength(2);
     expect(body.erros).toHaveLength(0);
-    // boi, soja e milho, cada um com as UFs da praça.
-    expect(salvarPrecosUf).toHaveBeenCalledTimes(3);
+    // A porteira inteira: grãos e boi (CONAB) + vaca, novilha e bezerro (indicadores).
+    expect(salvarPrecosUf).toHaveBeenCalledTimes(6);
     expect(salvarPrecosUf).toHaveBeenCalledWith(PRECOS_UF);
     expect(body.porUf).toEqual([
       { tipo: 'boi', ufs: 2 },
       { tipo: 'soja', ufs: 2 },
       { tipo: 'milho', ufs: 2 },
+      { tipo: 'vaca', ufs: 2 },
+      { tipo: 'novilha', ufs: 2 },
+      { tipo: 'bezerro', ufs: 2 },
     ]);
   });
 
-  it('falha da coleta por UF não derruba as cotações que já entraram', async () => {
+  it('falha da CONAB não derruba os indicadores de gado (nem as cotações)', async () => {
     mock.mockResolvedValue({ valor: 5.1 });
     mockUf.mockRejectedValue(new Error('CONAB fora'));
     const res = await GET(req('Bearer segredo'));
@@ -63,6 +70,17 @@ describe('GET /api/coletar', () => {
     const body = await res.json();
     expect(body.coletadas).toHaveLength(2);
     expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['boi_uf', 'soja_uf', 'milho_uf']);
+    // Vaca/novilha/bezerro vêm de outra fonte e entraram normalmente.
+    expect(body.porUf.map((p: { tipo: string }) => p.tipo)).toEqual(['vaca', 'novilha', 'bezerro']);
+  });
+
+  it('falha do indicador de gado não derruba a CONAB', async () => {
+    mock.mockResolvedValue({ valor: 5.1 });
+    mockUfPec.mockRejectedValue(new Error('Notícias Agrícolas fora'));
+    const res = await GET(req('Bearer segredo'));
+    const body = await res.json();
+    expect(body.porUf.map((p: { tipo: string }) => p.tipo)).toEqual(['boi', 'soja', 'milho']);
+    expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['vaca_uf', 'novilha_uf', 'bezerro_uf']);
   });
 
   it('falha de uma fonte não derruba as outras (200 com erro parcial)', async () => {
