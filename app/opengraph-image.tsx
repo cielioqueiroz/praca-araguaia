@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { marcaDataUri } from '@/lib/marca';
 
 export const alt = 'Praça Araguaia — cotações do agro para o produtor do Araguaia';
 export const size = { width: 1200, height: 630 };
@@ -21,22 +22,8 @@ export default function OgImage() {
           padding: 80,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 148,
-            height: 148,
-            backgroundColor: '#586a34',
-            border: '2px solid #b4863b',
-            fontSize: 80,
-            fontWeight: 700,
-            color: '#f1ebde',
-          }}
-        >
-          PA
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={marcaDataUri()} width={152} height={152} alt="" />
         <div style={{ display: 'flex', marginTop: 40, fontSize: 90, fontWeight: 600, color: '#f6efd8', letterSpacing: -1 }}>
           Praça Araguaia
         </div>

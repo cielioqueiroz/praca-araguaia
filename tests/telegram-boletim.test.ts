@@ -10,6 +10,10 @@ describe('legendaBoletim', () => {
     expect(l).toContain('agroapp-bay.vercel.app');
     expect(l).toContain('Bom dia');
   });
+
+  it('credita o criador', () => {
+    expect(legendaBoletim(AGORA)).toContain('Cielio Queiroz');
+  });
 });
 
 describe('urlFotoBoletim', () => {

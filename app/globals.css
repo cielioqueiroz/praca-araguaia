@@ -181,6 +181,40 @@ body { font-size: 14px; }
 .search input::placeholder{color:#8f875f}
 .masthead .goldrule{max-width:1280px;margin:20px auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(180,134,59,.5) 30%,rgba(180,134,59,.5) 70%,transparent)}
 
+/* Hambúrguer + gaveta (só abaixo de 900px; ver responsivo) */
+.burger{display:none;position:relative;width:44px;height:44px;justify-self:end;align-items:center;justify-content:center;border:1px solid rgba(246,239,216,.2);border-radius:11px;background:rgba(0,0,0,.14);cursor:pointer;flex-direction:column;gap:5px;padding:0;z-index:60}
+.burger:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+.burger .traco{display:block;width:19px;height:1.7px;border-radius:2px;background:#F6EFD8;transition:transform .28s cubic-bezier(.2,.7,.3,1),opacity .18s}
+.burger.aberto .traco:nth-child(1){transform:translateY(6.7px) rotate(45deg)}
+.burger.aberto .traco:nth-child(2){opacity:0;transform:scaleX(.4)}
+.burger.aberto .traco:nth-child(3){transform:translateY(-6.7px) rotate(-45deg)}
+
+.gaveta-fundo{position:fixed;inset:0;z-index:40;background:rgba(15,20,10,.55);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.gaveta-fundo.aberto{opacity:1;visibility:visible}
+.gaveta{position:fixed;top:0;right:0;bottom:0;z-index:50;width:min(84vw,340px);display:none;flex-direction:column;background:var(--olive-ink);border-left:1px solid rgba(180,134,59,.45);padding:88px 24px 28px;transform:translateX(100%);transition:transform .34s cubic-bezier(.22,.75,.28,1);overflow-y:auto;overscroll-behavior:contain}
+.gaveta.aberto{transform:translateX(0)}
+.gaveta-busca{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid rgba(246,239,216,.14);border-radius:10px;padding:10px 12px}
+.gaveta-busca svg{width:14px;height:14px;stroke:#BBB18C;fill:none;flex:none}
+.gaveta-busca input{background:none;border:none;outline:none;color:#D8D2B8;font-family:var(--mono);font-size:12px;letter-spacing:.04em;width:100%;min-width:0}
+.gaveta-busca input::placeholder{color:#8f875f}
+.gaveta ul{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column}
+.gaveta li{opacity:0;transform:translateX(14px);transition:opacity .3s,transform .3s}
+.gaveta.aberto li{opacity:1;transform:none}
+.gaveta li+li{border-top:1px dashed rgba(180,134,59,.28)}
+.gaveta a{display:flex;align-items:baseline;gap:12px;padding:15px 4px;font-family:var(--serif);font-size:23px;line-height:1;color:#E7DFC7;text-decoration:none;transition:color .15s}
+.gaveta a .num{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:#8f875f}
+.gaveta a:hover{color:#fff}
+.gaveta a.active{color:var(--ochre)}
+.gaveta a.active .num{color:var(--ochre)}
+.gaveta-pe{margin-top:auto;padding-top:26px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#7e7657}
+@media (prefers-reduced-motion: reduce){.gaveta,.gaveta li,.burger .traco,.gaveta-fundo{transition:none}}
+
+/* Vento da marca (Logo.tsx): a folha balança no talo. O .vt no <svg> liga o movimento;
+   sem ele — favicon, card do bot, impresso — a marca fica parada, como tem que ficar. */
+.vt .vt-folha{transform-box:fill-box;animation:vt-balanco 4.4s ease-in-out infinite}
+@keyframes vt-balanco{0%,100%{transform:rotate(-3.5deg)}50%{transform:rotate(4.5deg)}}
+@media (prefers-reduced-motion: reduce){.vt .vt-folha{animation:none}}
+
 /* Wrap + hero */
 .wrap{max-width:1280px;margin:0 auto;padding:0 26px;position:relative;z-index:1}
 .hero{position:relative;display:grid;grid-template-columns:1.05fr 1.15fr;border:1px solid var(--rule);border-radius:22px;margin-top:28px;background:var(--paper);overflow:hidden;box-shadow:0 1px 2px rgba(28,38,32,.04)}
@@ -340,8 +374,9 @@ a.mrow:hover{background:var(--paper-warm)}
 /* ---------- Responsivo ---------- */
 @media (max-width: 900px){
   .masthead .row{grid-template-columns:1fr auto;gap:16px}
-  .tools{display:none}
-  .nav{justify-self:end;flex-wrap:wrap;justify-content:flex-end}
+  .tools,.nav{display:none}
+  .burger{display:flex}
+  .gaveta{display:flex}
   .hero{grid-template-columns:1fr}
   .hero .photo{min-height:240px;border-left:none;border-top:1px solid var(--rule)}
   .cards{grid-template-columns:1fr 1fr}
@@ -353,16 +388,20 @@ a.mrow:hover{background:var(--paper-warm)}
   .efoot .c,.efoot .r{text-align:left;justify-self:start}
 }
 @media (max-width: 620px){
-  .utility{gap:12px;padding:0 16px}
-  .utility .left{gap:10px}
+  /* Em 390px o ticker e a localização brigavam pela mesma linha e o texto saía picado.
+     A localização fica (é botão); os preços já vêm logo abaixo, no corpo da página. */
+  .utility{gap:12px;padding:0 16px;justify-content:flex-start}
+  .utility .left{gap:10px;min-width:0;flex:1}
   .utility .left>span:not(.loc),.utility .left .sep{display:none}
-  .ticker-strip{max-width:50vw}
-  .masthead{padding:16px}
-  .masthead .row{grid-template-columns:1fr;gap:14px}
-  .brand{justify-self:start}
-  .nav{justify-self:stretch;width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .nav::-webkit-scrollbar{display:none}
-  .masthead .goldrule{margin-top:14px}
+  .utility .loc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ticker-strip{display:none}
+  .masthead{padding:14px 16px}
+  .masthead .row{grid-template-columns:1fr auto;gap:12px}
+  .brand{justify-self:start;gap:11px;min-width:0}
+  .brand svg{width:38px;height:38px}
+  .brand .word{font-size:22px}
+  .brand .sub{font-size:9px;letter-spacing:.18em}
+  .masthead .goldrule{margin-top:12px}
   .wrap{padding:0 16px}
   .hero .text{padding:32px 20px 28px}
   .hero h1{font-size:58px}

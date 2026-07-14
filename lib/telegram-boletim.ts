@@ -9,7 +9,8 @@ const fmtDataIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Araguai
 export function legendaBoletim(agora: Date): string {
   return (
     `☀️ Bom dia! Cotações da Praça Araguaia — ${fmtDataExtenso.format(agora)}. ` +
-    `Veja o painel completo em agroapp-bay.vercel.app`
+    `Veja o painel completo em agroapp-bay.vercel.app\n\n` +
+    `Criado por Cielio Queiroz.`
   );
 }
 

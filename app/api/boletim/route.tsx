@@ -2,6 +2,8 @@ import { ImageResponse } from 'next/og';
 import { createPublicClient } from '@/lib/supabase/public';
 import { montarBoletim, type Boletim, type Variacao, type ReporteCidade } from '@/lib/boletim';
 import { imagemDoAtivo } from '@/lib/imagens-card';
+import { marcaDataUri } from '@/lib/marca';
+import { programadorDataUri } from '@/lib/autor';
 import { MUNICIPIOS } from '@/lib/fontes/chuva';
 import { mediana } from '@/lib/termometro';
 import type { PrecoUf } from '@/types/cotacao';
@@ -81,22 +83,8 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 78,
-            height: 78,
-            backgroundColor: '#3f4a24',
-            border: '2px solid #b4863b',
-            fontSize: 42,
-            fontWeight: 700,
-            color: '#f1ebde',
-          }}
-        >
-          PA
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={marcaDataUri()} width={82} height={82} alt="" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: 50, fontWeight: 700, color: TINTA }}>Praça Araguaia</div>
           <div style={{ fontSize: 24, color: '#6e3e1e' }}>{boletim.dataExtenso}</div>
@@ -219,10 +207,17 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 16 }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 20, letterSpacing: 2, color: MUTED }}>
+      <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 19, letterSpacing: 2, color: MUTED }}>
         <div style={{ display: 'flex' }}>FONTES · CONAB · BCB · GOLD-API · COINGECKO</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={programadorDataUri()} width={36} height={36} alt="" />
+        <div style={{ display: 'flex', fontSize: 21, color: '#6e3e1e' }}>
+          Criado por Cielio Queiroz
+        </div>
       </div>
     </div>
   );
