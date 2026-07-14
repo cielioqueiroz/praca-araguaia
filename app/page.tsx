@@ -115,18 +115,18 @@ export default async function Home() {
           <div className="meta">
             <div className="big">{fmtHoje.format(agora)}</div>
             <div className="mono">
-              Atualizado {fmtHora.format(agora)}, fontes CONAB, Datagro, Scot, BCB, CoinGecko
+              Atualizado {fmtHora.format(agora)}, fontes CONAB, Datagro, Scot, BCB, B3, CoinGecko
             </div>
           </div>
           <SuaPraca />
         </div>
         <div className="photo">
-          {/* Foto de terceiro: o crédito ao Asocebu Bolivia fica na imagem, não é decorativo. */}
+          {/* Foto escolhida pelo dono do projeto. Sem nome de animal nem crédito de autoria:
+              a origem não é conhecida, e atribuir a quem não é seria mentira. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/hero-cebu.jpg" alt="Rhaya FIV Moxos, touro cebu nascido na Bolívia" />
+          <img src="/assets/hero-boi.jpg" alt="Touro nelore no pasto" />
           <div className="overlay" />
-          <span className="tag">Cebu · Rhaya FIV Moxos</span>
-          <span className="credit">Foto: Asocebu Bolivia</span>
+          <span className="tag">Nelore · Touro</span>
         </div>
       </section>
 
