@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { UtilityBar } from '@/components/redesign/UtilityBar';
 import { Masthead } from '@/components/redesign/Masthead';
 import { SiteFooter } from '@/components/redesign/SiteFooter';
+import { Beacon } from '@/components/redesign/Beacon';
 
 // Nomes de var mantidos (--font-fraunces/hanken/plex-mono) para não churnar o CSS.
 const display = Playfair_Display({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-fraunces' });
@@ -13,7 +14,13 @@ const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variab
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agroapp-bay.vercel.app'),
-  title: 'Praça Araguaia — cotações do agro',
+  // A marca vem primeiro em toda aba: quem tem 8 abas abertas lê os 12 primeiros
+  // caracteres e precisa achar a praça, não descobrir a seção. Cada página só
+  // declara o próprio nome; o template monta o resto e não deixa nenhuma divergir.
+  title: {
+    default: 'Praça Araguaia — cotações do agro',
+    template: 'Praça Araguaia — %s',
+  },
   description: 'Cotações agropecuárias diárias para o produtor rural do Araguaia.',
   openGraph: {
     title: 'Praça Araguaia — cotações do agro',
@@ -50,6 +57,7 @@ export default function RootLayout({
             </linearGradient>
           </defs>
         </svg>
+        <Beacon />
         <UtilityBar />
         <Masthead />
         <div className="flex-1">{children}</div>

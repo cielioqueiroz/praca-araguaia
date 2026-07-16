@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { enviarTexto } from '@/lib/telegram';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
 import { detectarMovers, montarMensagemAlerta } from '@/lib/telegram-alertas';
+import { enviarResumoAudiencia } from '@/lib/audiencia-envio';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -16,6 +17,19 @@ export async function GET(req: Request): Promise<Response> {
 
   const zero = { alertados: 0, enviados: 0, removidos: 0, falhas: 0 };
   const supabase = createServerClient();
+
+  // O resumo de audiência pega carona neste cron: o plano grátis da Vercel limita
+  // cron e o vercel.json já tem três. Vai ANTES de tudo de propósito — a rota
+  // retorna cedo quando não há variação relevante, e é assim na maioria dos dias:
+  // pendurado no fim, o dono quase nunca receberia.
+  //
+  // Vai só para o chat do dono (TELEGRAM_DONO_CHAT_ID), nunca para os inscritos.
+  // Em try/catch porque contagem de audiência jamais pode derrubar um alerta de preço.
+  try {
+    await enviarResumoAudiencia(supabase, token);
+  } catch (e) {
+    console.error('resumo de audiência falhou (alertas seguem)', e);
+  }
 
   const cots = await supabase
     .from('cotacoes')

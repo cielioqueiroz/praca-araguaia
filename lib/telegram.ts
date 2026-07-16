@@ -1,5 +1,5 @@
 export type IntencaoTelegram =
-  | { tipo: 'start'; chatId: number }
+  | { tipo: 'start'; chatId: number; carga: string | null }
   | { tipo: 'parar'; chatId: number }
   | { tipo: 'ajuda'; chatId: number }
   | { tipo: 'ignorar' };
@@ -18,8 +18,22 @@ export function interpretarUpdate(update: unknown): IntencaoTelegram {
   const texto = msg?.text;
   const chatId = msg?.chat?.id;
   if (typeof texto !== 'string' || typeof chatId !== 'number') return { tipo: 'ignorar' };
-  const comando = texto.trim().toLowerCase();
-  if (comando.startsWith('/start')) return { tipo: 'start', chatId };
+
+  const cru = texto.trim();
+  const comando = cru.toLowerCase();
+
+  if (comando.startsWith('/start')) {
+    // A carga vem do texto CRU, nunca do minusculado: ela é base64url e sensível a
+    // caixa — 'T2NyaQ' virado 't2nyaq' decodifica noutra coisa ou em nada.
+    //
+    // Em grupo o Telegram manda '/start@NomeDoBot': o sufixo é endereçamento, não
+    // carga. Sem tirá-lo, '@PracaBot' viraria a "cidade" do inscrito.
+    const carga = cru
+      .slice('/start'.length)
+      .replace(/^@\S+/, '')
+      .trim();
+    return { tipo: 'start', chatId, carga: carga === '' ? null : carga };
+  }
   if (comando.startsWith('/parar')) return { tipo: 'parar', chatId };
   return { tipo: 'ajuda', chatId };
 }

@@ -13,7 +13,8 @@ const JANELA_DIAS = 90;
 export async function generateMetadata({ params }: { params: Promise<{ produto: string }> }) {
   const { produto } = await params;
   const info = PRODUTOS[produto as ProdutoTermometro];
-  return { title: info ? `${info.rotulo} — Termômetro da Praça` : 'Termômetro da Praça' };
+  // A marca entra pelo template do layout: 'Praça Araguaia — Boi no Termômetro'.
+  return { title: info ? `${info.rotulo} no Termômetro` : 'Termômetro da Praça' };
 }
 
 export default async function HistoricoProduto({ params }: { params: Promise<{ produto: string }> }) {

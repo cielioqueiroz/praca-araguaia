@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Boletim do dia — Praça Araguaia' };
+export const metadata = { title: 'Boletim do dia' };
 
 export default function Boletim() {
   return (

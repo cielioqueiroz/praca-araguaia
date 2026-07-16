@@ -1,6 +1,6 @@
 import { FormAnuncioFornecedor } from '@/components/FormAnuncioFornecedor';
 
-export const metadata = { title: 'Anunciar — Fornecedores da Praça Araguaia' };
+export const metadata = { title: 'Anunciar nos fornecedores' };
 
 export default function Anunciar() {
   return (

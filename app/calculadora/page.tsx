@@ -2,7 +2,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { Calculadora, type Precos } from '@/components/Calculadora';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Calculadora — Praça Araguaia' };
+export const metadata = { title: 'Calculadora' };
 
 export default async function CalculadoraPage() {
   const supabase = createPublicClient();

@@ -9,7 +9,7 @@ import { AbasModeracao } from '@/components/AbasModeracao';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Moderação — Praça Araguaia',
+  title: 'Moderação',
   robots: { index: false },
 };
 

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
 import { LocalUsuario } from './LocalUsuario';
+import { BotaoTelegram } from './BotaoTelegram';
 
 const NAV = [
-  { href: '/', rotulo: 'A praça hoje' },
+  { href: '/', rotulo: 'Notícias do mercado' },
+  { href: '/cotacoes', rotulo: 'A praça hoje' },
   { href: '/boletim', rotulo: 'Boletim do dia' },
   { href: '/chuva', rotulo: 'Chuva na região' },
   { href: '/termometro', rotulo: 'Termômetro da praça' },
@@ -24,14 +26,6 @@ const SITE = 'https://cielio-portfolio.vercel.app/';
 
 function Titulo({ children }: { children: React.ReactNode }) {
   return <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-olive">{children}</div>;
-}
-
-function IconeTelegram({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
-    </svg>
-  );
 }
 
 function IconeSite({ className }: { className?: string }) {
@@ -61,15 +55,7 @@ export function SiteFooter() {
             A praça do Vale do Araguaia num lugar só. Cotações que importam, chuva, o preço na voz de quem está na lida
             e a conta da porteira. De graça, todo dia.
           </p>
-          <a
-            href="https://t.me/pracaaraguaia_bot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mt-6 inline-flex items-center gap-2.5 rounded-xl bg-olive px-5 py-3 font-sans text-sm font-semibold text-bone shadow-[0_2px_6px_rgba(38,48,26,0.2)] transition duration-200 hover:-translate-y-0.5 hover:bg-olive-deep hover:shadow-[0_10px_24px_-8px_rgba(38,48,26,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
-          >
-            <IconeTelegram className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-0.5" />
-            Boletim no Telegram
-          </a>
+          <BotaoTelegram className="group mt-6 inline-flex items-center gap-2.5 rounded-xl bg-olive px-5 py-3 font-sans text-sm font-semibold text-bone shadow-[0_2px_6px_rgba(38,48,26,0.2)] transition duration-200 hover:-translate-y-0.5 hover:bg-olive-deep hover:shadow-[0_10px_24px_-8px_rgba(38,48,26,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive" />
         </div>
 
         {/* Navegação */}

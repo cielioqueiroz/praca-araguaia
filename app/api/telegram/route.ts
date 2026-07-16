@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { decodificarConvite } from '@/lib/audiencia';
 import {
   interpretarUpdate,
   enviarMensagem,
@@ -32,9 +33,21 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const supabase = createServerClient();
     if (intencao.tipo === 'start') {
-      const { error } = await supabase
-        .from('assinantes_telegram')
-        .upsert({ chat_id: intencao.chatId }, { onConflict: 'chat_id', ignoreDuplicates: true });
+      // A cidade vem na carga do link do convite (o Telegram não a informa). Carga
+      // ausente ou inválida = inscrito sem cidade, que é o normal para quem chega
+      // pelo @ do bot em vez de pelo botão do site.
+      const convite = intencao.carga ? decodificarConvite(intencao.carga) : null;
+
+      // Com cidade, sobrescreve: quem já era inscrito e clicou no botão do site de
+      // novo passa a ter cidade. Sem cidade, ignoreDuplicates — um /start sem carga
+      // (pelo @ do bot) não pode apagar a cidade que já sabíamos.
+      const { error } = convite
+        ? await supabase
+            .from('assinantes_telegram')
+            .upsert({ chat_id: intencao.chatId, cidade: convite.cidade, uf: convite.uf }, { onConflict: 'chat_id' })
+        : await supabase
+            .from('assinantes_telegram')
+            .upsert({ chat_id: intencao.chatId }, { onConflict: 'chat_id', ignoreDuplicates: true });
       if (error) console.error('telegram upsert falhou', error);
       await enviarMensagem(token, intencao.chatId, TEXTO_BOAS_VINDAS);
     } else if (intencao.tipo === 'parar') {

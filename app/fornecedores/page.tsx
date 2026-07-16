@@ -4,7 +4,7 @@ import { type Fornecedor, type CategoriaFornecedor } from '@/lib/fornecedores';
 import { VitrineFornecedores } from '@/components/VitrineFornecedores';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Fornecedores — Praça Araguaia' };
+export const metadata = { title: 'Fornecedores' };
 
 export default async function Fornecedores() {
   const { data } = await createPublicClient()

@@ -3,7 +3,7 @@ import { buscarPrevisao, type PrevisaoMunicipio } from '@/lib/fontes/chuva';
 import { CardChuva } from '@/components/CardChuva';
 import { SuaRegiaoChuva } from '@/components/redesign/SuaRegiaoChuva';
 
-export const metadata = { title: 'Previsão de chuva — Praça Araguaia' };
+export const metadata = { title: 'Previsão de chuva' };
 
 // Dinâmica de propósito: o fetch da Open-Meteo continua cacheado por 1h (data cache),
 // mas uma FALHA não fica congelada na página estática — a próxima visita tenta de novo

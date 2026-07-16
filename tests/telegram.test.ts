@@ -4,17 +4,33 @@ import { interpretarUpdate, enviarMensagem, enviarFoto, enviarTexto } from '@/li
 const msg = (text: string, id: number = 42) => ({ message: { text, chat: { id } } });
 
 describe('interpretarUpdate', () => {
-  it('/start vira start com o chatId', () => {
-    expect(interpretarUpdate(msg('/start'))).toEqual({ tipo: 'start', chatId: 42 });
+  it('/start vira start com o chatId, sem carga', () => {
+    expect(interpretarUpdate(msg('/start'))).toEqual({ tipo: 'start', chatId: 42, carga: null });
+  });
+
+  it('/start <carga> guarda a carga do convite, preservando a caixa', () => {
+    // A carga é base64url e sensível a caixa: minusculá-la decodificaria noutra
+    // cidade — ou em nada. Vem do link t.me/bot?start=<carga> do rodapé do site.
+    expect(interpretarUpdate(msg('/start T3VyaWN1cml8UEU'))).toEqual({
+      tipo: 'start', chatId: 42, carga: 'T3VyaWN1cml8UEU',
+    });
   });
 
   it('/parar vira parar', () => {
     expect(interpretarUpdate(msg('/parar'))).toEqual({ tipo: 'parar', chatId: 42 });
   });
 
-  it('ignora sufixo do bot e argumentos, case-insensitive', () => {
-    expect(interpretarUpdate(msg('/start@PracaBot'))).toEqual({ tipo: 'start', chatId: 42 });
-    expect(interpretarUpdate(msg('/START agora'))).toEqual({ tipo: 'start', chatId: 42 });
+  it('o sufixo do bot em grupo não é carga', () => {
+    // Em grupo o Telegram manda '/start@NomeDoBot'. Sem tirar o sufixo, '@PracaBot'
+    // viraria a "cidade" do inscrito no painel de audiência.
+    expect(interpretarUpdate(msg('/start@PracaBot'))).toEqual({ tipo: 'start', chatId: 42, carga: null });
+    expect(interpretarUpdate(msg('/start@PracaBot T3VyaWN1cml8UEU'))).toEqual({
+      tipo: 'start', chatId: 42, carga: 'T3VyaWN1cml8UEU',
+    });
+  });
+
+  it('o comando é case-insensitive', () => {
+    expect(interpretarUpdate(msg('/START agora'))).toEqual({ tipo: 'start', chatId: 42, carga: 'agora' });
   });
 
   it('qualquer outro texto vira ajuda', () => {

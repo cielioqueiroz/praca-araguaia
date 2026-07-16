@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { FormReporte } from '@/components/FormReporte';
 
-export const metadata = { title: 'Reportar preço — Praça Araguaia' };
+export const metadata = { title: 'Reportar preço' };
 
 export default function Reportar() {
   return (

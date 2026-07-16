@@ -10,7 +10,7 @@ import { GradeNoticias } from '@/components/redesign/GradeNoticias';
 export const revalidate = 900;
 
 export const metadata = {
-  title: 'Notícias do Mercado — Praça Araguaia',
+  title: 'Notícias do Mercado',
   description:
     'As notícias do agro, da pecuária e do mercado que mexem com o preço na porteira, reunidas dos principais veículos do país.',
 };

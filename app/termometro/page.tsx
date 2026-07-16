@@ -4,7 +4,7 @@ import { CardTermometro } from '@/components/CardTermometro';
 import { resumirReportes } from '@/lib/termometro';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Termômetro da Praça — Praça Araguaia' };
+export const metadata = { title: 'Termômetro da Praça' };
 
 export default async function Termometro() {
   const supabase = createPublicClient();
