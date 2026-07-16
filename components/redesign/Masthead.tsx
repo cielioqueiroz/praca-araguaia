@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
+import { Busca } from './Busca';
 
 const LINKS = [
   { href: '/', rotulo: 'Notícias' },
@@ -14,15 +15,6 @@ const LINKS = [
   { href: '/fornecedores', rotulo: 'Fornecedores' },
   { href: '/calculadora', rotulo: 'Calculadora' },
 ];
-
-function IconeBusca() {
-  return (
-    <svg viewBox="0 0 24 24" strokeWidth="1.6" strokeLinecap="round">
-      <circle cx="11" cy="11" r="7" />
-      <line x1="16.5" y1="16.5" x2="21" y2="21" />
-    </svg>
-  );
-}
 
 export function Masthead() {
   const pathname = usePathname();
@@ -70,10 +62,7 @@ export function Masthead() {
         </nav>
 
         <div className="tools">
-          <div className="search">
-            <IconeBusca />
-            <input placeholder="Buscar praça, produto…" aria-label="Buscar" />
-          </div>
+          <Busca />
         </div>
 
         <button
@@ -98,10 +87,7 @@ export function Masthead() {
         aria-hidden="true"
       />
       <nav id="menu-gaveta" className={`gaveta${aberto ? ' aberto' : ''}`} aria-label="Menu" aria-hidden={!aberto}>
-        <div className="gaveta-busca">
-          <IconeBusca />
-          <input placeholder="Buscar praça, produto…" aria-label="Buscar" tabIndex={aberto ? 0 : -1} />
-        </div>
+        <Busca naGaveta alcancavel={aberto} />
         <ul>
           {LINKS.map((l, i) => (
             <li key={l.href} style={{ transitionDelay: aberto ? `${60 + i * 35}ms` : '0ms' }}>
