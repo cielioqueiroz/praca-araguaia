@@ -1,5 +1,5 @@
 import type { Feed, ItemBruto, Noticia } from '@/types/noticia';
-import { categoria, relevante } from './classificar';
+import { categoria, internacional, relevante } from './classificar';
 
 export const LIMITE_NOTICIAS = 40;
 
@@ -96,7 +96,13 @@ export function agregar(colhidos: Colhido[], limite = LIMITE_NOTICIAS): Noticia[
       if (tituloChave !== '' && titulosVistos.has(tituloChave)) continue;
       if (tituloChave !== '') titulosVistos.add(tituloChave);
 
-      porLink.set(id, { ...item, id, veiculo: feed.veiculo, categoria: categoria(item) });
+      porLink.set(id, {
+        ...item,
+        id,
+        veiculo: feed.veiculo,
+        categoria: categoria(item),
+        internacional: internacional(item),
+      });
     }
   }
 

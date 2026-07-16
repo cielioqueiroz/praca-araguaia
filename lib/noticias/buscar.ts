@@ -1,6 +1,7 @@
 import type { Noticia } from '@/types/noticia';
 import { agregar, type Colhido } from './agregar';
 import { FEEDS } from './feeds';
+import { completarImagens } from './og';
 import { parseFeed } from './rss';
 
 // O único módulo de notícias que toca a rede. Tudo que decide alguma coisa
@@ -42,5 +43,7 @@ export async function buscarNoticias(fetchImpl: typeof fetch = fetch): Promise<N
     else console.error(`[noticias] ${FEEDS[i].id} falhou:`, r.reason);
   }
 
-  return agregar(colhidos);
+  // Completa depois de agregar, e não antes: assim só busca a og:image das ~40 que
+  // vão para a tela, e não das ~350 que os feeds trouxeram.
+  return completarImagens(agregar(colhidos), fetchImpl);
 }

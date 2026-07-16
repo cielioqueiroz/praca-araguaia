@@ -74,8 +74,33 @@ const GRUPOS: Array<{ categoria: Categoria; termos: string[] }> = [
   { categoria: 'mercado', termos: MERCADO },
 ];
 
+// Onde o fato aconteceu — outra pergunta, não outra categoria.
+//
+// "China suspende compra de carne brasileira" é PECUÁRIA (é o que o pecuarista
+// precisa saber) E é internacional. Se 'internacional' fosse uma seção, essa
+// notícia sairia de Pecuária e o pecuarista não a acharia onde procura. Por isso
+// vira etiqueta no card e filtro no chip, cruzando as seções em vez de disputar
+// com elas.
+// País ou ator estrangeiro explícito, e nada mais. 'exportacao' e 'global' ficaram
+// de fora depois de medir: marcavam 23 de 40 notícias, e etiqueta que aparece em
+// mais da metade da página não informa nada. Exportar é o dia a dia do agro
+// brasileiro — o que é notícia de fora é quem está do outro lado.
+const FORA = [
+  'eua', 'estados unidos', 'estadunidense', 'washington', 'trump',
+  'china', 'chinesa', 'chines', 'chineses',
+  'uniao europeia', 'europeia', 'europeu', 'europeus',
+  'argentina', 'russia', 'russo', 'paraguai', 'uruguai', 'india', 'japao',
+  'mercosul', 'omc', 'usda', 'fda', 'tarifaco',
+];
+
 function textoDe(item: ItemBruto): string {
   return normalizar(`${item.titulo} ${item.resumo ?? ''}`);
+}
+
+/** A notícia fala de fora do Brasil? Só o título decide, como a categoria. */
+export function internacional(item: ItemBruto): boolean {
+  const titulo = normalizar(item.titulo);
+  return FORA.some((t) => contem(titulo, t));
 }
 
 /**

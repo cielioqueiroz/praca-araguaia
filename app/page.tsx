@@ -24,20 +24,29 @@ export default async function Home() {
 
   return (
     <div className="wrap">
-      <section className="nhero">
-        <div className="kicker">Notícias do mercado</div>
-        <h1>
-          O que mexe
-          <br />
-          <em>com o preço</em>.
-        </h1>
-        <p className="lede">
-          Agro, pecuária, grãos e mercado — reunido dos principais veículos do país. O card leva direto para a
-          reportagem no site de origem.
-        </p>
-        <div className="nmeta">
-          <div className="big">{fmtHoje.format(agora)}</div>
-          <div className="mono">Atualizado {fmtHora.format(agora)} · a cada 15 min · {FEEDS.length} veículos</div>
+      {/* Mesmo hero de duas colunas de /cotacoes — o site já fala assim. Lá o touro,
+          aqui a lavoura no fim da tarde: a mesma praça, outro assunto. */}
+      <section className="hero nhero">
+        <div className="text">
+          <div className="kicker">Notícias do mercado</div>
+          <h1>
+            O que mexe
+            <br />
+            <em>com o preço</em>.
+          </h1>
+          <p className="lede">
+            Agro, pecuária, grãos e mercado — dos principais veículos do país, num lugar só.
+          </p>
+          <div className="meta">
+            <div className="big">{fmtHoje.format(agora)}</div>
+            <div className="mono">Atualizado {fmtHora.format(agora)} · a cada 15 min · {FEEDS.length} veículos</div>
+          </div>
+        </div>
+        <div className="photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/lavoura-dourada.jpg" alt="Lavoura no fim da tarde" />
+          <div className="overlay" />
+          <span className="tag">Vale do Araguaia</span>
         </div>
       </section>
 

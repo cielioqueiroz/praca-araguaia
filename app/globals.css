@@ -257,13 +257,15 @@ body { font-size: 14px; }
 /* ——— Notícias do Mercado (home) ———
    Portal de notícias sem a poluição de portal: um destaque, uma grade, os chips e
    nada mais. Mesma paleta e mesmas fontes do resto do site. */
-.nhero{padding:44px 0 8px;max-width:64ch}
-.nhero h1{font-family:var(--serif);font-size:72px;line-height:.92;letter-spacing:-.015em;color:var(--ink);margin-top:20px;font-variation-settings:'opsz' 144,'wght' 480}
-.nhero h1 em{font-style:italic;color:var(--leather)}
-.nmeta{margin-top:26px;display:flex;flex-direction:column;gap:6px}
-.nmeta .big{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
-.nmeta .mono{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.nsecao{margin-top:34px;padding-bottom:24px}
+/* Herda o .hero (grade, moldura, foto, hover do zoom) e só ajusta a escala do
+   título — a manchete da notícia abaixo não pode competir com ele. */
+.nhero h1{font-size:64px}
+.nsecao{margin-top:38px;padding-bottom:24px}
+/* O divisor da seção respira mais aqui do que no painel: ele separa blocos de
+   cards, não linhas de tabela. */
+.nsec{margin-top:40px}
+.nsechead{margin-bottom:20px}
+.nsechead .pill{font-variant-numeric:tabular-nums}
 
 .nchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
 .nchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
@@ -299,6 +301,12 @@ body { font-size: 14px; }
 .nsemfoto{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(140deg,var(--olive) 0%,var(--olive-deep) 100%)}
 .nsemfoto span{font-family:var(--serif);font-size:60px;color:rgba(246,239,216,.32);font-variation-settings:'wght' 600}
+
+/* Etiqueta de onde o fato aconteceu. Cruza as seções: a notícia da China sobre
+   carne fica em Pecuária (é lá que o pecuarista procura) e leva o selo. */
+.nfora{position:absolute;top:12px;left:12px;z-index:1;font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;color:#F6EFD8;background:rgba(24,32,16,.62);
+  border:1px solid rgba(246,239,216,.3);border-radius:2px;padding:4px 8px;backdrop-filter:blur(3px)}
 
 .nveiculo{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--leather)}
 .nquando{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:12px}
@@ -463,7 +471,7 @@ a.mrow:hover{background:var(--paper-warm)}
   .ndestaque .ncorpo{padding:26px 24px}
   .ndestaque .ntitulo{font-size:27px}
   .ngrade{grid-template-columns:1fr 1fr}
-  .nhero h1{font-size:56px}
+  .nhero h1{font-size:50px}
   .cards{grid-template-columns:1fr 1fr}
   .mrow{grid-template-columns:1.4fr 1fr .8fr;gap:12px}
   .mrow .mspk,.mrow.h span:last-child{display:none}
@@ -489,7 +497,6 @@ a.mrow:hover{background:var(--paper-warm)}
   .hero .text{padding:32px 20px 28px}
   .hero h1{font-size:58px}
   .lede{font-size:16px}
-  .nhero{padding:30px 0 4px}
   .nhero h1{font-size:42px}
   .ngrade{grid-template-columns:1fr}
   .ndestaque .ntitulo{font-size:23px}

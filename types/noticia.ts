@@ -16,6 +16,8 @@ export type Noticia = ItemBruto & {
   id: string;
   veiculo: string;
   categoria: Categoria;
+  /** Fala de fora do Brasil. Cruza as categorias em vez de ser uma delas. */
+  internacional: boolean;
 };
 
 /** Um feed no registry. `nicho: true` = veículo só de agro, dispensa filtro de relevância. */

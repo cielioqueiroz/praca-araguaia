@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parseFeed, decodificar, dataDeFeed, limparResumo } from '@/lib/noticias/rss';
-import { categoria, relevante } from '@/lib/noticias/classificar';
+import { categoria, relevante, internacional } from '@/lib/noticias/classificar';
+import { extrairOgImage, completarImagens } from '@/lib/noticias/og';
 import { agregar, normalizarLink, normalizarTitulo, LIMITE_POR_VEICULO } from '@/lib/noticias/agregar';
 import { FEEDS } from '@/lib/noticias/feeds';
-import type { Feed, ItemBruto } from '@/types/noticia';
+import type { Feed, ItemBruto, Noticia } from '@/types/noticia';
 
 const item = (extra: Partial<ItemBruto> = {}): ItemBruto => ({
   titulo: 'Preço do boi gordo sobe em Redenção',
@@ -196,6 +197,90 @@ describe('relevante', () => {
 
   it('acha a palavra no resumo, não só no título', () => {
     expect(relevante(item({ titulo: 'Mercado reage', resumo: 'A saca de milho subiu' }), false)).toBe(true);
+  });
+});
+
+describe('internacional', () => {
+  it('marca país e ator estrangeiro explícito', () => {
+    expect(internacional(item({ titulo: 'China suspende compra de carne brasileira' }))).toBe(true);
+    expect(internacional(item({ titulo: 'Tarifa dos EUA atinge o agro' }))).toBe(true);
+    expect(internacional(item({ titulo: 'União Europeia muda regra de antimicrobianos' }))).toBe(true);
+  });
+
+  it('não marca a notícia de casa', () => {
+    expect(internacional(item({ titulo: 'Boi gordo sobe em Redenção' }))).toBe(false);
+  });
+
+  it('exportação sozinha não é notícia de fora', () => {
+    // 'exportacao' marcava 23 de 40 notícias nos feeds reais: exportar é o dia a
+    // dia do agro brasileiro, e um selo em mais da metade da página não informa.
+    expect(internacional(item({ titulo: 'Exportação de carne bovina cresce 12%' }))).toBe(false);
+  });
+
+  it('convive com a categoria em vez de disputar com ela', () => {
+    // A notícia da China sobre carne é PECUÁRIA — é onde o pecuarista procura —
+    // e leva o selo de internacional junto.
+    const noticia = item({ titulo: 'China suspende compra de carne bovina' });
+    expect(categoria(noticia)).toBe('pecuaria');
+    expect(internacional(noticia)).toBe(true);
+  });
+});
+
+describe('extrairOgImage', () => {
+  it('lê og:image nas duas ordens de atributo', () => {
+    expect(extrairOgImage('<meta property="og:image" content="https://v.com/a.jpg">')).toBe('https://v.com/a.jpg');
+    expect(extrairOgImage('<meta content="https://v.com/b.jpg" property="og:image">')).toBe('https://v.com/b.jpg');
+  });
+
+  it('cai para twitter:image quando não há og:image', () => {
+    expect(extrairOgImage('<meta name="twitter:image" content="https://v.com/c.jpg">')).toBe('https://v.com/c.jpg');
+  });
+
+  it('desescapa &amp; da URL', () => {
+    expect(extrairOgImage('<meta property="og:image" content="https://v.com/a.jpg?w=1&amp;h=2">'))
+      .toBe('https://v.com/a.jpg?w=1&h=2');
+  });
+
+  it('recusa URL relativa ou ausente — não resolveria no nosso domínio', () => {
+    expect(extrairOgImage('<meta property="og:image" content="/local.jpg">')).toBeNull();
+    expect(extrairOgImage('<html><head></head></html>')).toBeNull();
+  });
+});
+
+describe('completarImagens', () => {
+  const noticia = (id: string, imagem: string | null): Noticia => ({
+    id, titulo: 'Boi gordo sobe', link: `https://v.com/${id}`, publicadoEm: null,
+    resumo: null, imagem, veiculo: 'BeefPoint', categoria: 'pecuaria', internacional: false,
+  });
+
+  const respondeHtml = (html: string) =>
+    (async () => ({
+      ok: true,
+      body: new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(html)); c.close(); } }),
+    }) as unknown as Response) as unknown as typeof fetch;
+
+  it('busca a og:image só das que estão sem foto', async () => {
+    // Money Times e BeefPoint não publicam imagem nenhuma no feed (apurado em
+    // 16/07/2026) e o BeefPoint é a única fonte só de pecuária que temos.
+    const fetchImpl = vi.fn(respondeHtml('<meta property="og:image" content="https://v.com/og.jpg">')) as unknown as typeof fetch;
+    const r = await completarImagens([noticia('a', 'https://v.com/ja-tem.jpg'), noticia('b', null)], fetchImpl);
+
+    expect(r[0].imagem).toBe('https://v.com/ja-tem.jpg'); // intocada
+    expect(r[1].imagem).toBe('https://v.com/og.jpg');
+    expect(fetchImpl).toHaveBeenCalledTimes(1); // só a que faltava
+  });
+
+  it('veículo fora do ar deixa a notícia sem foto, mas não derruba a página', async () => {
+    const fetchImpl = (async () => { throw new Error('timeout'); }) as unknown as typeof fetch;
+    const r = await completarImagens([noticia('b', null)], fetchImpl);
+    expect(r[0].imagem).toBeNull();
+    expect(r[0].titulo).toBe('Boi gordo sobe');
+  });
+
+  it('sem nenhuma faltando, não toca a rede', async () => {
+    const fetchImpl = vi.fn() as unknown as typeof fetch;
+    await completarImagens([noticia('a', 'https://v.com/x.jpg')], fetchImpl);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
 

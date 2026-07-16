@@ -5,19 +5,30 @@ import { useRouter } from 'next/navigation';
 import { tempoRelativo } from '@/lib/tempo';
 import type { Categoria, Noticia } from '@/types/noticia';
 
-const CHIPS: Array<{ id: Categoria | 'tudo'; rotulo: string }> = [
+type Filtro = Categoria | 'tudo' | 'internacional';
+
+const CHIPS: Array<{ id: Filtro; rotulo: string }> = [
   { id: 'tudo', rotulo: 'Tudo' },
   { id: 'pecuaria', rotulo: 'Pecuária' },
   { id: 'graos', rotulo: 'Grãos' },
   { id: 'mercado', rotulo: 'Mercado' },
   { id: 'clima', rotulo: 'Clima' },
+  { id: 'internacional', rotulo: 'Internacional' },
   { id: 'geral', rotulo: 'Geral' },
 ];
 
-// A cada 15 min a página busca notícia nova sozinha.
+// A ordem das seções é a ordem de interesse de quem vive da porteira: primeiro o
+// bicho, depois o grão, depois o dinheiro. Não é alfabética nem a ordem do feed.
+const SECOES: Array<{ id: Categoria; titulo: string; meta: string }> = [
+  { id: 'pecuaria', titulo: 'Pecuária', meta: 'Boi, vaca, bezerro e frigorífico' },
+  { id: 'graos', titulo: 'Grãos', meta: 'Soja, milho e safra' },
+  { id: 'mercado', titulo: 'Mercado', meta: 'Câmbio, ouro, bolsa e comércio' },
+  { id: 'clima', titulo: 'Clima', meta: 'Chuva, seca e previsão' },
+  { id: 'geral', titulo: 'Geral', meta: 'O resto do agro' },
+];
+
 const INTERVALO_REFRESH_MS = 15 * 60 * 1000;
 
-/** Inicial do veículo, para quando a matéria não traz foto. */
 function Selo({ veiculo }: { veiculo: string }) {
   return (
     <div className="nsemfoto" aria-hidden="true">
@@ -40,14 +51,10 @@ function Foto({ noticia }: { noticia: Noticia }) {
 
 function Cartao({ noticia, agora, destaque = false }: { noticia: Noticia; agora: number; destaque?: boolean }) {
   return (
-    <a
-      className={destaque ? 'ndestaque' : 'ncard'}
-      href={noticia.link}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <a className={destaque ? 'ndestaque' : 'ncard'} href={noticia.link} target="_blank" rel="noopener noreferrer">
       <div className="nfoto">
         <Foto noticia={noticia} />
+        {noticia.internacional && <span className="nfora">Internacional</span>}
       </div>
       <div className="ncorpo">
         <div className="nveiculo">{noticia.veiculo}</div>
@@ -59,22 +66,34 @@ function Cartao({ noticia, agora, destaque = false }: { noticia: Noticia; agora:
   );
 }
 
+/** O mesmo divisor das seções do painel — o site já fala assim. */
+function Divisor({ titulo, meta, n }: { titulo: string; meta: string; n: number }) {
+  return (
+    <div className="section-head nsechead">
+      <div className="t">{titulo}</div>
+      <div className="line" />
+      <div className="meta">
+        {meta}
+        <span className="pill">{n}</span>
+      </div>
+    </div>
+  );
+}
+
 export function GradeNoticias({ noticias }: { noticias: Noticia[] }) {
-  const [filtro, setFiltro] = useState<Categoria | 'tudo'>('tudo');
+  const [filtro, setFiltro] = useState<Filtro>('tudo');
   const router = useRouter();
 
-  // O "há 2 h" é calculado com a hora do relógio do servidor na primeira pintura e
-  // com a do navegador depois. Fixar o agora só depois da montagem evita o erro de
-  // hidratação que apareceria quando os dois relógios discordam por segundos.
+  // O "há 2 h" nasce do relógio do servidor e passa a ser o do navegador. Fixar o
+  // agora só depois da montagem evita o erro de hidratação quando os dois discordam.
   const [agora, setAgora] = useState<number | null>(null);
   useEffect(() => setAgora(Date.now()), [noticias]);
 
-  // Recarrega as notícias sozinho, sem recarregar a página: router.refresh() troca
-  // o conteúdo mantendo a rolagem e o filtro escolhido. Um location.reload() jogaria
-  // quem está lendo de volta para o topo a cada 15 minutos.
+  // Recarrega sozinho sem recarregar a página: router.refresh() troca o conteúdo
+  // mantendo a rolagem e o filtro. Um location.reload() jogaria quem está lendo de
+  // volta ao topo a cada 15 minutos.
   useEffect(() => {
     const tick = () => {
-      // Aba em segundo plano não precisa de notícia fresca; ela atualiza quando voltar.
       if (document.visibilityState === 'visible') router.refresh();
     };
     const id = setInterval(tick, INTERVALO_REFRESH_MS);
@@ -85,23 +104,40 @@ export function GradeNoticias({ noticias }: { noticias: Noticia[] }) {
     };
   }, [router]);
 
-  const visiveis = useMemo(
-    () => (filtro === 'tudo' ? noticias : noticias.filter((n) => n.categoria === filtro)),
-    [noticias, filtro],
-  );
+  const visiveis = useMemo(() => {
+    if (filtro === 'tudo') return noticias;
+    if (filtro === 'internacional') return noticias.filter((n) => n.internacional);
+    return noticias.filter((n) => n.categoria === filtro);
+  }, [noticias, filtro]);
 
-  // Só mostra o chip que tem notícia: chip que abre uma lista vazia é armadilha.
+  // Chip que abre uma lista vazia é armadilha: só mostra o que tem notícia.
   const chips = useMemo(() => {
-    const existentes = new Set(noticias.map((n) => n.categoria));
-    return CHIPS.filter((c) => c.id === 'tudo' || existentes.has(c.id));
+    const cats = new Set(noticias.map((n) => n.categoria));
+    const temFora = noticias.some((n) => n.internacional);
+    return CHIPS.filter((c) =>
+      c.id === 'tudo' ? true : c.id === 'internacional' ? temFora : cats.has(c.id),
+    );
   }, [noticias]);
 
-  const [destaque, ...resto] = visiveis;
   const quando = agora ?? Date.now();
+  const [destaque, ...resto] = visiveis;
+
+  // Com filtro ligado, a lista é uma só — separar em seções repetiria o próprio
+  // filtro como título. Sem filtro, as seções são o mapa da página.
+  const seccionado = filtro === 'tudo';
+  const porSecao = useMemo(() => {
+    const mapa = new Map<Categoria, Noticia[]>();
+    for (const n of resto) {
+      const arr = mapa.get(n.categoria) ?? [];
+      arr.push(n);
+      mapa.set(n.categoria, arr);
+    }
+    return mapa;
+  }, [resto]);
 
   return (
     <>
-      <div className="nchips" role="tablist" aria-label="Filtrar por assunto">
+      <div className="nchips" role="tablist" aria-label="Filtrar notícias">
         {chips.map((c) => (
           <button
             key={c.id}
@@ -121,13 +157,29 @@ export function GradeNoticias({ noticias }: { noticias: Noticia[] }) {
       ) : (
         <>
           <Cartao noticia={destaque} agora={quando} destaque />
-          {resto.length > 0 && (
-            <div className="ngrade">
-              {resto.map((n) => (
-                <Cartao key={n.id} noticia={n} agora={quando} />
-              ))}
-            </div>
-          )}
+
+          {seccionado
+            ? SECOES.map(({ id, titulo, meta }) => {
+                const itens = porSecao.get(id) ?? [];
+                if (itens.length === 0) return null; // seção vazia não vira título solto
+                return (
+                  <section key={id} className="nsec">
+                    <Divisor titulo={titulo} meta={meta} n={itens.length} />
+                    <div className="ngrade">
+                      {itens.map((n) => (
+                        <Cartao key={n.id} noticia={n} agora={quando} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })
+            : resto.length > 0 && (
+                <div className="ngrade nsec">
+                  {resto.map((n) => (
+                    <Cartao key={n.id} noticia={n} agora={quando} />
+                  ))}
+                </div>
+              )}
         </>
       )}
     </>
