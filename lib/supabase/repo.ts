@@ -4,11 +4,15 @@ import type {
   CotacaoRepo,
   HistoricoRepo,
   PontoHistorico,
+  PrecoPraca,
+  PrecoPracaRepo,
   PrecoUf,
   PrecoUfRepo,
 } from '@/types/cotacao';
 
-export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRepo & PrecoUfRepo {
+export function supabaseRepo(
+  client: SupabaseClient,
+): CotacaoRepo & HistoricoRepo & PrecoUfRepo & PrecoPracaRepo {
   return {
     async ultimoValor(tipo, antesDe) {
       const { data, error } = await client
@@ -66,6 +70,25 @@ export function supabaseRepo(client: SupabaseClient): CotacaoRepo & HistoricoRep
           atualizado_em: new Date().toISOString(),
         })),
         { onConflict: 'tipo,uf' },
+      );
+      if (error) throw new Error(error.message);
+    },
+
+    async salvarPrecosPraca(precos: PrecoPraca[]) {
+      if (precos.length === 0) return;
+      const { error } = await client.from('cotacoes_praca').upsert(
+        precos.map((p) => ({
+          tipo: p.tipo,
+          praca: p.praca,
+          uf: p.uf,
+          valor: p.valor,
+          unidade: p.unidade,
+          variacao_pct: p.variacaoPct,
+          valor_prazo: p.valorPrazo ?? null,
+          data_referencia: p.dataReferencia,
+          atualizado_em: new Date().toISOString(),
+        })),
+        { onConflict: 'tipo,praca,uf' },
       );
       if (error) throw new Error(error.message);
     },

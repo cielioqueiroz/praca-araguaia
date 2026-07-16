@@ -3,8 +3,9 @@ import { buscarDolar, buscarHistoricoDolarBcb } from './dolar';
 import { buscarEuro, buscarHistoricoEuroFrankfurter } from './euro';
 import { buscarOuro, buscarOuro18k } from './ouro';
 import { buscarBitcoin, buscarEthereum, buscarHistoricoCripto } from './cripto';
-import { buscarBoi, buscarSoja, buscarMilho, buscarHistoricoConab } from './conab';
-import { buscarVaca, buscarNovilha, buscarBezerro } from './pecuaria';
+import { buscarSoja, buscarMilho, buscarHistoricoConab } from './conab';
+import { buscarNovilha, buscarBezerro } from './pecuaria';
+import { buscarMediaScot } from './scot';
 import { buscarIbovespa, buscarHistoricoIbovespa } from './ibovespa';
 
 // Fontes da coleta diária: tipo -> função que devolve a cotação atual.
@@ -16,8 +17,10 @@ export const FONTES: Record<string, () => Promise<Cotacao>> = {
   ibovespa: () => buscarIbovespa(),
   bitcoin: () => buscarBitcoin(),
   ethereum: () => buscarEthereum(),
-  boi: () => buscarBoi(),
-  vaca: () => buscarVaca(),
+  // Boi e vaca: Scot, média das praças da região — só para o gráfico. O painel
+  // mostra praça por praça (cotacoes_praca), que é o dado que importa.
+  boi: () => buscarMediaScot('boi'),
+  vaca: () => buscarMediaScot('vaca'),
   novilha: () => buscarNovilha(),
   bezerro: () => buscarBezerro(),
   soja: () => buscarSoja(),

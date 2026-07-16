@@ -12,12 +12,12 @@ const NAV = [
 ];
 
 const FONTES = [
-  'Grãos e boi: CONAB',
-  'Vaca e novilha: Datagro',
-  'Bezerro: Scot Consultoria',
+  'Boi, vaca, novilha e bezerro: Scot Consultoria',
+  'Grãos: CONAB',
   'Câmbio e ouro: BCB, gold-api',
   'Chuva: INMET, CEMADEN, Open-Meteo',
   'Termômetro: reportes da praça',
+  'Notícias: veículos de origem, via RSS',
 ];
 
 const SITE = 'https://cielio-portfolio.vercel.app/';

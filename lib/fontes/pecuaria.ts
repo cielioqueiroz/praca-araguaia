@@ -1,13 +1,19 @@
 import type { Cotacao, PrecoUf } from '@/types/cotacao';
 
-// Vaca gorda, novilha e bezerro — as categorias que faltavam na porteira.
+// Novilha e bezerro — a REPOSIÇÃO da porteira, por estado.
 //
 // Por que não a CONAB: o arquivo semanal por UF (PrecosSemanalUF.txt) só publica
-// BOI|GORDO. Vaca, novilha e bezerro não existem lá. Estas vêm dos indicadores
-// publicados no Notícias Agrícolas:
-//   vaca/novilha → Datagro, R$/@ por estado, com a variação já calculada;
-//   bezerro      → Scot Consultoria, R$/cabeça (nelore 12 meses, 240 kg, 8@),
-//                  que é como a praça negocia bezerro — sem coluna de variação.
+// BOI|GORDO. Novilha e bezerro não existem lá. Vêm dos indicadores da Scot
+// Consultoria republicados no Notícias Agrícolas, ambos em R$/cabeça:
+//   bezerro → macho nelore 12 meses (240 kg, 8@);
+//   novilha → fêmea nelore 18 meses.
+// É como a praça negocia reposição. Nenhuma das duas páginas traz coluna de
+// variação (a 2ª coluna é R$/kg), daí temVariacao: false nas duas.
+//
+// A VACA GORDA saiu daqui na fatia 17: ela é abate, não reposição, e a Scot publica
+// vaca por PRAÇA (Marabá, Redenção…) na mesma tabela do boi — ver lib/fontes/scot.ts.
+// A novilha GORDA da Datagro (R$/@) foi trocada pela novilha de reposição da Scot a
+// pedido do dono: fonte única e coerente com o bezerro. São produtos diferentes.
 //
 // O HTML é o contrato: <table class="cot-fisicas"> com <td>estado</td><td>valor</td>…
 // e a data em <div class="fechamento">. A primeira tabela da página é a do
@@ -18,15 +24,13 @@ const OFFSET_BRT = '-03:00';
 const BASE = 'https://www.noticiasagricolas.com.br/cotacoes/boi-gordo';
 const TTL_MS = 10 * 60 * 1000;
 
-export type TipoPecuaria = 'vaca' | 'novilha' | 'bezerro';
+export type TipoPecuaria = 'novilha' | 'bezerro';
 
 type Pagina = { url: string; fonte: string; unidade: string; temVariacao: boolean };
 
 const PAGINAS: Record<TipoPecuaria, Pagina> = {
-  vaca: { url: `${BASE}/indicador-da-vaca`, fonte: 'datagro', unidade: 'R$/@', temVariacao: true },
-  novilha: { url: `${BASE}/indicador-da-novilha`, fonte: 'datagro', unidade: 'R$/@', temVariacao: true },
-  // A 2ª coluna do bezerro é R$/kg, não variação — por isso temVariacao: false.
   bezerro: { url: `${BASE}/macho-nelore-bezerro-12-meses`, fonte: 'scot', unidade: 'R$/cab', temVariacao: false },
+  novilha: { url: `${BASE}/femea-nelore-novilha-18-meses`, fonte: 'scot', unidade: 'R$/cab', temVariacao: false },
 };
 
 // Ordem de exibição: a praça primeiro.
@@ -145,6 +149,5 @@ async function buscarMedia(tipo: TipoPecuaria, fetchImpl: typeof fetch): Promise
   return { tipo, valor: Math.round(media * 100) / 100, unidade, fonte, dataReferencia };
 }
 
-export const buscarVaca = (fetchImpl: typeof fetch = fetch) => buscarMedia('vaca', fetchImpl);
 export const buscarNovilha = (fetchImpl: typeof fetch = fetch) => buscarMedia('novilha', fetchImpl);
 export const buscarBezerro = (fetchImpl: typeof fetch = fetch) => buscarMedia('bezerro', fetchImpl);

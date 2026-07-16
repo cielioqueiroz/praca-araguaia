@@ -4,13 +4,17 @@ import { NOME_UF } from '@/lib/praca';
 
 export type PrecoUfUI = { uf: string; valor: number; variacaoPct: number | null };
 export type PrecoCidadeUI = { municipio: string; uf: string; mediana: number | null; contagem: number };
+/** Preço de uma praça da Scot: 'Redenção (PA)', com o preço a prazo quando houver. */
+export type PrecoPracaUI = { praca: string; uf: string; valor: number; variacaoPct: number | null; valorPrazo?: number };
 
 export type CardPorteiraProps = {
   tipo: string;
   titulo: string;
   unLabel: string; // 'R$ por arroba'
-  rodape: string; // 'CONAB · semana de 27/06 a 03/07' ou 'Datagro · 10/07'
+  rodape: string; // 'CONAB · semana de 27/06 a 03/07' ou 'Scot Consultoria · 15/07'
   precos: PrecoUfUI[];
+  /** Quando vem preenchido, a lista de cima é por PRAÇA e não por estado (boi, vaca). */
+  pracas?: PrecoPracaUI[];
   cidades?: PrecoCidadeUI[]; // o que os produtores reportaram nas cidades da praça
 };
 
@@ -56,19 +60,39 @@ export function CardPorteira(p: CardPorteiraProps) {
         </div>
 
         <div className="listas">
-          <ul className="ufs">
-            {p.precos.map((u) => (
-              <li key={u.uf} data-uf={u.uf}>
-                <span className="lugar">
-                  {NOME_UF[u.uf] ?? u.uf}
-                  <b className="badge">sua praça</b>
-                </span>
-                <span className="valor tnum">{brl(u.valor)}</span>
-                <Variacao pct={u.variacaoPct} />
-              </li>
-            ))}
-            {p.precos.length === 0 && <li className="vazio">Sem preço publicado nesta semana.</li>}
-          </ul>
+          {/* Boi e vaca vêm praça a praça (Scot); o resto, estado a estado. Marcamos
+              data-cidade também: 'Redenção' é praça da Scot E cidade da região, então
+              o destaque do SuaPraca acerta a linha sem precisar saber disso. */}
+          {p.pracas ? (
+            <ul className="ufs pracas">
+              {p.pracas.map((u) => (
+                <li key={`${u.uf}-${u.praca}`} data-uf={u.uf} data-cidade={u.praca}>
+                  <span className="lugar">
+                    {u.praca}
+                    <i>{u.uf}</i>
+                    <b className="badge">você</b>
+                  </span>
+                  <span className="valor tnum">{brl(u.valor)}</span>
+                  <Variacao pct={u.variacaoPct} />
+                </li>
+              ))}
+              {p.pracas.length === 0 && <li className="vazio">Sem preço publicado hoje.</li>}
+            </ul>
+          ) : (
+            <ul className="ufs">
+              {p.precos.map((u) => (
+                <li key={u.uf} data-uf={u.uf}>
+                  <span className="lugar">
+                    {NOME_UF[u.uf] ?? u.uf}
+                    <b className="badge">sua praça</b>
+                  </span>
+                  <span className="valor tnum">{brl(u.valor)}</span>
+                  <Variacao pct={u.variacaoPct} />
+                </li>
+              ))}
+              {p.precos.length === 0 && <li className="vazio">Sem preço publicado nesta semana.</li>}
+            </ul>
+          )}
 
           {p.cidades && (
             <div className="cidades">

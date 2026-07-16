@@ -30,24 +30,29 @@ describe('tipos-ui', () => {
     expect(NAO_E_MOEDA.has('bitcoin')).toBe(false);
   });
 
-  it('legenda da porteira aponta o preço por estado e credita quem apurou', () => {
-    expect(LEGENDAS.boi).toBe('preço por estado · CONAB');
-    expect(LEGENDAS.milho).toBe('preço por estado · CONAB');
-    // Vaca/novilha/bezerro não são da CONAB — ela não publica essas categorias.
-    expect(LEGENDAS.vaca).toBe('preço por estado · Datagro');
-    expect(LEGENDAS.novilha).toBe('preço por estado · Datagro');
+  it('legenda da porteira diz o recorte certo e credita quem apurou', () => {
+    // Boi e vaca vêm praça a praça (Scot pesquisa Marabá, Redenção…); grãos, por
+    // estado (a CONAB só publica assim). A legenda não pode prometer o que não é.
+    expect(LEGENDAS.boi).toBe('preço por praça · Scot Consultoria');
+    expect(LEGENDAS.vaca).toBe('preço por praça · Scot Consultoria');
+    expect(LEGENDAS.novilha).toBe('preço por estado · Scot Consultoria');
     expect(LEGENDAS.bezerro).toBe('preço por estado · Scot Consultoria');
+    expect(LEGENDAS.milho).toBe('preço por estado · CONAB');
+    expect(LEGENDAS.soja).toBe('preço por estado · CONAB');
     expect(LEGENDAS.dolar).toBeUndefined();
   });
 
-  it('prazo de desatualizado: 48h para diárias, 5 dias para os indicadores, 10 para a CONAB', () => {
+  it('prazo de desatualizado: 48h para diárias, 5 dias para a Scot, 10 para a CONAB', () => {
     expect(prazoDesatualizadoMs('dolar')).toBe(48 * 60 * 60 * 1000);
     expect(prazoDesatualizadoMs('ouro')).toBe(48 * 60 * 60 * 1000);
     expect(prazoDesatualizadoMs('ouro18k')).toBe(48 * 60 * 60 * 1000);
     expect(prazoDesatualizadoMs('bitcoin')).toBe(48 * 60 * 60 * 1000);
+    // A Scot publica em dia útil: 5 dias cobre fim de semana e feriado.
     expect(prazoDesatualizadoMs('vaca')).toBe(5 * 24 * 60 * 60 * 1000);
     expect(prazoDesatualizadoMs('bezerro')).toBe(5 * 24 * 60 * 60 * 1000);
-    expect(prazoDesatualizadoMs('boi')).toBe(10 * 24 * 60 * 60 * 1000);
+    // O boi saiu da CONAB (semanal) para a Scot (diária) na fatia 17: 10 dias de
+    // tolerância esconderiam um preço parado há mais de uma semana.
+    expect(prazoDesatualizadoMs('boi')).toBe(5 * 24 * 60 * 60 * 1000);
     expect(prazoDesatualizadoMs('milho')).toBe(10 * 24 * 60 * 60 * 1000);
   });
 });

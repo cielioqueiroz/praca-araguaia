@@ -30,6 +30,28 @@ export interface PrecoUfRepo {
   salvarPrecosUf(precos: PrecoUf[]): Promise<void>;
 }
 
+/**
+ * Preço de uma PRAÇA — um degrau mais fino que a UF. A Scot pesquisa Marabá,
+ * Redenção e Paragominas separadamente, e é assim que a região negocia; a média do
+ * Pará não é o preço de ninguém.
+ */
+export type PrecoPraca = {
+  tipo: string;
+  uf: string;
+  praca: string; // 'Redenção', 'Norte', 'Cuiabá'
+  valor: number;
+  unidade: string;
+  variacaoPct: number | null;
+  dataReferencia: string; // ISO 8601
+  /** Só o boi tem: o mesmo preço a prazo de 30 dias. */
+  valorPrazo?: number;
+};
+
+export interface PrecoPracaRepo {
+  /** Upsert por (tipo, praca, uf). */
+  salvarPrecosPraca(precos: PrecoPraca[]): Promise<void>;
+}
+
 export type PontoHistorico = { data: string; valor: number }; // data ISO 8601, ordem asc
 
 export interface HistoricoRepo {

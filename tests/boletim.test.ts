@@ -69,10 +69,11 @@ describe('montarBoletim', () => {
     expect(b.porteira[0].rodape).toBe('CONAB · semana de 29/06 a 03/07');
   });
 
-  // Datagro e Scot fecham por DIA — rotular de "semana" seria mentir na data.
+  // A Scot fecha por DIA — rotular de "semana" seria mentir na data. Só a CONAB
+  // (grãos) fecha semana; desde a fatia 17 todo o gado é Scot.
   it('rotula os indicadores diários pelo dia do fechamento', () => {
     const b = montarBoletim([], [uf('vaca', 'PA', 298.36, 0.13)]);
-    expect(b.porteira[0].rodape).toBe('Datagro · 03/07');
+    expect(b.porteira[0].rodape).toBe('Scot Consultoria · 03/07');
 
     const c = montarBoletim([], [uf('bezerro', 'MT', 3546.23, null)]);
     expect(c.porteira[0].rodape).toBe('Scot Consultoria · 03/07');
