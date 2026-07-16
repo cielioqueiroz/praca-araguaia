@@ -54,7 +54,7 @@ export function SiteFooter() {
             <Logo size={42} />
             <div>
               <div className="font-display text-[26px] leading-none text-ink">Praça Araguaia</div>
-              <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Cotações do agro, 2024</div>
+              <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Cotações do agro</div>
             </div>
           </div>
           <p className="mt-6 max-w-[44ch] text-sm leading-relaxed text-ink2/85">

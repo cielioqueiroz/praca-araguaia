@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
 
 const LINKS = [
-  { href: '/', rotulo: 'A praça hoje' },
+  { href: '/', rotulo: 'Notícias' },
+  { href: '/cotacoes', rotulo: 'A praça hoje' },
   { href: '/boletim', rotulo: 'Boletim' },
   { href: '/chuva', rotulo: 'Chuva' },
   { href: '/termometro', rotulo: 'Termômetro' },
@@ -51,7 +52,7 @@ export function Masthead() {
           <Logo />
           <div>
             <div className="word">Praça Araguaia</div>
-            <div className="sub">Cotações do agro, 2024</div>
+            <div className="sub">Cotações do agro</div>
           </div>
         </Link>
 

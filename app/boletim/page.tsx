@@ -5,7 +5,7 @@ export const metadata = { title: 'Boletim do dia — Praça Araguaia' };
 export default function Boletim() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
+      <Link href="/cotacoes" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Para compartilhar</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Boletim do dia</h1>
       <p className="mt-1 text-sm text-tinta/50">Baixe a imagem e compartilhe no Instagram ou WhatsApp.</p>

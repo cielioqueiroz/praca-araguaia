@@ -230,11 +230,86 @@ body { font-size: 14px; }
 .hero .photo{position:relative;overflow:hidden;border-left:1px solid var(--rule);background:var(--olive-deep)}
 /* A foto do touro é quadrada num quadro paisagem: o corte come topo e base. Puxado
    para cima, para não decepar os chifres. */
-.hero .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-.hero .photo .overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,32,16,.42) 0%,rgba(24,32,16,0) 32%)}
+.hero .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
+  transition:transform .75s cubic-bezier(.2,.7,.25,1),filter .55s ease}
+.hero .photo .overlay{position:absolute;inset:0;transition:background .55s ease;
+  background:linear-gradient(0deg,rgba(24,32,16,.42) 0%,rgba(24,32,16,0) 32%)}
+
+/* O touro reage ao mouse: aproxima devagar, ganha um respiro de luz e a etiqueta
+   sobe. Só transform/filter/opacity — nada aqui mexe no layout, então não há
+   reflow nem salto de imagem. O overflow:hidden do .photo segura o corte. */
+.hero .photo:hover img{transform:scale(1.055);filter:saturate(1.08) brightness(1.03)}
+.hero .photo:hover .overlay{background:linear-gradient(0deg,rgba(24,32,16,.58) 0%,rgba(24,32,16,.06) 46%)}
+.hero .photo .tag{transition:transform .45s cubic-bezier(.2,.7,.25,1),border-color .45s ease,background .45s ease}
+.hero .photo:hover .tag{transform:translateY(-3px);border-color:rgba(246,239,216,.75);background:rgba(24,32,16,.28)}
+.hero .photo .credit{transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+.hero .photo:hover .credit{transform:translateY(-2px)}
+/* Movimento é escolha do usuário, não nossa. */
+@media (prefers-reduced-motion: reduce){
+  .hero .photo img,.hero .photo .overlay,.hero .photo .tag,.hero .photo .credit{transition:none}
+  .hero .photo:hover img{transform:none;filter:none}
+  .hero .photo:hover .tag,.hero .photo:hover .credit{transform:none}
+}
 .tag{position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#F6EFD8;border:1px solid rgba(246,239,216,.35);border-radius:2px;padding:4px 8px;backdrop-filter:blur(2px)}
 .credit{position:absolute;left:18px;bottom:16px;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(246,239,216,.85)}
 .credit::before{content:"";width:22px;height:1px;background:rgba(246,239,216,.6)}
+
+/* ——— Notícias do Mercado (home) ———
+   Portal de notícias sem a poluição de portal: um destaque, uma grade, os chips e
+   nada mais. Mesma paleta e mesmas fontes do resto do site. */
+.nhero{padding:44px 0 8px;max-width:64ch}
+.nhero h1{font-family:var(--serif);font-size:72px;line-height:.92;letter-spacing:-.015em;color:var(--ink);margin-top:20px;font-variation-settings:'opsz' 144,'wght' 480}
+.nhero h1 em{font-style:italic;color:var(--leather)}
+.nmeta{margin-top:26px;display:flex;flex-direction:column;gap:6px}
+.nmeta .big{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
+.nmeta .mono{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.nsecao{margin-top:34px;padding-bottom:24px}
+
+.nchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.nchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  background:var(--paper);border:1px solid var(--rule);border-radius:999px;padding:8px 15px;cursor:pointer;
+  transition:color .2s,border-color .2s,background .2s}
+.nchip:hover{border-color:var(--rule-strong);color:var(--ink-2)}
+.nchip.ativo{background:var(--olive);border-color:var(--olive);color:#F6EFD8}
+.nchip:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+
+.ncard,.ndestaque{display:block;color:inherit;text-decoration:none;background:var(--paper);
+  border:1px solid var(--rule);border-radius:16px;overflow:hidden;
+  transition:transform .3s cubic-bezier(.2,.7,.25,1),border-color .3s,box-shadow .3s}
+.ncard:hover,.ndestaque:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 10px 26px rgba(28,38,32,.09)}
+.ncard:focus-visible,.ndestaque:focus-visible{outline:2px solid var(--ochre);outline-offset:3px}
+
+/* Destaque: foto à esquerda, texto à direita. */
+.ndestaque{display:grid;grid-template-columns:1.25fr 1fr;margin-bottom:22px}
+.ndestaque .nfoto{position:relative;min-height:340px;background:var(--olive-deep)}
+.ndestaque .ncorpo{padding:38px 36px;align-self:center}
+.ndestaque .ntitulo{font-family:var(--serif);font-size:34px;line-height:1.1;letter-spacing:-.01em;margin-top:12px;
+  font-variation-settings:'opsz' 144,'wght' 460}
+.nresumo{font-family:var(--sans);font-size:14.5px;line-height:1.55;color:var(--ink-2);margin-top:14px;max-width:46ch}
+
+.ngrade{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.ncard .nfoto{position:relative;aspect-ratio:16/9;background:var(--olive-deep)}
+.ncard .ncorpo{padding:18px 20px 20px}
+.ncard .ntitulo{font-family:var(--serif);font-size:18.5px;line-height:1.25;margin-top:9px;
+  font-variation-settings:'opsz' 144,'wght' 460}
+
+.nfoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.25,1)}
+.ncard:hover .nfoto img,.ndestaque:hover .nfoto img{transform:scale(1.045)}
+/* Matéria sem foto: bloco da marca com a inicial do veículo, em vez de imagem quebrada. */
+.nsemfoto{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,var(--olive) 0%,var(--olive-deep) 100%)}
+.nsemfoto span{font-family:var(--serif);font-size:60px;color:rgba(246,239,216,.32);font-variation-settings:'wght' 600}
+
+.nveiculo{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--leather)}
+.nquando{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+.nvazio{margin:40px 0;color:var(--muted)}
+.nvazio a{color:var(--olive);text-decoration:underline}
+
+@media (prefers-reduced-motion: reduce){
+  .ncard,.ndestaque,.nfoto img,.nchip{transition:none}
+  .ncard:hover,.ndestaque:hover{transform:none}
+  .ncard:hover .nfoto img,.ndestaque:hover .nfoto img{transform:none}
+}
 
 /* Section head */
 .section{margin-top:56px}
@@ -383,6 +458,12 @@ a.mrow:hover{background:var(--paper-warm)}
   .gaveta{display:flex}
   .hero{grid-template-columns:1fr}
   .hero .photo{min-height:240px;border-left:none;border-top:1px solid var(--rule)}
+  .ndestaque{grid-template-columns:1fr}
+  .ndestaque .nfoto{min-height:230px}
+  .ndestaque .ncorpo{padding:26px 24px}
+  .ndestaque .ntitulo{font-size:27px}
+  .ngrade{grid-template-columns:1fr 1fr}
+  .nhero h1{font-size:56px}
   .cards{grid-template-columns:1fr 1fr}
   .mrow{grid-template-columns:1.4fr 1fr .8fr;gap:12px}
   .mrow .mspk,.mrow.h span:last-child{display:none}
@@ -408,6 +489,11 @@ a.mrow:hover{background:var(--paper-warm)}
   .hero .text{padding:32px 20px 28px}
   .hero h1{font-size:58px}
   .lede{font-size:16px}
+  .nhero{padding:30px 0 4px}
+  .nhero h1{font-size:42px}
+  .ngrade{grid-template-columns:1fr}
+  .ndestaque .ntitulo{font-size:23px}
+  .ncard .ntitulo{font-size:17.5px}
   .cards{grid-template-columns:1fr}
   .pcards{grid-template-columns:1fr}
   .pcard .pbody{padding:14px 16px 18px}

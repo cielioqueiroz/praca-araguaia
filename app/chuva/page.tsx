@@ -21,7 +21,7 @@ export default async function Chuva() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
+      <Link href="/cotacoes" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-rio">Próximos 7 dias, Open-Meteo</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Chuva na região</h1>
       <p className="mt-1 text-sm text-tinta/50">

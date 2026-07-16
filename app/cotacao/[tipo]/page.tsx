@@ -28,7 +28,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
+      <Link href="/cotacoes" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
       <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-mata">{titulo}</h1>
 
       <div className="mt-6 max-w-sm">
