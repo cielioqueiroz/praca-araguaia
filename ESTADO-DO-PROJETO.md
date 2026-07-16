@@ -5,6 +5,25 @@
 
 ---
 
+## 🔴 O AUTO-DEPLOY DA VERCEL PAROU DE DISPARAR (16/07/2026)
+
+Os commits das fatias 16-19 **estão no GitHub** (`origin/master` = `ec411c2`), mas a
+Vercel **não criou nenhum deploy** para eles: o último build de produção ainda é o do
+commit `9d34adc`, de 14/07. Conferido pela API — `list_deployments` devolve zero
+deployments desde os pushes de hoje. Por isso `/cotacoes` e `/painel` respondem **404
+em produção**, enquanto `/` ainda serve o painel antigo.
+
+Não é falha de build: o `npm run build` local passa limpo. É o gatilho GitHub → Vercel.
+
+**O que o dono precisa fazer** (não dá para resolver pelo código):
+1. Vercel → projeto `agro_app` → **Deployments** → *Redeploy* no commit mais recente; **ou**
+2. Vercel → **Settings → Git**: reconectar o repositório `cielioqueiroz/praca-araguaia`
+   (a permissão do GitHub App pode ter caído — o repo é privado).
+
+Depois do primeiro deploy, conferir: `/cotacoes` e `/painel` devem sair do 404.
+
+---
+
 ## ⚠️ Duas envs pendentes na Vercel (só o dono pode criar)
 
 | Env | Para quê | Sem ela |
