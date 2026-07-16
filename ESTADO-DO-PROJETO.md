@@ -1,7 +1,20 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-12.
+> **Documento de retomada.** Última atualização: 2026-07-16.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
+
+---
+
+## ⚠️ Duas envs pendentes na Vercel (só o dono pode criar)
+
+| Env | Para quê | Sem ela |
+|---|---|---|
+| `MODERACAO_SENHA` | abre `/moderar` **e** `/painel` | as duas páginas respondem 500 "não configurada" — **falha fechada, não é buraco** |
+| `TELEGRAM_DONO_CHAT_ID` | o resumo diário de audiência no seu Telegram | o resumo simplesmente não é enviado (não é erro) |
+
+Existe `MODERACAO_SENHA` no `.env.local`, mas **não foi confirmado que está na Vercel**.
+Para pegar o `TELEGRAM_DONO_CHAT_ID`: mande `/start` para o `@pracaaraguaia_bot` e leia
+o `chat_id` em `assinantes_telegram`, ou use `@userinfobot`.
 
 ---
 
@@ -128,7 +141,40 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - **Ticker do topo estava com preços FIXOS no código** (inclusive "OURO 21.699") — em todas as páginas. Agora lê `/api/ticker` das cotações reais.
 - **Card do Telegram** em 2 colunas, 1080×**1350** (o 1:1 estourava com 12 linhas de estado), com **ilustração por ativo** (data URI — o Satori não busca imagem externa) e o bloco "Boi nas cidades". As artes de bitcoin/ethereum foram **desenhadas em SVG e rasterizadas com o sharp** (a cota grátis da IA de imagem estava zerada). O envio diário não mudou: `/api/enviar-boletim` já usa este PNG.
 
-**Estado atual:** 305 testes passando, build/lint limpos, no ar: **8 cotações** (boi/soja/milho **por estado**, dólar, euro, ouro **em R$/g**, bitcoin, ethereum) + boletim + chuva + Termômetro completo + vitrine de fornecedores + calculadora do produtor; **bot de Telegram `@pracaaraguaia_bot` LIGADO** (inscrição, boletim diário e alertas).
+### Fatia 16 — Notícias do Mercado (a home mudou de dono)
+- **`/` agora é a seção de notícias**; o painel de cotações foi para **`/cotacoes`** (2º item do menu). O ticker de preços do topo continua em todas as páginas, então preço não some da primeira tela.
+- **9 feeds RSS** (`lib/noticias/feeds.ts`), lidos em paralelo com `allSettled` + timeout de 8s. **ISR de 15 min** + `router.refresh()` a cada 15 min na aba aberta (refresh **suave**: não perde rolagem nem filtro). Sem banco e sem cron — o plano grátis da Vercel só dispara cron 1×/dia, e o `vercel.json` já tem 3.
+- Seções com divisória por assunto (Pecuária · Grãos · Mercado · Clima · Geral) + **etiqueta "Internacional"**, que é selo e não seção: "China suspende compra de carne" é PECUÁRIA (onde o pecuarista procura) *e* internacional.
+- **Tudo apurado contra os feeds reais, não presumido:**
+  - **Agrolink foi removido**: responde 200 com 49 itens, mas a notícia mais nova é de **02/07/2020**.
+  - **R7, SBT e Band não publicam RSS** (nenhuma variação de URL responde). Notícias Agrícolas também não. Gazeta do Povo e Summit Agro devolvem HTML no lugar do feed.
+  - `juros` trazia "Telefônica aprova JCP", `campo` trazia o Brasileirão, `tempo`/`previsao` traziam PIB → **vocabulário de relevância separado do de categoria**, que olha só o título.
+  - Sem teto por veículo, InfoMoney e CNN tomavam 17 de 40 vagas e o G1 Agronegócios entrava com **uma**. Teto de 6/veículo (`LIMITE_POR_VEICULO`).
+  - Todo feed WordPress carimba `The post ... appeared first on ...` no resumo → `limparResumo`.
+  - **Money Times e BeefPoint não publicam imagem nenhuma** e o BeefPoint é a única fonte 100% pecuária → `lib/noticias/og.ts` busca a `og:image` da matéria só das que faltam (lendo só o `<head>`). **33/40 → 40/40 com foto, em 1,1s.**
+
+### Fatia 17 — Scot por praça (boi, vaca, novilha)
+- Boi e vaca saem da média CONAB/Datagro e passam a vir da **Scot, praça a praça**: Marabá, Redenção, Paragominas (PA), Norte/Sul (TO), Norte/Sudoeste/Cuiabá/Sudeste (MT), Goiânia/Região Sul (GO) — **11 praças**. Tabela nova `cotacoes_praca` (migração 0008).
+- **Novilha trocou de produto** a pedido do dono: gorda (Datagro, R$/@) → **reposição 18 meses (Scot, R$/cabeça)**, na família do bezerro. A Scot não publica novilha gorda.
+- **Migração 0009 apaga os 3 pontos de novilha gorda do histórico**: outro produto e outra escala — o gráfico desenharia um salto de **+900%** que nunca houve (a lição do ouro da fatia 15). Boi e vaca **mantêm** o histórico: mesma unidade, ~1% entre consultorias, e o boi tem 53 semanas.
+- **Lição:** a página do Notícias Agrícolas é **UTF-8** (conferido byte a byte: `á` = `c3 a1`). Uma conclusão anterior de que era ISO-8859-1 veio de um artefato do `curl` no Windows — e forçar o decoder fazia **Marabá, Redenção, Cuiabá e Goiânia sumirem**. Só a CONAB (`PrecosSemanalUF.txt`) é ISO-8859-1.
+- `prazoDesatualizadoMs` passou a **derivar de `FONTE_PORTEIRA`**: o boi virou diário, e uma lista paralela ainda lhe daria 10 dias de tolerância. Datagro saiu dos créditos (não é fonte de nada).
+- Variação por praça mostra `—`: a Scot não publica, e não guardamos histórico por praça. Inventar comparando com a média regional seria pior.
+
+### Fatia 18 — Audiência por cidade
+- **`/painel`** (senha do `/moderar`, fora do menu, `noindex`): "Ouricuri-PE — 2 inscritos · 5 acessos hoje" + resumo diário no Telegram **do dono**.
+- **O Telegram não informa cidade** — só `chat_id`. A cidade é capturada no site, no clique, e viaja na carga do link (`t.me/bot?start=<base64url>`); o `/start` decodifica e grava (migração 0010).
+- **O resumo vai para UM chat** (`TELEGRAM_DONO_CHAT_ID`), nunca para os inscritos — **há um teste que trava isso** lendo o código de `lib/audiencia-envio.ts`.
+- Decisões apuradas ao construir: o botão do Telegram é **client** (ler `headers()` no rodapé tornaria o layout dinâmico e **mataria o ISR da home**); o resumo vai no **começo** da rota de alertas (ela retorna cedo quando não há mover, que é a maioria dos dias); `/start@NomeDoBot` fazia `@PracaBot` virar a "cidade"; `x-vercel-ip-city` vem **URL-encoded**; `registrar_visita` incrementa **no banco** — verificado com 8 acessos simultâneos (1+8=9, nenhum perdido).
+- **Privacidade:** só cidade, UF e contagem. Sem IP, sem nome, sem `chat_id` na tela. `visitas` com RLS fechada.
+
+### Fatia 19 — Busca funcional
+- O `<input>` do topo era **enfeite**: sem estado, sem submit — digitar não fazia nada, no desktop e na gaveta. Agora acha produto, cidade e página, com ↑/↓, Enter, Esc e `/`. Client puro sobre `lib/busca.ts`, sem rota nem banco.
+- O índice nasce de `PORTEIRA`/`TITULOS`/`MUNICIPIOS` — cotação nova entra sozinha —, mais apelidos da praça ('gado' e 'arroba' → boi; 'zap' → boletim).
+- Achado ao dirigir no navegador: as duas instâncias (cabeçalho e gaveta) colidiam — `id` duplicado, `/` disputado, campo da gaveta focável com o menu fechado. Resolvido com `useId` + prop `alcancavel`.
+- O hero de `/cotacoes` ganhou hover (zoom lento, overlay, etiqueta subindo), com `prefers-reduced-motion` respeitado.
+
+**Estado atual:** **444 testes passando**, build/lint limpos. No ar: **Notícias do Mercado na home** (9 veículos, 15 min) + **8 cotações** (boi e vaca **por praça** via Scot; novilha e bezerro **reposição por estado**; soja/milho por estado via CONAB; dólar, euro, ouro em R$/g, ouro 18k, Ibovespa, bitcoin, ethereum) + boletim + chuva + Termômetro + fornecedores + calculadora + **busca funcional** + **`/painel` de audiência**; bot `@pracaaraguaia_bot` ligado (**4 inscritos**).
 
 > **Pendência de verificação:** o envio do boletim novo pelo Telegram não foi disparado à mão (é broadcast irreversível); o cron das 12:20 UTC entrega o card novo. Se algo sair torto na imagem, olhar `app/api/boletim/route.tsx`.
 
@@ -203,7 +249,19 @@ O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do
 
 ---
 
-## Ponto de retomada
+## Ponto de retomada (2026-07-16)
+
+**Feito neste ciclo:** fatias 16 (notícias), 17 (Scot por praça), 18 (audiência) e 19 (busca) — spec em `docs/superpowers/specs/2026-07-16-noticias-scot-audiencia-design.md`. Migrações 0008/0009/0010 **já aplicadas** no Supabase.
+
+**O que só o dono pode fazer** (ver o quadro no topo): criar `MODERACAO_SENHA` e `TELEGRAM_DONO_CHAT_ID` nas env vars da Vercel. Sem a primeira, `/moderar` e `/painel` não abrem para ninguém (falha fechada). Sem a segunda, o resumo de audiência não é enviado.
+
+**Não verificado em produção:** o `/painel` e o resumo do Telegram foram validados **localmente** (login, cidade por header de geo, incremento sob concorrência). Em produção dependem das envs acima. O beacon de visita só conta de verdade atrás da Vercel — localmente os headers de geo não existem.
+
+**Dívidas novas anotadas:** `components/Header.tsx` está órfão (nenhum import); o histórico do boi mistura CONAB (até 10/07) e Scot (a partir de 16/07) — mesma unidade, ~1% de diferença, mas é mistura; não há histórico por praça (a variação mostra `—`); os feeds RSS são contrato de terceiro e podem mudar sem aviso — a página aguenta (`allSettled`), mas vale reconferir a lista de tempos em tempos.
+
+---
+
+## Ponto de retomada (anterior)
 
 Quando voltar: o app está **100% funcional com 6 cotações (boi, soja, milho via CONAB; dólar, euro, ouro), boletim diário em `/boletim`, previsão de chuva em `/chuva`, o Termômetro da Praça completo e a vitrine de fornecedores** — reportes anônimos em `/termometro/reportar`, **valor típico (mediana) + faixa** em `/termometro`, **histórico por produto** em `/termometro/[produto]`, **moderação própria pelo celular em `/moderar`** (senha na env `MODERACAO_SENHA` da Vercel), e **`/fornecedores`** (curado, link `wa.me`, começa vazio). O usuário pediu **só ferramentas grátis**. **Pendências abertas:** (a) ligar o bot de Telegram 13A (só ativação: BotFather + env + setWebhook — código já em prod, dormente); (b) popular a vitrine com fornecedores reais. Próximas fatias grátis: bot Telegram B (envio do boletim) e C (alertas). É só dizer e eu sigo.
 
