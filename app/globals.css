@@ -340,6 +340,13 @@ body { font-size: 14px; }
   .ncard:hover .nfoto img,.ndestaque:hover .nfoto img{transform:none}
 }
 
+/* Convite único no pé do card, quando nenhuma cidade reportou o produto ainda. */
+.convite-pe{display:block;margin-top:14px;padding-top:12px;border-top:1px dashed var(--rule);
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--olive);text-decoration:none;transition:color .2s}
+.convite-pe:hover{color:var(--leather);text-decoration:underline}
+.convite-pe:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+
 /* Section head */
 .section{margin-top:56px}
 .section-head{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:22px}

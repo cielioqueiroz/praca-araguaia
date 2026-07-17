@@ -15,5 +15,5 @@ next-env.d.ts
 /public/assets/novilha.jpg
 /public/assets/bezerro.jpg
 
-# Imagem que o site não usa mais (o hero é o hero-cebu.jpg).
-/public/assets/lavoura-dourada.jpg
+# (a lavoura-dourada.jpg voltou a ser usada — é o hero das Notícias do Mercado —
+#  e por isso saiu daqui: ignorada, ela ia para produção como imagem quebrada.)

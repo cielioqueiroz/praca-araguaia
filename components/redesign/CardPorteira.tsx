@@ -38,6 +38,8 @@ function Variacao({ pct }: { pct: number | null }) {
 // aplicado no cliente (SuaPraca) via data-uf / data-cidade.
 export function CardPorteira(p: CardPorteiraProps) {
   const foto = FOTO_COMMODITY[p.tipo];
+  // Cidade sem reporte não vira linha: vira o convite único do rodapé.
+  const reportadas = (p.cidades ?? []).filter((c) => c.mediana !== null);
 
   return (
     <article className={`pcard tipo-${p.tipo}`}>
@@ -66,7 +68,10 @@ export function CardPorteira(p: CardPorteiraProps) {
           {p.pracas ? (
             <ul className="ufs pracas">
               {p.pracas.map((u) => (
-                <li key={`${u.uf}-${u.praca}`} data-uf={u.uf} data-cidade={u.praca}>
+                // Só data-cidade: com data-uf, um usuário no Pará acendia "você" em
+                // Marabá, Redenção E Paragominas ao mesmo tempo — ninguém está em três
+                // praças. A praça é o lugar exato, não o estado.
+                <li key={`${u.uf}-${u.praca}`} data-cidade={u.praca}>
                   <span className="lugar">
                     {u.praca}
                     <i>{u.uf}</i>
@@ -94,37 +99,41 @@ export function CardPorteira(p: CardPorteiraProps) {
             </ul>
           )}
 
-          {p.cidades && (
+          {/* Só as cidades que TÊM reporte — o mesmo critério que o card do Telegram
+              já usa. Listar as 5 cidades com "seja o primeiro a reportar" em cada um
+              dos 6 produtos enchia o painel de 30 linhas vazias, e repetia Redenção,
+              que já está na lista da Scot logo acima. Sem reporte nenhum, o convite
+              vira UMA linha no rodapé do card. */}
+          {reportadas.length > 0 && (
             <div className="cidades">
               <div className="ctit">
                 Nas cidades da praça
                 <span className="fonte">Termômetro · reportes de produtores</span>
               </div>
               <ul>
-                {p.cidades.map((c) => (
+                {reportadas.map((c) => (
                   <li key={c.municipio} data-cidade={c.municipio}>
                     <span className="lugar">
                       {c.municipio}
                       <i>{c.uf}</i>
                       <b className="badge">você</b>
                     </span>
-                    {c.mediana === null ? (
-                      // Leva o produto do card: o formulário já abre no item certo.
-                      <Link className="convite" href={`/termometro/reportar?produto=${p.tipo}`}>
-                        seja o primeiro a reportar
-                      </Link>
-                    ) : (
-                      <>
-                        <span className="valor tnum">{brl(c.mediana)}</span>
-                        <span className="n">
-                          {c.contagem} {c.contagem === 1 ? 'reporte' : 'reportes'}
-                        </span>
-                      </>
-                    )}
+                    <span className="valor tnum">{brl(c.mediana as number)}</span>
+                    <span className="n">
+                      {c.contagem} {c.contagem === 1 ? 'reporte' : 'reportes'}
+                    </span>
                   </li>
                 ))}
               </ul>
             </div>
+          )}
+
+          {/* Ninguém reportou este produto ainda: uma linha convidando, em vez da
+              lista de cidades vazias. O formulário já abre no produto do card. */}
+          {p.cidades && reportadas.length === 0 && (
+            <Link className="convite-pe" href={`/termometro/reportar?produto=${p.tipo}`}>
+              Sabe o preço na sua cidade? Reporte →
+            </Link>
           )}
         </div>
       </div>
