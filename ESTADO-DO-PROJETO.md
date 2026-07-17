@@ -19,6 +19,29 @@ dono. O resumo diário de audiência já chega no Telegram do dono pelo cron de 
 
 ---
 
+## 🐂 Boi/vaca por estado + só o Ouro (fatia 21 — 17/07/2026)
+
+A pedido do dono, a porteira de **boi e vaca** parou de repetir região (dois "Norte",
+dois "Sul", dois "Oeste"). Agora: as **3 cidades do Pará** (Marabá, Paragominas,
+Redenção) + **uma linha por estado** — Mato Grosso, Tocantins, Goiás, Bahia, Maranhão
+—, rotulada com o nome do estado e trazendo o valor da **praça de referência da Scot**
+mais próxima do Araguaia (MT→Norte, TO→Norte, GO→Goiânia, BA→Oeste, MA→Oeste). Goiás
+voltou. Decisão registrada: **praça de referência, não média** (respeita o "fim das
+médias" da fatia 15). A linha que já é o estado não repete a sigla ("Mato Grosso"); a
+cidade do PA mantém a etiqueta ("Marabá · PA").
+
+No **Mercado**, o ouro 18k saiu: fica só o **Ouro** em R$/grama. Removido de todo o
+código; migração 0013 apaga o tipo do banco e limpa as praças antigas de
+`cotacoes_praca`. A coleta de 17/07 já repopulou as 8 praças novas (conferido).
+
+O **card do Telegram** foi atualizado no mesmo golpe (boi/vaca agora com BA e MA, igual
+ao site) — altura conferida renderizando o PNG (sem estouro, rodapé limpo). O boletim
+segue recortando os produtos por-UF (soja/milho/novilha/bezerro) à casa (PA/MT/TO/GO);
+só boi/vaca mostram BA/MA. Se o dono quiser BA/MA em soja/milho no card, é um passo a
+mais.
+
+---
+
 ## 🔒 Endurecimento de segurança (fatia 20 — 17/07/2026)
 
 Auditoria completa do app. A base já era sólida (RLS nega por padrão, service role

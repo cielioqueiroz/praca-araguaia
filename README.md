@@ -8,10 +8,10 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-342_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-466_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
-Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **13 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
+Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **12 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
 
 - 🟢 **Estado atual e ponto de retomada:** [`ESTADO-DO-PROJETO.md`](ESTADO-DO-PROJETO.md)
 - 📄 Conceito completo do produto: [`conceito-praca-araguaia.md`](conceito-praca-araguaia.md)
@@ -25,21 +25,21 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
   <img src="docs/screenshots/home.jpg" alt="A praça hoje — painel de cotações da Praça Araguaia" width="100%">
 </p>
 
-### Na porteira — o preço de cada estado, nunca uma média
+### Na porteira — o preço de cada praça, nunca uma média
 
 <p align="center">
-  <img src="docs/screenshots/cards.jpg" alt="Cards da porteira: boi gordo, vaca gorda, novilha, bezerro, soja e milho, com o preço de PA, MT, TO e GO" width="100%">
+  <img src="docs/screenshots/cards.jpg" alt="Cards da porteira: boi gordo, vaca gorda, novilha, bezerro, soja e milho" width="100%">
 </p>
 
-<sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg) — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. Cada um mostra o preço das quatro praças (PA, MT, TO, GO), sempre na mesma ordem, e credita **quem apurou e quando**: a CONAB fecha a semana, Datagro e Scot fecham o dia. O **Termômetro** traz o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
+<sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg) — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. **Boi e vaca** trazem as três cidades do Pará (Marabá, Paragominas, Redenção) e **uma linha por estado** (Mato Grosso, Tocantins, Goiás, Bahia, Maranhão), com o valor da praça de referência da **Scot** mais próxima do Araguaia. Cada card credita **quem apurou e quando**: a CONAB fecha a semana, a Scot fecha o dia. O **Termômetro** traz o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
 
 ### Mercado — câmbio, ouro, bolsa e cripto
 
 <p align="center">
-  <img src="docs/screenshots/mercado.jpg" alt="Tabela de mercado: dólar, euro, ouro 24k, ouro 18k, Ibovespa, bitcoin e ethereum" width="100%">
+  <img src="docs/screenshots/mercado.jpg" alt="Tabela de mercado: dólar, euro, ouro, Ibovespa, bitcoin e ethereum" width="100%">
 </p>
 
-<sub>**Ouro 24k** (fino, 999) e **ouro 18k** (750) — o 18k é o mesmo grama com 75% de teor, que é a definição da liga, não uma segunda cotação. O **Ibovespa** aparece em **pontos**, sem `R$` na frente: índice não é dinheiro. Cada linha traz a mini-tendência de 30 dias.</sub>
+<sub>O **Ouro** aparece em **R$ por grama** (metal fino, 999) — a cotação de mercado. O **Ibovespa** aparece em **pontos**, sem `R$` na frente: índice não é dinheiro. Cada linha traz a mini-tendência de 30 dias.</sub>
 
 <table>
   <tr>
@@ -89,14 +89,15 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 
 | Página | O que oferece |
 |---|---|
-| **`/`** — a praça hoje | **Na porteira**, o preço de **cada estado** (PA/MT/TO/GO) de 6 categorias: **boi gordo, soja e milho** (CONAB), **vaca gorda e novilha** (Datagro) e **bezerro** (Scot) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 7 cotações com mini-tendência de 30 dias: **dólar, euro, ouro 24k, ouro 18k, Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
+| **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 9 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
+| **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 6 cotações com mini-tendência de 30 dias: **dólar, euro, ouro (R$/g), Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
-| **`/boletim`** | Card-resumo do dia em **PNG 1080×1800** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. Enviado também no **Telegram** todo dia. |
+| **`/boletim`** | Card-resumo do dia em **PNG 1080×1960** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. Enviado também no **Telegram** todo dia. |
 | **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
 | **`/termometro`** | **Termômetro da Praça**: o "valor típico" (mediana) dos preços reportados por produtores nos últimos 7 dias, **nas 6 categorias da porteira**, por município, contrastado com a referência oficial. |
 | **`/termometro/reportar`** | Reporte de preço **anônimo** (sem cadastro), com faixa de plausibilidade, honeypot e limite por IP. O convite no card já abre no produto certo (`?produto=`). |
 | **`/fornecedores`** | Vitrine de fornecedores da praça (contato direto por WhatsApp). Qualquer um se cadastra em **`/fornecedores/anunciar`**; só entra no ar depois da moderação. |
-| **`/calculadora`** | Calculadora do produtor, em quatro contas: **gado na balança** (boi, vaca ou novilha: peso vivo + rendimento → arrobas), **lote de bezerro** (por cabeça), **colheita de grãos** (sacas) e **mercado** (o que você tem em dólar, euro, ouro 24k/18k ou cripto, em reais). O preço da praça já vem preenchido. |
+| **`/calculadora`** | Calculadora do produtor, em quatro contas: **gado na balança** (boi, vaca ou novilha: peso vivo + rendimento → arrobas), **lote de bezerro** (por cabeça), **colheita de grãos** (sacas) e **mercado** (o que você tem em dólar, euro, ouro ou cripto, em reais). O preço da praça já vem preenchido. |
 | **`/moderar`** | Moderação **pelo celular** (senha): abas de **preços** e **fornecedores** — aprovar/rejeitar/remover sem abrir o banco. |
 
 Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos e sem dados pessoais. Alertas e boletim também chegam pelo bot **[@pracaaraguaia_bot](https://t.me/pracaaraguaia_bot)** no Telegram.
@@ -105,17 +106,17 @@ Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos e sem 
 
 | Categoria | Fonte | Unidade | Ritmo |
 |---|---|---|---|
-| Boi gordo, soja, milho | **CONAB** (`PrecosSemanalUF.txt`, arquivo público) | @ · saca 60 kg | semanal (fecha seg–sex) |
-| Vaca gorda, novilha | **Datagro** (indicador por estado) | R$/@ | diário |
-| Bezerro | **Scot Consultoria** (nelore 12 meses, 240 kg) | R$/cabeça | diário |
+| Boi gordo, vaca gorda | **Scot Consultoria** — praça a praça (3 cidades do PA + praça de referência de MT/TO/GO/BA/MA) | R$/@ | diário |
+| Novilha, bezerro | **Scot Consultoria** — reposição por estado | R$/cabeça | diário |
+| Soja, milho | **CONAB** (`PrecosSemanalUF.txt`, arquivo público) | saca 60 kg | semanal (fecha seg–sex) |
 | Dólar, euro | BCB · Frankfurter | R$ | diário |
-| Ouro 24k / 18k | gold-api (onça troy) × USD-BRL | R$/g | diário |
+| Ouro | gold-api (onça troy) × USD-BRL | R$/g | diário |
 | Ibovespa | B3, via Yahoo Finance (`^BVSP`) | pontos | diário |
 | Bitcoin, ethereum | CoinGecko | R$ | diário |
 | Chuva | INMET · CEMADEN · Open-Meteo | mm | diário |
 | Termômetro | reportes dos próprios produtores | R$/@ | contínuo |
 
-> **A CONAB não publica vaca, novilha nem bezerro** — o arquivo semanal por UF só traz `BOI|GORDO`. Por isso essas três vêm de indicadores de mercado, e cada card diz na cara quem apurou o preço e em que dia. O **ouro 18k não é uma segunda cotação**: é o 24k com o teor da liga (750/1000 = 75%), que é definição, não estimativa.
+> **A CONAB só publica boi/soja/milho por estado** (`BOI|GORDO`, sem vaca/novilha/bezerro), e por estado a granularidade some — o produtor negocia na praça, não no "preço do Pará". Por isso **boi e vaca vêm da Scot, praça a praça**: as três cidades do Pará e uma linha de referência por estado vizinho. **Novilha e bezerro** são reposição (também Scot). Cada card diz na cara quem apurou o preço e em que dia.
 
 ---
 
@@ -142,9 +143,9 @@ Duas trilhas de dados: a **coleta agendada** das cotações (cron diário) e o *
 ```mermaid
 flowchart TD
     subgraph Fontes["Fontes públicas gratuitas"]
-        CONAB["CONAB<br/>boi · soja · milho"]
-        GADO["Datagro · Scot<br/>vaca · novilha · bezerro"]
-        CAMBIO["BCB · Frankfurter · gold-api · CoinGecko<br/>dólar · euro · ouro 24k/18k · cripto"]
+        CONAB["CONAB<br/>soja · milho"]
+        GADO["Scot Consultoria<br/>boi · vaca · novilha · bezerro"]
+        CAMBIO["BCB · Frankfurter · gold-api · CoinGecko<br/>dólar · euro · ouro · cripto"]
         METEO["Open-Meteo<br/>chuva"]
     end
 
@@ -202,7 +203,7 @@ timeline
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
 | Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
 | Bot | Telegram Bot API (inscrição, boletim, alertas) |
-| Testes | Vitest + Testing Library (342 testes) |
+| Testes | Vitest + Testing Library (466 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -228,9 +229,10 @@ agro_app/
 │     └─ moderar/{login,decidir}   # Sessão + decisão da moderação
 ├─ lib/
 │  ├─ fontes/*                     # Uma fonte por arquivo + registry
-│  │  ├─ conab.ts                  #   boi, soja, milho (arquivo semanal por UF)
-│  │  ├─ pecuaria.ts               #   vaca, novilha, bezerro (indicadores por UF)
-│  │  └─ ouro.ts                   #   24k, e o 18k derivado do teor da liga
+│  │  ├─ conab.ts                  #   soja, milho (arquivo semanal por UF)
+│  │  ├─ scot.ts                   #   boi, vaca (praça a praça: cidades do PA + estados)
+│  │  ├─ pecuaria.ts               #   novilha, bezerro (reposição por UF)
+│  │  └─ ouro.ts                   #   ouro fino em R$/g (onça troy × USD-BRL)
 │  ├─ marca.ts · autor.ts          # Marca e assinatura (site, favicon, card, OG)
 │  ├─ coleta.ts · backfill.ts      # Orquestração pura
 │  ├─ termometro.ts                # Produtos, validação, mediana, faixa
@@ -241,7 +243,7 @@ agro_app/
 ├─ components/                     # Apresentação (cards, gráficos, formulários)
 ├─ supabase/migrations/            # DDL + RLS versionado
 ├─ components/redesign/            # Sistema visual novo (masthead, cards, ticker…)
-├─ tests/                          # 342 testes unitários e de componente
+├─ tests/                          # 466 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
@@ -326,8 +328,11 @@ curl -H "authorization: Bearer SEU_CRON_SECRET" http://localhost:3000/api/coleta
 cotacoes              -- último valor "vivo" por tipo (1 linha por tipo)
   tipo, valor, unidade, variacao_pct, fonte, data_referencia, atualizado_em
 
-cotacoes_uf           -- o preço de CADA praça (PA/MT/TO/GO), 1 linha por (tipo, uf)
+cotacoes_uf           -- o preço por estado (soja/milho/novilha/bezerro), 1 linha por (tipo, uf)
   tipo, uf, valor, unidade, variacao_pct, data_referencia, atualizado_em
+
+cotacoes_praca        -- boi e vaca da Scot, praça a praça, 1 linha por (tipo, praca, uf)
+  tipo, praca, uf, valor, unidade, valor_prazo, variacao_pct, data_referencia, atualizado_em
 
 cotacoes_historico    -- série temporal append-only (alimenta os gráficos)
   tipo, valor, fonte, data_referencia, created_at
@@ -356,8 +361,10 @@ reportes              -- Termômetro da Praça: preços reportados, moderados
 - [x] Vitrine de fornecedores com submissão pública + moderação
 - [x] Redesign "fazenda moderna premium" + geolocalização do usuário
 - [x] Menu hambúrguer no celular + marca nova ("broto no sulco") em site, favicon, card e OG
-- [x] Porteira completa: **vaca gorda, novilha e bezerro** (Datagro/Scot), além do boi
-- [x] **Ouro 24k e 18k** e **Ibovespa** no mercado
+- [x] Porteira completa: **vaca gorda, novilha e bezerro** (Scot), além do boi
+- [x] **Boi e vaca praça a praça** (Scot): cidades do PA + uma praça de referência por estado
+- [x] Notícias do Mercado como home (9 veículos, RSS) + busca funcional
+- [x] **Ouro** (R$/g) e **Ibovespa** no mercado
 - [x] Termômetro nas **6 categorias** da porteira (antes só o boi)
 - [x] Calculadora com gado, bezerro, colheita e mercado (ouro, câmbio, cripto)
 - [ ] Verificação do produtor (OTP) e reputação — *dependem de provedor pago; em avaliação*
