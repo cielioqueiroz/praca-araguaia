@@ -10,6 +10,10 @@ import { Revelar } from '@/components/redesign/Revelar';
 
 export const dynamic = 'force-dynamic';
 
+// Sem isto a aba caía no título padrão do layout ("cotações do agro"): a página era a
+// home e nunca precisou de título próprio. A marca vem do template do layout.
+export const metadata = { title: 'A praça hoje' };
+
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
 type LinhaUf = { tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string };
 type LinhaPraca = { tipo: string; praca: string; uf: string; valor: number; variacao_pct: number | null; valor_prazo: number | null; data_referencia: string };

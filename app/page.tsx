@@ -10,7 +10,10 @@ import { GradeNoticias } from '@/components/redesign/GradeNoticias';
 export const revalidate = 900;
 
 export const metadata = {
-  title: 'Notícias do Mercado',
+  // Escrito por extenso, e não 'Notícias do Mercado' + template: o title.template do
+  // layout só vale para segmentos FILHOS, e a home divide o segmento raiz com ele.
+  // Confiar no template aqui deixava a aba como "Notícias do Mercado", sem a marca.
+  title: 'Praça Araguaia — Notícias do Mercado',
   description:
     'As notícias do agro, da pecuária e do mercado que mexem com o preço na porteira, reunidas dos principais veículos do país.',
 };

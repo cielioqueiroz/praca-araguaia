@@ -10,6 +10,15 @@ export const dynamic = 'force-dynamic';
 
 const JANELA_DIAS = 90;
 
+// Sem isto a aba de /cotacao/boi dizia só "cotações do agro" — o título padrão do
+// layout. Quem abre o gráfico do boi e o do dólar lado a lado não distinguia as abas.
+// A marca vem do template do layout.
+export async function generateMetadata({ params }: { params: Promise<{ tipo: string }> }) {
+  const { tipo } = await params;
+  const titulo = TITULOS[tipo];
+  return { title: titulo ? `${titulo} — cotação` : 'Cotação' };
+}
+
 export default async function DetalheCotacao({ params }: { params: Promise<{ tipo: string }> }) {
   const { tipo } = await params;
   const supabase = createPublicClient();
