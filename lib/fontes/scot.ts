@@ -16,26 +16,37 @@ const OFFSET_BRT = '-03:00';
 const URL_SCOT = 'https://www.noticiasagricolas.com.br/cotacoes/boi-gordo/boi-gordo-scot-consultoria';
 const TTL_MS = 10 * 60 * 1000;
 
-// As praças da nossa região. Chave: 'UF|praça' como a página escreve (sem acento,
-// maiúsculo). O resto do Brasil (SP, MG, MS, RS...) é ignorado de propósito: esta é
-// a praça do Araguaia, não um portal nacional.
+// As praças que a região negocia. Chave: 'UF|praça' como a página escreve (sem
+// acento, maiúsculo). O resto do Brasil (SP, MG, MS, RS...) é ignorado de propósito:
+// esta é a praça do Araguaia, não um portal nacional.
+//
+// Cuiabá, Goiânia, GO Região Sul e MT Sudoeste SAÍRAM a pedido do dono: ficam longe
+// do Vale e eram 4 linhas que ninguém daqui negocia. Bahia e Maranhão entraram no
+// lugar — mais distantes ainda, mas o dono tem gente acompanhando de lá, e por isso
+// vêm no FIM da lista, como referência, nunca antes do preço de casa.
+//
+// Pernambuco não está aqui porque a Scot não cobre PE (a página tem BA Sul, BA
+// Oeste, MA Oeste e Alagoas, mas nenhum PE) — apurado em 16/07/2026.
 const PRACAS_DA_REGIAO: Record<string, { uf: string; praca: string }> = {
   'PA|MARABA': { uf: 'PA', praca: 'Marabá' },
   'PA|REDENCAO': { uf: 'PA', praca: 'Redenção' },
   'PA|PARAGOMINAS': { uf: 'PA', praca: 'Paragominas' },
-  'MT|NORTE': { uf: 'MT', praca: 'Norte' },
-  'MT|SUDOESTE': { uf: 'MT', praca: 'Sudoeste' },
-  'MT|CUIABA': { uf: 'MT', praca: 'Cuiabá' },
-  'MT|SUDESTE': { uf: 'MT', praca: 'Sudeste' },
   'TO|NORTE': { uf: 'TO', praca: 'Norte' },
   'TO|SUL': { uf: 'TO', praca: 'Sul' },
-  'GO|GOIANIA': { uf: 'GO', praca: 'Goiânia' },
-  'GO|REG. SUL': { uf: 'GO', praca: 'Região Sul' },
+  'MT|NORTE': { uf: 'MT', praca: 'Norte' },
+  'MT|SUDESTE': { uf: 'MT', praca: 'Sudeste' },
+  'BA|SUL': { uf: 'BA', praca: 'Sul' },
+  'BA|OESTE': { uf: 'BA', praca: 'Oeste' },
+  'MA|OESTE': { uf: 'MA', praca: 'Oeste' },
 };
 
-// Ordem de exibição: a praça de casa primeiro.
-const ORDEM: string[] = ['PA|MARABA', 'PA|REDENCAO', 'PA|PARAGOMINAS', 'TO|NORTE', 'TO|SUL',
-  'MT|NORTE', 'MT|SUDOESTE', 'MT|CUIABA', 'MT|SUDESTE', 'GO|GOIANIA', 'GO|REG. SUL'];
+// Ordem de exibição: o Araguaia primeiro (PA → TO → MT), a referência depois (BA, MA).
+const ORDEM: string[] = [
+  'PA|MARABA', 'PA|REDENCAO', 'PA|PARAGOMINAS',
+  'TO|NORTE', 'TO|SUL',
+  'MT|NORTE', 'MT|SUDESTE',
+  'BA|SUL', 'BA|OESTE', 'MA|OESTE',
+];
 
 function semAcento(s: string): string {
   return s.normalize('NFD').replace(/\p{Mn}/gu, '').toUpperCase().trim();

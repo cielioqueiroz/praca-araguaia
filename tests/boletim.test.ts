@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { montarBoletim } from '@/lib/boletim';
-import type { PrecoUf } from '@/types/cotacao';
+import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
+
+const praca = (tipo: string, nome: string, sigla: string, valor: number): PrecoPraca => ({
+  tipo,
+  praca: nome,
+  uf: sigla,
+  valor,
+  unidade: 'R$/@',
+  variacaoPct: null,
+  dataReferencia: '2026-07-15T03:00:00.000Z',
+});
 
 const linha = (tipo: string, valor: number, unidade: string, variacao_pct: number | null) => ({
   tipo, valor, unidade, variacao_pct,
@@ -122,6 +132,33 @@ describe('montarBoletim', () => {
     ]);
     expect(b.semReportes).toBe(true);
     expect(b.porteira[0].cidades).toEqual([]);
+  });
+
+  // A fatia 17 trocou boi e vaca para a Scot, que pesquisa PRAÇA. O boletim ficou
+  // para trás lendo só cotacoes_uf: mandava "Pará" no card do Telegram enquanto o
+  // site já dizia "Redenção" — e a vaca, que parou de ser gravada por UF, ia
+  // congelada todo dia para os inscritos.
+  it('quando há preço por praça, o card mostra a praça — não o estado', () => {
+    const b = montarBoletim([], [uf('boi', 'PA', 325.95, -1)], [], new Date(), [
+      praca('boi', 'Marabá', 'PA', 314.5),
+      praca('boi', 'Redenção', 'PA', 314.5),
+    ]);
+    expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Marabá · PA', 'Redenção · PA']);
+    expect(b.porteira[0].ufs[0].valorFmt).toBe('314,50');
+  });
+
+  it('a sigla desempata praças de mesmo nome em estados diferentes', () => {
+    // 'Norte' existe no MT e no TO: sem a sigla, o card mostraria duas linhas iguais.
+    const b = montarBoletim([], [], [], new Date(), [
+      praca('boi', 'Norte', 'MT', 311.5),
+      praca('boi', 'Norte', 'TO', 305),
+    ]);
+    expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Norte · MT', 'Norte · TO']);
+  });
+
+  it('sem praça, segue mostrando o estado (grãos continuam da CONAB)', () => {
+    const b = montarBoletim([], [uf('soja', 'TO', 112.2, 2.19)], [], new Date(), []);
+    expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Tocantins']);
   });
 
   it('sem dado nenhum devolve as colunas vazias sem quebrar', () => {

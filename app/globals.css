@@ -156,8 +156,19 @@ body { font-size: 14px; }
 .dot{width:7px;height:7px;border-radius:50%;background:#8FA55A;animation:pulse 2.4s infinite}
 .dot.off{background:#9a7b52;animation:none}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(143,165,90,.5)}70%{box-shadow:0 0 0 6px rgba(143,165,90,0)}100%{box-shadow:0 0 0 0 rgba(143,165,90,0)}}
-.ticker-strip{overflow:hidden;max-width:560px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%)}
-.ticker-track{display:inline-flex;gap:34px;white-space:nowrap;animation:ticker 60s linear infinite}
+/* A faixa toma todo o espaço que sobra da barra: tinha um max-width de 560px que a
+   deixava encolhida no meio do vazio, num monitor largo. min-width:0 é o que permite
+   um filho flex encolher abaixo do conteúdo — sem ele, o overflow:hidden não corta e
+   a faixa empurra a data para fora da tela. */
+.ticker-strip{overflow:hidden;flex:1;min-width:0;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%)}
+/* A trilha é a lista repetida 4x e desliza -50% (= 2 cópias): quando a segunda metade
+   chega ao lugar da primeira, elas são idênticas e a emenda não aparece. Duas cópias
+   bastariam num monitor comum, mas 4 garantem trilha maior que a tela em qualquer
+   largura — com 2, uma tela larga demais mostraria o vão entre o fim e o recomeço. */
+.ticker-track{display:inline-flex;gap:34px;white-space:nowrap;animation:ticker 90s linear infinite;will-change:transform}
+.ticker-strip:hover .ticker-track{animation-play-state:paused}
 .ticker-track b{color:#E7DFC7;font-weight:500}
 .ticker-track .up{color:#8FA55A}.ticker-track .down{color:#D8724F}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -508,12 +519,16 @@ a.mrow:hover{background:var(--paper-warm)}
 }
 @media (max-width: 620px){
   /* Em 390px o ticker e a localização brigavam pela mesma linha e o texto saía picado.
-     A localização fica (é botão); os preços já vêm logo abaixo, no corpo da página. */
-  .utility{gap:12px;padding:0 16px;justify-content:flex-start}
-  .utility .left{gap:10px;min-width:0;flex:1}
+     A saída antiga era esconder os preços no celular — que é onde o produtor abre o
+     site. Agora a barra quebra em duas linhas e cada um tem a sua: localização em
+     cima, preços correndo embaixo. */
+  .utility{height:auto;flex-wrap:wrap;gap:0;padding:5px 16px 0;justify-content:flex-start}
+  .utility .left{gap:10px;min-width:0;flex:1 1 100%;height:24px}
   .utility .left>span:not(.loc),.utility .left .sep{display:none}
   .utility .loc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ticker-strip{display:none}
+  .ticker-strip{flex:1 1 100%;height:26px;display:flex;align-items:center;
+    border-top:1px solid rgba(246,239,216,.07)}
+  .ticker-track{gap:26px}
   .masthead{padding:14px 16px}
   .masthead .row{grid-template-columns:1fr auto;gap:12px}
   .brand{justify-self:start;gap:11px;min-width:0}

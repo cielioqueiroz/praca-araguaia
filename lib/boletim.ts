@@ -6,8 +6,8 @@ import {
   FONTE_PORTEIRA,
   NAO_E_MOEDA,
 } from '@/lib/tipos-ui';
-import { NOME_UF, ordenarPorUf } from '@/lib/praca';
-import type { PrecoUf } from '@/types/cotacao';
+import { NOME_UF, ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
+import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
 // Linha crua vinda de `cotacoes` (tipos já convertidos pelo chamador).
 export type LinhaCotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null };
@@ -102,22 +102,34 @@ export function montarBoletim(
   precosUf: PrecoUf[],
   reportes: ReporteCidade[] = [],
   agora: Date = new Date(),
+  precosPraca: PrecoPraca[] = [],
 ): Boletim {
-  // Porteira: só entra a commodity que tem preço por estado — sem estado, sem linha
+  // Porteira: só entra a commodity que tem preço por lugar — sem lugar, sem linha
   // (a média antiga não volta disfarçada).
   const porteira: ItemPorteira[] = PORTEIRA.flatMap((tipo) => {
-    // Ordem fixa da praça (PA/MT/TO/GO): o banco não garante nenhuma.
+    // Boi e vaca vêm por PRAÇA (Scot); o resto, por estado. Quando há praça, ela
+    // manda: o card tem de dizer "Redenção", não "Pará" — foi para isso que a
+    // fatia 17 trocou a fonte. Ordem fixa: o banco não garante nenhuma.
+    const pracas = ordenarPorPraca(precosPraca.filter((p) => p.tipo === tipo));
     const ufs = ordenarPorUf(precosUf.filter((p) => p.tipo === tipo));
-    if (ufs.length === 0) return [];
-    const maisRecente = ufs.reduce((a, b) => (a.dataReferencia >= b.dataReferencia ? a : b));
+
+    const lugares: Array<{ nome: string; valor: number; variacaoPct: number | null; dataReferencia: string }> =
+      pracas.length > 0
+        ? // Duas praças podem ter o mesmo nome em estados diferentes (Norte no MT e
+          // Norte no TO): sem a sigla, o card mostraria duas linhas "Norte".
+          pracas.map((p) => ({ nome: `${p.praca} · ${p.uf}`, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }))
+        : ufs.map((p) => ({ nome: NOME_UF[p.uf] ?? p.uf, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }));
+
+    if (lugares.length === 0) return [];
+    const maisRecente = lugares.reduce((a, b) => (a.dataReferencia >= b.dataReferencia ? a : b));
     return [
       {
         tipo,
         titulo: TITULOS[tipo] ?? tipo,
         unidade: UNIDADE_PORTEIRA[tipo] ?? '',
         rodape: rodapeDaFonte(tipo, maisRecente.dataReferencia),
-        ufs: ufs.map((p) => ({
-          nome: NOME_UF[p.uf] ?? p.uf,
+        ufs: lugares.map((p) => ({
+          nome: p.nome,
           valorFmt: numero(p.valor, 2),
           variacao: variacaoDe(p.variacaoPct),
         })),

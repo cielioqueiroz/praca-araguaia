@@ -6,7 +6,8 @@ import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
 import { programadorDataUri } from '@/lib/autor';
 import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
-import type { PrecoUf } from '@/types/cotacao';
+import { ehDoAraguaia } from '@/lib/praca';
+import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
 export const dynamic = 'force-dynamic';
 
@@ -250,7 +251,9 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
 
       <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 19, letterSpacing: 2, color: MUTED }}>
-        <div style={{ display: 'flex' }}>CONAB · DATAGRO · SCOT · BCB · B3 · GOLD-API · COINGECKO</div>
+        {/* Datagro saiu na fatia 17: não é mais fonte de nada. Creditar quem não
+            apurou o preço é atribuição falsa, ainda que em letra miúda. */}
+        <div style={{ display: 'flex' }}>SCOT · CONAB · BCB · B3 · GOLD-API · COINGECKO</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
@@ -268,9 +271,10 @@ export async function GET() {
   const supabase = createPublicClient();
   const seteDias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data, error }, { data: ufs }, { data: reportes }] = await Promise.all([
+  const [{ data, error }, { data: ufs }, { data: pracas }, { data: reportes }] = await Promise.all([
     supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct'),
     supabase.from('cotacoes_uf').select('tipo, uf, valor, unidade, variacao_pct, data_referencia'),
+    supabase.from('cotacoes_praca').select('tipo, praca, uf, valor, unidade, variacao_pct, data_referencia'),
     supabase
       .from('reportes')
       .select('produto, municipio, valor')
@@ -291,14 +295,31 @@ export async function GET() {
     cidadesDoProduto(aprovados, produto).map((c) => ({ produto, ...c })),
   );
 
-  const precosUf: PrecoUf[] = (ufs ?? []).map((u) => ({
-    tipo: u.tipo as string,
-    uf: u.uf as string,
-    valor: Number(u.valor),
-    unidade: u.unidade as string,
-    variacaoPct: u.variacao_pct === null ? null : Number(u.variacao_pct),
-    dataReferencia: u.data_referencia as string,
-  }));
+  // O card é imagem de tamanho fixo: com os sete estados, a porteira passaria de 45
+  // linhas e estouraria (ele já virou 1080x1350 quando eram 12). Ele mostra a CASA —
+  // BA/MA/PE são referência do site, não da foto do dia.
+  const precosUf: PrecoUf[] = (ufs ?? [])
+    .filter((u) => ehDoAraguaia(u.uf as string))
+    .map((u) => ({
+      tipo: u.tipo as string,
+      uf: u.uf as string,
+      valor: Number(u.valor),
+      unidade: u.unidade as string,
+      variacaoPct: u.variacao_pct === null ? null : Number(u.variacao_pct),
+      dataReferencia: u.data_referencia as string,
+    }));
+
+  const precosPraca: PrecoPraca[] = (pracas ?? [])
+    .filter((p) => ehDoAraguaia(p.uf as string))
+    .map((p) => ({
+      tipo: p.tipo as string,
+      praca: p.praca as string,
+      uf: p.uf as string,
+      valor: Number(p.valor),
+      unidade: p.unidade as string,
+      variacaoPct: p.variacao_pct === null ? null : Number(p.variacao_pct),
+      dataReferencia: p.data_referencia as string,
+    }));
 
   const boletim = montarBoletim(
     (data ?? []).map((c) => ({
@@ -309,13 +330,20 @@ export async function GET() {
     })),
     precosUf,
     cidades,
+    new Date(),
+    precosPraca,
   );
 
-  // Retrato alto: são 6 categorias na porteira (24 linhas de estado), 6 de mercado
-  // e as 5 cidades. Medido no render: abaixo de 1800 a coluna do gado invade o rodapé.
+  // Retrato alto: 6 categorias na porteira, 7 de mercado e as cidades do Termômetro.
+  //
+  // A altura é MEDIDA no render, não calculada: o Satori não rola nem corta — o que
+  // não cabe escreve por cima do rodapé. Em 1800 (medida de quando boi e vaca tinham
+  // 4 estados) o Bezerro colidia com a linha do Termômetro, porque a fatia 17 trocou
+  // esses 8 estados por 14 praças. Se a porteira crescer de novo, refaça a medida:
+  // renderize e olhe o pé da coluna da esquerda.
   return new ImageResponse(<CardBoletim boletim={boletim} />, {
     width: 1080,
-    height: 1800,
+    height: 1960,
     headers: { 'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
   });
 }

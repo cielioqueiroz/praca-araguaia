@@ -2,7 +2,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA } from '@/lib/tipos-ui';
 import { rodapeDaFonte } from '@/lib/boletim';
 import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
-import { ordenarPorUf } from '@/lib/praca';
+import { ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
 import { CardPorteira, type PrecoCidadeUI, type PrecoPracaUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
 import { TabelaMercado, type ItemMercado } from '@/components/redesign/TabelaMercado';
 import { SuaPraca } from '@/components/redesign/SuaPraca';
@@ -93,8 +93,9 @@ export default async function Home() {
     const atual = refPorTipo.get(l.tipo);
     if (!atual || l.data_referencia > atual) refPorTipo.set(l.tipo, l.data_referencia);
   }
-  // Mesma razão da ordem das UFs: agrupa por estado, com a praça de casa (PA) primeiro.
-  for (const [tipo, pracas] of pracasPorTipo) pracasPorTipo.set(tipo, ordenarPorUf(pracas));
+  // Ordena por UF e desempata pela praça: só por UF, Marabá e Redenção trocavam de
+  // lugar entre acessos, porque o Postgres devolve na ordem que quiser.
+  for (const [tipo, pracas] of pracasPorTipo) pracasPorTipo.set(tipo, ordenarPorPraca(pracas));
 
   // As cidades da praça, agora para TODA a porteira (antes: só o boi). Valor típico
   // (mediana) dos reportes aprovados de 7 dias; cidade sem reporte vira convite.

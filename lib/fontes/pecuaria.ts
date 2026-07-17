@@ -33,8 +33,12 @@ const PAGINAS: Record<TipoPecuaria, Pagina> = {
   novilha: { url: `${BASE}/femea-nelore-novilha-18-meses`, fonte: 'scot', unidade: 'R$/cab', temVariacao: false },
 };
 
-// Ordem de exibição: a praça primeiro.
-const ORDEM_UF = ['PA', 'MT', 'TO', 'GO'] as const;
+// Ordem de exibição: a praça do Araguaia primeiro, BA/MA de referência depois.
+//
+// PERNAMBUCO não entra: a Scot não publica reposição para PE (conferido em
+// 16/07/2026 — as UFs da página são SP, MG, GO, MS, BA, MT, PR, PA, RO, TO, AC, MA
+// e RJ). UF ausente é omitida pelo flatMap abaixo, nunca zerada.
+const ORDEM_UF = ['PA', 'MT', 'TO', 'GO', 'BA', 'MA'] as const;
 
 // As páginas ora escrevem o nome ('Pará', às vezes sem acento), ora a sigla.
 const POR_NOME: Record<string, string> = {
@@ -42,10 +46,14 @@ const POR_NOME: Record<string, string> = {
   'MATO GROSSO': 'MT',
   TOCANTINS: 'TO',
   GOIAS: 'GO',
+  BAHIA: 'BA',
+  MARANHAO: 'MA',
   PA: 'PA',
   MT: 'MT',
   TO: 'TO',
   GO: 'GO',
+  BA: 'BA',
+  MA: 'MA',
 };
 
 function semAcento(s: string): string {

@@ -1,0 +1,13 @@
+-- A vaca não é mais gravada em cotacoes_uf.
+--
+-- Na fatia 17 ela trocou de fonte: era Datagro por ESTADO, virou Scot por PRAÇA
+-- (cotacoes_praca). A coleta parou de escrever `vaca` em cotacoes_uf — mas as linhas
+-- antigas ficaram lá, com a data de 15/07 congelada, e o boletim as lia como se
+-- fossem o preço de hoje. Todo dia, para os inscritos do Telegram.
+--
+-- Dado velho servido como novo é pior que dado nenhum: o produtor decide venda em
+-- cima disso. Apagar é a única leitura honesta — e a vaca não some do site, ela
+-- aparece por praça, que é mais fino do que era antes.
+--
+-- Idempotente: não há mais nada escrevendo vaca aqui, então rodar de novo não faz nada.
+delete from cotacoes_uf where tipo = 'vaca';

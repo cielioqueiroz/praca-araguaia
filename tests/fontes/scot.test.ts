@@ -9,16 +9,20 @@ const HTML = `
   <tr><th>Município</th><th>Boi Gordo - (R$/@ - à vista)</th><th>Boi Gordo - (R$/@ - prazo 30 dias)</th><th>Vaca Gorda (R$/@ - à vista)</th></tr>
   <tr><td>SP Barretos</td><td>326,50</td><td>330,00</td><td>306,50</td></tr>
   <tr><td>GO Goiânia</td><td>311,50</td><td>315,00</td><td>291,50</td></tr>
-  <tr><td>GO Reg. Sul</td><td>311,50</td><td>315,00</td><td>294,50</td></tr>
   <tr><td>RS Oeste (kg)</td><td>12,35</td><td>12,50</td><td>11,35</td></tr>
   <tr><td>MT Norte</td><td>311,50</td><td>315,00</td><td>291,50</td></tr>
   <tr><td>MT Cuiabá*</td><td>313,50</td><td>317,00</td><td>287,00</td></tr>
+  <tr><td>MT Sudeste</td><td>309,00</td><td>313,00</td><td>289,00</td></tr>
   <tr><td>SC</td><td>338,00</td><td>342,00</td><td>311,50</td></tr>
   <tr><td>PA Marabá</td><td>300,00</td><td>304,00</td><td>280,00</td></tr>
   <tr><td>PA Redenção</td><td>302,00</td><td>306,00</td><td>282,00</td></tr>
   <tr><td>PA Paragominas</td><td>298,00</td><td>302,00</td><td>278,00</td></tr>
   <tr><td>TO Norte</td><td>305,00</td><td>309,00</td><td>285,00</td></tr>
   <tr><td>TO Sul</td><td>307,00</td><td>311,00</td><td>287,00</td></tr>
+  <tr><td>BA Sul</td><td>306,50</td><td>310,00</td><td>284,00</td></tr>
+  <tr><td>BA Oeste</td><td>314,50</td><td>318,00</td><td>284,00</td></tr>
+  <tr><td>MA Oeste</td><td>316,50</td><td>320,00</td><td>293,50</td></tr>
+  <tr><td>Alagoas</td><td>334,00</td><td>338,00</td><td>316,50</td></tr>
 </table>
 <table class="cot-fisicas"><tr><td>PA Marabá</td><td>1,00</td><td>1,00</td><td>1,00</td></tr></table>
 `;
@@ -49,14 +53,23 @@ describe('parseScot', () => {
     expect(parseScot(HTML)!.dataReferencia).toBe('2026-07-15T03:00:00.000Z');
   });
 
-  it('fica só com as praças da região, na ordem de casa', () => {
+  it('Araguaia primeiro, referência depois — e o resto do Brasil fora', () => {
+    // Cuiabá, Goiânia e SP/RS/SC estão no HTML e NÃO podem entrar: o dono cortou as
+    // praças distantes. BA e MA entram, mas no fim — nunca antes do preço de casa.
     const l = parseScot(HTML)!.linhas;
     expect(l.map((x) => `${x.uf} ${x.praca}`)).toEqual([
       'PA Marabá', 'PA Redenção', 'PA Paragominas',
       'TO Norte', 'TO Sul',
-      'MT Norte', 'MT Cuiabá',
-      'GO Goiânia', 'GO Região Sul',
+      'MT Norte', 'MT Sudeste',
+      'BA Sul', 'BA Oeste', 'MA Oeste',
     ]);
+  });
+
+  it('não deixa entrar praça de fora do recorte', () => {
+    const nomes = parseScot(HTML)!.linhas.map((x) => x.praca);
+    for (const fora of ['Cuiabá', 'Goiânia', 'Região Sul', 'Barretos']) {
+      expect(nomes, `${fora} não deveria estar na lista`).not.toContain(fora);
+    }
   });
 
   it('lê boi à vista, boi a prazo e vaca de cada praça', () => {
@@ -108,20 +121,18 @@ describe('buscarPorPracaScot', () => {
   });
 
   it('não perde as praças acentuadas', async () => {
-    // Marabá, Redenção, Cuiabá e Goiânia sumiram de verdade numa versão anterior
-    // (decoder errado). São justamente as praças de casa: valem um teste próprio.
+    // Marabá e Redenção sumiram de verdade numa versão anterior (decoder errado).
+    // São justamente as praças de casa: valem um teste próprio.
     const precos = await buscarPorPracaScot('boi', respondeCom(HTML));
-    expect(precos.map((p) => p.praca)).toEqual(
-      expect.arrayContaining(['Marabá', 'Redenção', 'Cuiabá', 'Goiânia']),
-    );
+    expect(precos.map((p) => p.praca)).toEqual(expect.arrayContaining(['Marabá', 'Redenção']));
   });
 });
 
 describe('buscarMediaScot', () => {
   it('faz a média das praças da região para o gráfico', async () => {
     const c = await buscarMediaScot('boi', respondeCom(HTML));
-    // (300+302+298+305+307+311,50+313,50+311,50+311,50) / 9
+    // (300+302+298+305+307+311,50+309+306,50+314,50+316,50) / 10
     expect(c).toMatchObject({ tipo: 'boi', unidade: 'R$/@', fonte: 'scot' });
-    expect(c.valor).toBeCloseTo(306.67, 1);
+    expect(c.valor).toBeCloseTo(307, 1);
   });
 });

@@ -25,10 +25,11 @@ const respostaOk = (html: string) => ({ ok: true, status: 200, text: async () =>
 beforeEach(() => resetCachePecuaria());
 
 describe('parsePagina', () => {
-  it('lê a novilha: só as UFs da praça, na ordem PA/MT/TO/GO', () => {
+  it('lê a novilha: Araguaia primeiro, BA/MA de referência depois', () => {
     const r = parsePagina(HTML_NOVILHA, false);
     expect(r).not.toBeNull();
-    expect(r!.ufs.map((u) => u.uf)).toEqual(['PA', 'MT', 'TO', 'GO']);
+    // BA e MA entraram como referência na fatia 17 — depois do Araguaia, nunca antes.
+    expect(r!.ufs.map((u) => u.uf)).toEqual(['PA', 'MT', 'TO', 'GO', 'BA', 'MA']);
     // R$/cabeça: reposição não se negocia por arroba.
     expect(r!.ufs.find((u) => u.uf === 'PA')).toEqual({ uf: 'PA', valor: 3050, variacaoPct: null });
     expect(r!.ufs.find((u) => u.uf === 'MT')?.valor).toBe(3089);
@@ -67,7 +68,7 @@ describe('parsePagina', () => {
 describe('buscarPorUfPecuaria', () => {
   it('devolve o preço de cada UF com a unidade da categoria', async () => {
     const precos = await buscarPorUfPecuaria('novilha', async () => respostaOk(HTML_NOVILHA));
-    expect(precos).toHaveLength(4);
+    expect(precos).toHaveLength(6);
     expect(precos[0]).toEqual({
       tipo: 'novilha',
       uf: 'PA',
@@ -87,8 +88,8 @@ describe('buscarPorUfPecuaria', () => {
 describe('buscarNovilha / buscarBezerro (valor único do histórico)', () => {
   it('é a média das UFs da praça — o mesmo critério do boi', async () => {
     const c = await buscarNovilha(async () => respostaOk(HTML_NOVILHA));
-    // (3050 + 3089 + 3010 + 3000) / 4
-    expect(c.valor).toBe(3037.25);
+    // (3050 + 3089 + 3010 + 3000 + 2707,50 + 2970) / 6
+    expect(c.valor).toBe(2971.08);
     expect(c).toMatchObject({ tipo: 'novilha', unidade: 'R$/cab', fonte: 'scot' });
   });
 

@@ -31,6 +31,8 @@ Depois do primeiro deploy, conferir: `/cotacoes` e `/painel` devem sair do 404.
 | `MODERACAO_SENHA` | abre `/moderar` **e** `/painel` | as duas páginas respondem 500 "não configurada" — **falha fechada, não é buraco** |
 | `TELEGRAM_DONO_CHAT_ID` | o resumo diário de audiência no seu Telegram | o resumo simplesmente não é enviado (não é erro) |
 
+**O chat_id do dono é `8896839605`** (confirmado pelo @userinfobot em 17/07/2026).
+
 Existe `MODERACAO_SENHA` no `.env.local`, mas **não foi confirmado que está na Vercel**.
 Para pegar o `TELEGRAM_DONO_CHAT_ID`: mande `/start` para o `@pracaaraguaia_bot` e leia
 o `chat_id` em `assinantes_telegram`, ou use `@userinfobot`.

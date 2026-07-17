@@ -91,6 +91,27 @@ export function supabaseRepo(
         { onConflict: 'tipo,praca,uf' },
       );
       if (error) throw new Error(error.message);
+
+      // Apaga a praça que saiu da lista. O upsert só grava o que chega: quando o
+      // dono cortou Cuiabá e Goiânia, elas continuaram no banco com o preço do dia
+      // do corte e voltaram no card do Telegram como se fossem de hoje.
+      //
+      // Só mexe no `tipo` que acabou de chegar: se a Scot cair e o boi falhar, a
+      // vaca não apaga o boi junto. E precos.length === 0 nunca chega aqui (sai
+      // acima), então uma coleta vazia não limpa a tabela.
+      const tipo = precos[0].tipo;
+      const vivas = precos.map((p) => `${p.praca}|${p.uf}`);
+      const { data: atuais, error: erroLeitura } = await client
+        .from('cotacoes_praca')
+        .select('id, praca, uf')
+        .eq('tipo', tipo);
+      if (erroLeitura) throw new Error(erroLeitura.message);
+
+      const fantasmas = (atuais ?? []).filter((r) => !vivas.includes(`${r.praca}|${r.uf}`)).map((r) => r.id);
+      if (fantasmas.length === 0) return;
+
+      const { error: erroDelete } = await client.from('cotacoes_praca').delete().in('id', fantasmas);
+      if (erroDelete) throw new Error(erroDelete.message);
     },
 
     async salvarHistoricoEmLote(tipo: string, fonte: string, pontos: PontoHistorico[]) {

@@ -4,8 +4,13 @@ import type { Cotacao, PontoHistorico, PrecoUf } from '@/types/cotacao';
 const OFFSET_BRT = '-03:00';
 const URL_CONAB = 'https://portaldeinformacoes.conab.gov.br/downloads/arquivos/PrecosSemanalUF.txt';
 
-// UFs da praça do Araguaia. A ordem é a de exibição (a região fica antes do resto).
-const ORDEM_UF = ['PA', 'MT', 'TO', 'GO'] as const;
+// UFs da praça do Araguaia primeiro; BA/MA/PE entram como referência, no fim.
+//
+// PERNAMBUCO só existe no MILHO. Apurado no arquivo em 16/07/2026 (nível "preço
+// recebido pelo produtor"): a CONAB não publica soja nem boi para PE. Não há `if`
+// para isso — o flatMap abaixo omite UF sem dado, então o PE aparece no milho e some
+// sozinho dos outros. Se um dia a CONAB publicar soja no PE, ele entra sem tocar aqui.
+const ORDEM_UF = ['PA', 'MT', 'TO', 'GO', 'BA', 'MA', 'PE'] as const;
 const UFS = new Set<string>(ORDEM_UF);
 const TTL_MS = 10 * 60 * 1000;
 
@@ -91,7 +96,7 @@ function mediasSemanais(linhas: SemanaUf[], tipo: TipoCommodity): PontoHistorico
 async function buscarCommodity(tipo: TipoCommodity, fetchImpl: typeof fetch): Promise<Cotacao> {
   const pontos = mediasSemanais(await carregar(fetchImpl), tipo);
   const ultimo = pontos[pontos.length - 1];
-  if (!ultimo) throw new Error(`CONAB sem dados de ${tipo} para MT/PA/TO/GO`);
+  if (!ultimo) throw new Error(`CONAB sem dados de ${tipo} para ${ORDEM_UF.join('/')}`);
   return { tipo, valor: ultimo.valor, unidade: UNIDADE[tipo], fonte: 'conab', dataReferencia: ultimo.data };
 }
 
