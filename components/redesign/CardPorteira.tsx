@@ -74,7 +74,10 @@ export function CardPorteira(p: CardPorteiraProps) {
                 <li key={`${u.uf}-${u.praca}`} data-cidade={u.praca}>
                   <span className="lugar">
                     {u.praca}
-                    <i>{u.uf}</i>
+                    {/* A cidade do Pará ganha a etiqueta da UF ("Marabá [PA]"); a
+                        linha que já é o nome do estado, não — "Mato Grosso [MT]"
+                        seria redundante. */}
+                    {u.praca !== (NOME_UF[u.uf] ?? '') && <i>{u.uf}</i>}
                     <b className="badge">você</b>
                   </span>
                   <span className="valor tnum">{brl(u.valor)}</span>

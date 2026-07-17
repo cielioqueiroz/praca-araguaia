@@ -52,7 +52,7 @@ describe('Calculadora', () => {
   });
 
   it('mercado: ouro em gramas, e trocar o ativo troca preço e unidade', () => {
-    render(<Calculadora precos={{ ouro: 672.31, ouro18k: 504.23, bitcoin: 324949 }} />);
+    render(<Calculadora precos={{ ouro: 672.31, bitcoin: 324949 }} />);
     // Abre no ouro 24k.
     fireEvent.change(screen.getByLabelText(/quantidade/i), { target: { value: '10' } });
     expect(screen.getByTestId('mercado-valor')).toHaveTextContent('6.723,1');

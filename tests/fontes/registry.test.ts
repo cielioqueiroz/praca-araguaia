@@ -2,16 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { FONTES, FONTES_HISTORICO } from '@/lib/fontes/registry';
 
 describe('registry de fontes', () => {
-  it('tem as 13 cotações na coleta diária', () => {
+  it('tem as 12 cotações na coleta diária', () => {
     expect(Object.keys(FONTES).sort()).toEqual([
       'bezerro', 'bitcoin', 'boi', 'dolar', 'ethereum', 'euro', 'ibovespa',
-      'milho', 'novilha', 'ouro', 'ouro18k', 'soja', 'vaca',
+      'milho', 'novilha', 'ouro', 'soja', 'vaca',
     ]);
   });
 
-  // Vaca/novilha/bezerro e o ouro 18k não entram no backfill: os indicadores não
-  // publicam série histórica grátis, e o 18k é derivado do 24k. Eles acumulam
-  // histórico a partir da primeira coleta.
+  // Vaca/novilha/bezerro não entram no backfill: os indicadores não publicam série
+  // histórica grátis. Eles acumulam histórico a partir da primeira coleta.
   it('backfill só tem quem tem série histórica de graça', () => {
     expect(FONTES_HISTORICO.map((f) => f.tipo).sort()).toEqual([
       'bitcoin', 'boi', 'dolar', 'ethereum', 'euro', 'ibovespa', 'milho', 'soja',

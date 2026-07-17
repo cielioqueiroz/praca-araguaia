@@ -8,7 +8,7 @@ const cache = new Map<string, string | null>();
 // Tipos que compartilham a arte de outro (é o mesmo objeto no mundo).
 // Vaca/novilha/bezerro NÃO entram aqui: reusar a foto do nelore para elas seria
 // mentir na imagem. Sem arte, o card só não desenha a figura.
-const ARTE_DE: Record<string, string> = { ouro18k: 'ouro' };
+const ARTE_DE: Record<string, string> = {};
 
 export function imagemDoAtivo(tipo: string): string | null {
   const guardado = cache.get(tipo);

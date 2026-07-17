@@ -16,36 +16,41 @@ const OFFSET_BRT = '-03:00';
 const URL_SCOT = 'https://www.noticiasagricolas.com.br/cotacoes/boi-gordo/boi-gordo-scot-consultoria';
 const TTL_MS = 10 * 60 * 1000;
 
-// As praças que a região negocia. Chave: 'UF|praça' como a página escreve (sem
-// acento, maiúsculo). O resto do Brasil (SP, MG, MS, RS...) é ignorado de propósito:
-// esta é a praça do Araguaia, não um portal nacional.
+// O que a praça mostra: as três cidades do Pará que o Vale negocia, e UMA linha por
+// estado vizinho. Chave: 'UF|praça' como a página escreve (sem acento, maiúsculo).
 //
-// Cuiabá, Goiânia, GO Região Sul e MT Sudoeste SAÍRAM a pedido do dono: ficam longe
-// do Vale e eram 4 linhas que ninguém daqui negocia. Bahia e Maranhão entraram no
-// lugar — mais distantes ainda, mas o dono tem gente acompanhando de lá, e por isso
-// vêm no FIM da lista, como referência, nunca antes do preço de casa.
+// POR QUE UMA LINHA POR ESTADO (decisão do dono, 17/07/2026): a Scot publica várias
+// praças por estado (MT Norte, Sudeste, Cuiabá, Sudoeste; TO Norte e Sul; BA Sul e
+// Oeste; GO Goiânia e Reg. Sul). Repetir todas enchia o card de "Norte", "Sul" e
+// "Oeste" repetidos, sem o produtor daqui reconhecer nenhuma. Então, fora do Pará,
+// escolhemos a PRAÇA DE REFERÊNCIA — a mais próxima do Araguaia — e a rotulamos com o
+// nome do estado. O número continua sendo um preço real que alguém negocia (não uma
+// média inventada), só que apresentado como "o preço do estado".
 //
-// Pernambuco não está aqui porque a Scot não cobre PE (a página tem BA Sul, BA
-// Oeste, MA Oeste e Alagoas, mas nenhum PE) — apurado em 16/07/2026.
+// A praça de referência de cada estado:
+//   MT → Norte  (o norte de MT faz divisa com o Vale: Confresa, Vila Rica)
+//   TO → Norte  (o Bico e o norte do Tocantins, à beira do Araguaia)
+//   GO → Goiânia (a Scot só publica Goiânia e Reg. Sul em GO; Goiânia é a referência)
+//   BA → Oeste  (o oeste baiano é a fronteira agrícola, perfil da nossa região)
+//   MA → Oeste  (Imperatriz/Balsas, no oeste, encostado no Tocantins)
+//
+// Pernambuco não está aqui porque a Scot não cobre PE — apurado em 16/07/2026.
 const PRACAS_DA_REGIAO: Record<string, { uf: string; praca: string }> = {
   'PA|MARABA': { uf: 'PA', praca: 'Marabá' },
-  'PA|REDENCAO': { uf: 'PA', praca: 'Redenção' },
   'PA|PARAGOMINAS': { uf: 'PA', praca: 'Paragominas' },
-  'TO|NORTE': { uf: 'TO', praca: 'Norte' },
-  'TO|SUL': { uf: 'TO', praca: 'Sul' },
-  'MT|NORTE': { uf: 'MT', praca: 'Norte' },
-  'MT|SUDESTE': { uf: 'MT', praca: 'Sudeste' },
-  'BA|SUL': { uf: 'BA', praca: 'Sul' },
-  'BA|OESTE': { uf: 'BA', praca: 'Oeste' },
-  'MA|OESTE': { uf: 'MA', praca: 'Oeste' },
+  'PA|REDENCAO': { uf: 'PA', praca: 'Redenção' },
+  'MT|NORTE': { uf: 'MT', praca: 'Mato Grosso' },
+  'TO|NORTE': { uf: 'TO', praca: 'Tocantins' },
+  'GO|GOIANIA': { uf: 'GO', praca: 'Goiás' },
+  'BA|OESTE': { uf: 'BA', praca: 'Bahia' },
+  'MA|OESTE': { uf: 'MA', praca: 'Maranhão' },
 };
 
-// Ordem de exibição: o Araguaia primeiro (PA → TO → MT), a referência depois (BA, MA).
+// Ordem de exibição (a ordem que o dono pediu): as cidades do Pará primeiro, depois
+// os estados vizinhos do Araguaia (MT, TO, GO) e a referência mais distante (BA, MA).
 const ORDEM: string[] = [
-  'PA|MARABA', 'PA|REDENCAO', 'PA|PARAGOMINAS',
-  'TO|NORTE', 'TO|SUL',
-  'MT|NORTE', 'MT|SUDESTE',
-  'BA|SUL', 'BA|OESTE', 'MA|OESTE',
+  'PA|MARABA', 'PA|PARAGOMINAS', 'PA|REDENCAO',
+  'MT|NORTE', 'TO|NORTE', 'GO|GOIANIA', 'BA|OESTE', 'MA|OESTE',
 ];
 
 function semAcento(s: string): string {

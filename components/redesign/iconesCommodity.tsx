@@ -17,7 +17,6 @@ const ICONES: Record<string, IconType> = {
   dolar: FaDollarSign,
   euro: FaEuroSign,
   ouro: GiGoldBar,
-  ouro18k: GiGoldBar,
   ibovespa: FaChartLine,
   bitcoin: FaBitcoin,
   ethereum: FaEthereum,
@@ -36,7 +35,6 @@ export const FOTO_COMMODITY: Record<string, string> = {
   dolar: '/assets/cards/dolar.png',
   euro: '/assets/cards/euro.png',
   ouro: '/assets/cards/ouro.png',
-  ouro18k: '/assets/cards/ouro.png', // mesmo metal, outra liga
   ibovespa: '/assets/cards/ibovespa.png', // um índice não tem foto: é a linha do pregão
   bitcoin: '/assets/cards/bitcoin.png',
   ethereum: '/assets/cards/ethereum.png',

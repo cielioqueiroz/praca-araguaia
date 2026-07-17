@@ -40,8 +40,7 @@ const APELIDOS: Record<string, string[]> = {
 const MERCADO: Array<{ tipo: string; termos: string[] }> = [
   { tipo: 'dolar', termos: ['cambio', 'usd', 'moeda'] },
   { tipo: 'euro', termos: ['cambio', 'eur', 'moeda'] },
-  { tipo: 'ouro', termos: ['grama', 'metal', '24k'] },
-  { tipo: 'ouro18k', termos: ['grama', 'metal', '18k', 'joia'] },
+  { tipo: 'ouro', termos: ['grama', 'metal', '24k', '18k', 'joia'] },
   { tipo: 'ibovespa', termos: ['bolsa', 'b3', 'acoes', 'indice'] },
   { tipo: 'bitcoin', termos: ['cripto', 'btc', 'moeda digital'] },
   { tipo: 'ethereum', termos: ['cripto', 'eth', 'moeda digital'] },

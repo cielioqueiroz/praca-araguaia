@@ -6,10 +6,9 @@ const URL_USD = 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=BRL';
 // O gold-api cota a ONÇA TROY; o mercado brasileiro fala em grama.
 const GRAMAS_POR_ONCA_TROY = 31.1034768;
 
-// O gold-api cota ouro FINO (999/1000) — é o nosso 24k.
-// 18k é definição de liga, não outra cotação: 18 partes de ouro em 24 = 750/1000.
-// Por isso o 18k é derivado do 24k, e não buscado numa segunda fonte.
-export const TEOR_18K = 18 / 24; // 0,75
+// O gold-api cota ouro FINO (999/1000) — o grama do metal puro, que é o preço de
+// mercado que o dono quer ver. (Havia um "ouro 18k" derivado daqui por 0,75; saiu a
+// pedido do dono em 17/07/2026 — o Mercado mostra só o Ouro, em R$/grama.)
 
 // Ouro em R$ por grama: (preço da onça em USD × USD-BRL) ÷ gramas da onça troy.
 // gold-api: { price (USD), updatedAt }. Frankfurter: { rates: { BRL } }.
@@ -40,20 +39,8 @@ async function gramaDeOuro24k(
 
 const centavos = (n: number) => Math.round(n * 100) / 100;
 
-/** Ouro 24k (fino): o grama do metal puro. */
+/** Ouro fino (grama do metal puro) — a cotação de mercado, em R$/g. */
 export async function buscarOuro(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
   const { valor, dataReferencia } = await gramaDeOuro24k(fetchImpl);
   return { tipo: 'ouro', valor: centavos(valor), unidade: 'R$/g', fonte: 'gold-api', dataReferencia };
-}
-
-/** Ouro 18k: o mesmo grama, com 75% de ouro na liga (750/1000). */
-export async function buscarOuro18k(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
-  const { valor, dataReferencia } = await gramaDeOuro24k(fetchImpl);
-  return {
-    tipo: 'ouro18k',
-    valor: centavos(valor * TEOR_18K),
-    unidade: 'R$/g',
-    fonte: 'gold-api',
-    dataReferencia,
-  };
 }

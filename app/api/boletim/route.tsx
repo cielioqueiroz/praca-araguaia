@@ -318,8 +318,10 @@ export async function GET(req: Request) {
       dataReferencia: u.data_referencia as string,
     }));
 
+  // Boi e vaca vêm por praça e agora são UMA linha por estado — cabem inteiros, com
+  // Bahia e Maranhão no fim, igual ao site. (Os produtos por UF acima seguem só a
+  // casa: soja/milho por estado ainda somariam muitas linhas.)
   const precosPraca: PrecoPraca[] = (pracas ?? [])
-    .filter((p) => ehDoAraguaia(p.uf as string))
     .map((p) => ({
       tipo: p.tipo as string,
       praca: p.praca as string,

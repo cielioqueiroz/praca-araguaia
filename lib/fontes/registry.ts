@@ -1,7 +1,7 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
 import { buscarDolar, buscarHistoricoDolarBcb } from './dolar';
 import { buscarEuro, buscarHistoricoEuroFrankfurter } from './euro';
-import { buscarOuro, buscarOuro18k } from './ouro';
+import { buscarOuro } from './ouro';
 import { buscarBitcoin, buscarEthereum, buscarHistoricoCripto } from './cripto';
 import { buscarSoja, buscarMilho, buscarHistoricoConab } from './conab';
 import { buscarNovilha, buscarBezerro } from './pecuaria';
@@ -13,7 +13,6 @@ export const FONTES: Record<string, () => Promise<Cotacao>> = {
   dolar: () => buscarDolar(),
   euro: () => buscarEuro(),
   ouro: () => buscarOuro(),
-  ouro18k: () => buscarOuro18k(),
   ibovespa: () => buscarIbovespa(),
   bitcoin: () => buscarBitcoin(),
   ethereum: () => buscarEthereum(),

@@ -35,7 +35,7 @@ describe('buscar', () => {
     // 'boi' aparece como termo do bezerro e no rótulo 'Boi gordo'; quem começa
     // com o que foi digitado tem de vir antes.
     expect(buscar(indice, 'boi')[0].rotulo).toBe('Boi gordo');
-    expect(buscar(indice, 'ouro')[0].rotulo).toBe('Ouro 24k');
+    expect(buscar(indice, 'ouro')[0].rotulo).toBe('Ouro');
   });
 
   it('ignora acento e caixa', () => {

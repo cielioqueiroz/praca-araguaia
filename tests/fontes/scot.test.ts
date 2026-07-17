@@ -53,21 +53,30 @@ describe('parseScot', () => {
     expect(parseScot(HTML)!.dataReferencia).toBe('2026-07-15T03:00:00.000Z');
   });
 
-  it('Araguaia primeiro, referência depois — e o resto do Brasil fora', () => {
-    // Cuiabá, Goiânia e SP/RS/SC estão no HTML e NÃO podem entrar: o dono cortou as
-    // praças distantes. BA e MA entram, mas no fim — nunca antes do preço de casa.
+  it('as 3 cidades do Pará e UMA praça de referência por estado, na ordem do dono', () => {
+    // As cidades do Pará primeiro; depois um rótulo por estado (MT/TO/GO/BA/MA), com
+    // o VALOR da praça de referência daquele estado (MT Norte, TO Norte, GO Goiânia,
+    // BA Oeste, MA Oeste). As demais praças do estado — MT Sudeste/Cuiabá, TO Sul,
+    // BA Sul, GO Reg. Sul — não entram: eram as linhas repetidas que o dono cortou.
     const l = parseScot(HTML)!.linhas;
     expect(l.map((x) => `${x.uf} ${x.praca}`)).toEqual([
-      'PA Marabá', 'PA Redenção', 'PA Paragominas',
-      'TO Norte', 'TO Sul',
-      'MT Norte', 'MT Sudeste',
-      'BA Sul', 'BA Oeste', 'MA Oeste',
+      'PA Marabá', 'PA Paragominas', 'PA Redenção',
+      'MT Mato Grosso', 'TO Tocantins', 'GO Goiás', 'BA Bahia', 'MA Maranhão',
     ]);
+  });
+
+  it('o valor de cada estado é o da praça de referência (MT = MT Norte)', () => {
+    const l = parseScot(HTML)!.linhas;
+    const mt = l.find((x) => x.uf === 'MT')!;
+    // No HTML, MT Norte = 311,50 (não o Sudeste 309,00 nem o Cuiabá 313,50).
+    expect(mt).toMatchObject({ praca: 'Mato Grosso', boi: 311.5 });
+    const to = l.find((x) => x.uf === 'TO')!;
+    expect(to).toMatchObject({ praca: 'Tocantins', boi: 305 }); // TO Norte, não TO Sul (307)
   });
 
   it('não deixa entrar praça de fora do recorte', () => {
     const nomes = parseScot(HTML)!.linhas.map((x) => x.praca);
-    for (const fora of ['Cuiabá', 'Goiânia', 'Região Sul', 'Barretos']) {
+    for (const fora of ['Cuiabá', 'Sudeste', 'Barretos', 'Sul']) {
       expect(nomes, `${fora} não deveria estar na lista`).not.toContain(fora);
     }
   });
@@ -97,7 +106,7 @@ describe('parseScot', () => {
 describe('buscarPorPracaScot', () => {
   it('devolve o boi de cada praça em R$/@ com o preço a prazo junto', async () => {
     const precos = await buscarPorPracaScot('boi', respondeCom(HTML));
-    expect(precos[1]).toEqual({
+    expect(precos.find((p) => p.praca === 'Redenção')).toEqual({
       tipo: 'boi', uf: 'PA', praca: 'Redenção', valor: 302, unidade: 'R$/@',
       variacaoPct: null, dataReferencia: '2026-07-15T03:00:00.000Z', valorPrazo: 306,
     });
@@ -129,10 +138,12 @@ describe('buscarPorPracaScot', () => {
 });
 
 describe('buscarMediaScot', () => {
-  it('faz a média das praças da região para o gráfico', async () => {
+  it('faz a média das praças exibidas para o gráfico', async () => {
     const c = await buscarMediaScot('boi', respondeCom(HTML));
-    // (300+302+298+305+307+311,50+309+306,50+314,50+316,50) / 10
+    // 3 cidades do PA + a praça de referência de cada estado:
+    // (300+298+302 + 311,50 MT Norte + 305 TO Norte + 311,50 GO Goiânia
+    //  + 314,50 BA Oeste + 316,50 MA Oeste) / 8 = 307,375
     expect(c).toMatchObject({ tipo: 'boi', unidade: 'R$/@', fonte: 'scot' });
-    expect(c.valor).toBeCloseTo(307, 1);
+    expect(c.valor).toBeCloseTo(307.375, 2);
   });
 });

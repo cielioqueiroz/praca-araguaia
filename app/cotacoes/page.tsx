@@ -21,8 +21,7 @@ type LinhaPraca = { tipo: string; praca: string; uf: string; valor: number; vari
 const MERCADO: Record<string, { unLabel: string; casas: number }> = {
   dolar: { unLabel: 'comercial', casas: 4 },
   euro: { unLabel: 'comercial', casas: 4 },
-  ouro: { unLabel: 'por grama · 999', casas: 2 },
-  ouro18k: { unLabel: 'por grama · 750', casas: 2 },
+  ouro: { unLabel: 'por grama', casas: 2 },
   ibovespa: { unLabel: 'índice B3 · pontos', casas: 0 },
   bitcoin: { unLabel: 'por unidade', casas: 2 },
   ethereum: { unLabel: 'por unidade', casas: 2 },

@@ -17,13 +17,12 @@ type GadoArroba = 'boi' | 'vaca' | 'novilha';
 type Grao = 'soja' | 'milho';
 // O Ibovespa fica de fora de propósito: é índice, não tem lote nem quantidade — não
 // existe "quanto vale o meu Ibovespa".
-type Ativo = 'dolar' | 'euro' | 'ouro' | 'ouro18k' | 'bitcoin' | 'ethereum';
+type Ativo = 'dolar' | 'euro' | 'ouro' | 'bitcoin' | 'ethereum';
 
 const UNIDADE_ATIVO: Record<Ativo, { qtd: string; preco: string }> = {
   dolar: { qtd: 'Dólares (US$)', preco: 'Cotação (R$/US$)' },
   euro: { qtd: 'Euros (€)', preco: 'Cotação (R$/€)' },
-  ouro: { qtd: 'Gramas (24k)', preco: 'Preço (R$/g)' },
-  ouro18k: { qtd: 'Gramas (18k)', preco: 'Preço (R$/g)' },
+  ouro: { qtd: 'Gramas (g)', preco: 'Preço (R$/g)' },
   bitcoin: { qtd: 'Bitcoins (BTC)', preco: 'Preço (R$/BTC)' },
   ethereum: { qtd: 'Ethers (ETH)', preco: 'Preço (R$/ETH)' },
 };

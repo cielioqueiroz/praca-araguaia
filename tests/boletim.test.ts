@@ -156,6 +156,16 @@ describe('montarBoletim', () => {
     expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Norte · MT', 'Norte · TO']);
   });
 
+  it('a linha que já é o nome do estado não repete a sigla', () => {
+    // Fora do Pará, boi e vaca viram uma praça de referência rotulada com o estado:
+    // 'Mato Grosso', nunca 'Mato Grosso · MT'. Só a cidade do PA leva a sigla.
+    const b = montarBoletim([], [], [], new Date(), [
+      praca('boi', 'Marabá', 'PA', 314.5),
+      praca('boi', 'Mato Grosso', 'MT', 311.5),
+    ]);
+    expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Marabá · PA', 'Mato Grosso']);
+  });
+
   it('sem praça, segue mostrando o estado (grãos continuam da CONAB)', () => {
     const b = montarBoletim([], [uf('soja', 'TO', 112.2, 2.19)], [], new Date(), []);
     expect(b.porteira[0].ufs.map((u) => u.nome)).toEqual(['Tocantins']);

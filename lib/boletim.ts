@@ -56,7 +56,7 @@ export type ReporteCidade = {
 };
 
 // Sufixo compacto depois do número, para o valor não ficar poluído.
-const SUFIXO: Record<string, string> = { ouro: '/g', ouro18k: '/g' };
+const SUFIXO: Record<string, string> = { ouro: '/g' };
 const CASAS: Record<string, number> = { dolar: 4, euro: 4, ibovespa: 0 };
 
 // Araguaia fica no fuso -03:00 sem horário de verão; fixar o fuso torna a data
@@ -115,9 +115,14 @@ export function montarBoletim(
 
     const lugares: Array<{ nome: string; valor: number; variacaoPct: number | null; dataReferencia: string }> =
       pracas.length > 0
-        ? // Duas praças podem ter o mesmo nome em estados diferentes (Norte no MT e
-          // Norte no TO): sem a sigla, o card mostraria duas linhas "Norte".
-          pracas.map((p) => ({ nome: `${p.praca} · ${p.uf}`, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }))
+        ? // Cidade do Pará leva a sigla ("Marabá · PA"); a linha que já é o estado,
+          // não ("Mato Grosso", nunca "Mato Grosso · MT").
+          pracas.map((p) => ({
+            nome: p.praca === (NOME_UF[p.uf] ?? '') ? p.praca : `${p.praca} · ${p.uf}`,
+            valor: p.valor,
+            variacaoPct: p.variacaoPct,
+            dataReferencia: p.dataReferencia,
+          }))
         : ufs.map((p) => ({ nome: NOME_UF[p.uf] ?? p.uf, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }));
 
     if (lugares.length === 0) return [];
