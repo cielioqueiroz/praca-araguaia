@@ -7,7 +7,6 @@ import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
 import { programadorDataUri } from '@/lib/autor';
 import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
-import { ehDoAraguaia } from '@/lib/praca';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
 export const dynamic = 'force-dynamic';
@@ -304,23 +303,21 @@ export async function GET(req: Request) {
     cidadesDoProduto(aprovados, produto).map((c) => ({ produto, ...c })),
   );
 
-  // O card é imagem de tamanho fixo: com os sete estados, a porteira passaria de 45
-  // linhas e estouraria (ele já virou 1080x1350 quando eram 12). Ele mostra a CASA —
-  // BA/MA/PE são referência do site, não da foto do dia.
-  const precosUf: PrecoUf[] = (ufs ?? [])
-    .filter((u) => ehDoAraguaia(u.uf as string))
-    .map((u) => ({
-      tipo: u.tipo as string,
-      uf: u.uf as string,
-      valor: Number(u.valor),
-      unidade: u.unidade as string,
-      variacaoPct: u.variacao_pct === null ? null : Number(u.variacao_pct),
-      dataReferencia: u.data_referencia as string,
-    }));
+  // O card mostra TODOS os estados, igual ao site: o dono quis Pernambuco no milho e
+  // Bahia/Maranhão em soja/milho/novilha/bezerro. A altura da imagem é medida no
+  // render para caber tudo (ver a nota no ImageResponse). BA/MA entram por padrão;
+  // PE só aparece no milho, porque é o único com dado de PE — o flatMap omite os
+  // vazios, sem precisar de if.
+  const precosUf: PrecoUf[] = (ufs ?? []).map((u) => ({
+    tipo: u.tipo as string,
+    uf: u.uf as string,
+    valor: Number(u.valor),
+    unidade: u.unidade as string,
+    variacaoPct: u.variacao_pct === null ? null : Number(u.variacao_pct),
+    dataReferencia: u.data_referencia as string,
+  }));
 
-  // Boi e vaca vêm por praça e agora são UMA linha por estado — cabem inteiros, com
-  // Bahia e Maranhão no fim, igual ao site. (Os produtos por UF acima seguem só a
-  // casa: soja/milho por estado ainda somariam muitas linhas.)
+  // Boi e vaca vêm por praça — uma linha por estado, com Bahia e Maranhão no fim.
   const precosPraca: PrecoPraca[] = (pracas ?? [])
     .map((p) => ({
       tipo: p.tipo as string,
@@ -345,16 +342,17 @@ export async function GET(req: Request) {
     precosPraca,
   );
 
-  // Retrato alto: 6 categorias na porteira, 7 de mercado e as cidades do Termômetro.
+  // Retrato alto: 6 categorias na porteira, 6 de mercado e as cidades do Termômetro.
   //
   // A altura é MEDIDA no render, não calculada: o Satori não rola nem corta — o que
-  // não cabe escreve por cima do rodapé. Em 1800 (medida de quando boi e vaca tinham
-  // 4 estados) o Bezerro colidia com a linha do Termômetro, porque a fatia 17 trocou
-  // esses 8 estados por 14 praças. Se a porteira crescer de novo, refaça a medida:
+  // não cabe escreve por cima do rodapé. 1960 servia quando os produtos por UF
+  // mostravam só a casa (PA/MT/TO/GO); ao trazer BA/MA para novilha/bezerro e
+  // BA/MA/PE para soja/milho (igual ao site), a coluna do gado cresceu e o Bezerro
+  // colidia com o rodapé — daí 2300. Se a porteira crescer de novo, refaça a medida:
   // renderize e olhe o pé da coluna da esquerda.
   return new ImageResponse(<CardBoletim boletim={boletim} />, {
     width: 1080,
-    height: 1960,
+    height: 2300,
     headers: { 'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
   });
 }
