@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { createPublicClient } from '@/lib/supabase/public';
+import { boletimLiberado } from '@/lib/boletim-url';
 import { montarBoletim, type Boletim, type ItemPorteira, type Variacao, type ReporteCidade } from '@/lib/boletim';
 import { PECUARIA, PORTEIRA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
@@ -267,7 +268,15 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
   );
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  // Desenhar este card custa ~8s de função. Sem query é o card do dia, que o CDN
+  // serve por 1h; com query, só assinada (ver lib/boletim-url.ts). Sem esta linha,
+  // `?t=<qualquer número>` era um cache miss por chamada — um laço de curl queimava
+  // a cota do plano grátis e levava o site inteiro junto.
+  if (!boletimLiberado(new URL(req.url), process.env.CRON_SECRET)) {
+    return new Response('nao encontrado', { status: 404 });
+  }
+
   const supabase = createPublicClient();
   const seteDias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 

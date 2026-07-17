@@ -22,6 +22,10 @@ import { GET } from '@/app/api/boletim/route';
 import { createPublicClient } from '@/lib/supabase/public';
 import { montarBoletim } from '@/lib/boletim';
 
+// Sem query: é o card do dia, que a rota sempre libera (o CDN o cacheia). A defesa
+// contra o cache-buster assinado vive em tests/boletim-url.test.ts.
+const req = () => new Request('http://localhost/api/boletim');
+
 // A rota faz 3 consultas: cotacoes (select), cotacoes_uf (select) e reportes
 // (select + eq + eq + gte). O mock encadeia os filtros e responde por tabela.
 const mockClient = (
@@ -52,7 +56,7 @@ describe('GET /api/boletim', () => {
       data: [{ tipo: 'dolar', valor: 5.1072, unidade: 'R$', variacao_pct: 0.11 }],
       error: null,
     });
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/^image\//);
     expect(res.headers.get('cache-control')).toContain('s-maxage=3600');
@@ -60,13 +64,13 @@ describe('GET /api/boletim', () => {
 
   it('200 mesmo com o banco vazio (card de estado vazio)', async () => {
     mockClient({ data: [], error: null });
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
   });
 
   it('500 quando o Supabase falha', async () => {
     mockClient({ data: null, error: { message: 'boom' } });
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(500);
   });
 
@@ -86,7 +90,7 @@ describe('GET /api/boletim', () => {
       [{ produto: 'boi', municipio: 'Redenção', valor: 305 }],
     );
 
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
 
     const [linhas, precosUf, cidades] = (montarBoletim as ReturnType<typeof vi.fn>).mock.calls[0];

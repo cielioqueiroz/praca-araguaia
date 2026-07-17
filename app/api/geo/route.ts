@@ -4,6 +4,17 @@ export const dynamic = 'force-dynamic';
 
 const PADRAO = { cidade: 'Vale do Araguaia', uf: '', lat: -15.89, lon: -52.26 };
 
+// O header de geo vem URL-encoded. Se vier malformado ('%C3%'), decodeURIComponent
+// lança e derrubaria a rota inteira com 500 — melhor cair no padrão. O /api/visita
+// já tratava; aqui faltava.
+function decodificarCidade(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return PADRAO.cidade;
+  }
+}
+
 export async function GET(req: Request): Promise<Response> {
   const h = req.headers;
   const cidadeRaw = h.get('x-vercel-ip-city');
@@ -11,7 +22,7 @@ export async function GET(req: Request): Promise<Response> {
   const lat = h.get('x-vercel-ip-latitude');
   const lon = h.get('x-vercel-ip-longitude');
 
-  const cidade = cidadeRaw ? decodeURIComponent(cidadeRaw) : PADRAO.cidade;
+  const cidade = cidadeRaw ? decodificarCidade(cidadeRaw) : PADRAO.cidade;
   const estado = uf || PADRAO.uf;
   const latN = lat ? Number(lat) : PADRAO.lat;
   const lonN = lon ? Number(lon) : PADRAO.lon;

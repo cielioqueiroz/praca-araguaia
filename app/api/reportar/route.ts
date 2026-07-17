@@ -1,16 +1,10 @@
-import { createHash } from 'node:crypto';
 import { createServerClient } from '@/lib/supabase/server';
 import { validarReporte } from '@/lib/termometro';
+import { ipHash } from '@/lib/ip';
 
 export const dynamic = 'force-dynamic';
 
 const LIMITE_24H = 5;
-
-// Hash do IP para o limite diário — nunca guardamos o IP puro.
-function ipHash(req: Request): string {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconhecido';
-  return createHash('sha256').update(ip).digest('hex');
-}
 
 export async function POST(req: Request) {
   let body: unknown;

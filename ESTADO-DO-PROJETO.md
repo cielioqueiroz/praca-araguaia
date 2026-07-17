@@ -1,41 +1,49 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-16.
+> **Documento de retomada.** Última atualização: 2026-07-17.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
 
-## 🔴 O AUTO-DEPLOY DA VERCEL PAROU DE DISPARAR (16/07/2026)
+## ✅ Situação (17/07/2026)
 
-Os commits das fatias 16-19 **estão no GitHub** (`origin/master` = `ec411c2`), mas a
-Vercel **não criou nenhum deploy** para eles: o último build de produção ainda é o do
-commit `9d34adc`, de 14/07. Conferido pela API — `list_deployments` devolve zero
-deployments desde os pushes de hoje. Por isso `/cotacoes` e `/painel` respondem **404
-em produção**, enquanto `/` ainda serve o painel antigo.
+O deploy voltou a disparar (o "🔴 auto-deploy parou" de 16/07 era a **outage do
+GitHub** daquele dia, não uma configuração quebrada — resolveu sozinho). As fatias
+16-19 estão em produção: `/` serve as Notícias do Mercado, `/cotacoes` e `/painel`
+saíram do 404.
 
-Não é falha de build: o `npm run build` local passa limpo. É o gatilho GitHub → Vercel.
-
-**O que o dono precisa fazer** (não dá para resolver pelo código):
-1. Vercel → projeto `agro_app` → **Deployments** → *Redeploy* no commit mais recente; **ou**
-2. Vercel → **Settings → Git**: reconectar o repositório `cielioqueiroz/praca-araguaia`
-   (a permissão do GitHub App pode ter caído — o repo é privado).
-
-Depois do primeiro deploy, conferir: `/cotacoes` e `/painel` devem sair do 404.
+**As env vars estão todas na Vercel** (conferido em 17/07 com `vercel env ls production`):
+`MODERACAO_SENHA`, `TELEGRAM_DONO_CHAT_ID` (= `8896839605`), `CRON_SECRET`,
+`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, as três do Supabase. Nada pendente do
+dono. O resumo diário de audiência já chega no Telegram do dono pelo cron de alertas.
 
 ---
 
-## ⚠️ Duas envs pendentes na Vercel (só o dono pode criar)
+## 🔒 Endurecimento de segurança (fatia 20 — 17/07/2026)
 
-| Env | Para quê | Sem ela |
-|---|---|---|
-| `MODERACAO_SENHA` | abre `/moderar` **e** `/painel` | as duas páginas respondem 500 "não configurada" — **falha fechada, não é buraco** |
-| `TELEGRAM_DONO_CHAT_ID` | o resumo diário de audiência no seu Telegram | o resumo simplesmente não é enviado (não é erro) |
+Auditoria completa do app. A base já era sólida (RLS nega por padrão, service role
+nunca no cliente, cookie HttpOnly+HMAC, sem segredo versionado). Seis correções:
 
-**O chat_id do dono é `8896839605`** (confirmado pelo @userinfobot em 17/07/2026).
+1. **`/api/boletim` era uma torneira de CPU.** Rota pública, ~8s por render, e o `?t=`
+   aceitava qualquer valor — cada um um cache miss. Um laço de curl queimava a cota do
+   plano grátis e derrubava o site todo. Agora a query vai **assinada** com o
+   `CRON_SECRET` (`lib/boletim-url.ts`): sem query → card do dia cacheado; com query →
+   só a que o envio diário assina. Público que inventa `?t=` leva 404.
+2. **As 4 rotas de cron falhavam ABERTAS.** `auth !== \`Bearer ${env}\`` virava
+   `Bearer undefined` sem a env — e duas dessas rotas fazem broadcast irreversível.
+   `lib/cron.ts`: sem `CRON_SECRET`, nega todo mundo; compara com `timingSafeEqual`.
+3. **Login da moderação sem limite de tentativas.** A espera de 800ms atrasava mas não
+   travava. Agora 10 falhas em 15 min → 429 (`tentativas_login`, migração 0012).
+4. **`ipHash` era SHA-256 do IP puro** — reversível por força bruta (IPv4 inteiro).
+   Virou HMAC com o `CRON_SECRET` como sal (`lib/ip.ts`), compartilhado por
+   reportar/fornecedores/login.
+5. **Sem headers de segurança.** `next.config.ts` ganhou `X-Frame-Options`,
+   `X-Content-Type-Options`, `Referrer-Policy`, HSTS.
+6. **`/api/geo` derrubava com 500** se o header de geo viesse malformado
+   (`decodeURIComponent` sem try/catch, que o `/api/visita` já tinha).
 
-Existe `MODERACAO_SENHA` no `.env.local`, mas **não foi confirmado que está na Vercel**.
-Para pegar o `TELEGRAM_DONO_CHAT_ID`: mande `/start` para o `@pracaaraguaia_bot` e leia
-o `chat_id` em `assinantes_telegram`, ou use `@userinfobot`.
+Dívida anotada, não urgente: `next` 15.5.19 → 16.x quando der (3 avisos do
+`npm audit`, todos em postcss/esbuild de build/dev, não exploráveis em runtime).
 
 ---
 
@@ -195,7 +203,7 @@ Plataforma de **cotações agropecuárias** para a região do Araguaia. App Next
 - Achado ao dirigir no navegador: as duas instâncias (cabeçalho e gaveta) colidiam — `id` duplicado, `/` disputado, campo da gaveta focável com o menu fechado. Resolvido com `useId` + prop `alcancavel`.
 - O hero de `/cotacoes` ganhou hover (zoom lento, overlay, etiqueta subindo), com `prefers-reduced-motion` respeitado.
 
-**Estado atual:** **444 testes passando**, build/lint limpos. No ar: **Notícias do Mercado na home** (9 veículos, 15 min) + **8 cotações** (boi e vaca **por praça** via Scot; novilha e bezerro **reposição por estado**; soja/milho por estado via CONAB; dólar, euro, ouro em R$/g, ouro 18k, Ibovespa, bitcoin, ethereum) + boletim + chuva + Termômetro + fornecedores + calculadora + **busca funcional** + **`/painel` de audiência**; bot `@pracaaraguaia_bot` ligado (**4 inscritos**).
+**Estado atual:** **467 testes passando**, build/lint limpos. No ar: **Notícias do Mercado na home** (9 veículos, 15 min) + **8 cotações** (boi e vaca **por praça** via Scot; novilha e bezerro **reposição por estado**; soja/milho por estado via CONAB; dólar, euro, ouro em R$/g, ouro 18k, Ibovespa, bitcoin, ethereum) + boletim + chuva + Termômetro + fornecedores + calculadora + **busca funcional** + **`/painel` de audiência**; bot `@pracaaraguaia_bot` ligado (**4 inscritos**).
 
 > **Pendência de verificação:** o envio do boletim novo pelo Telegram não foi disparado à mão (é broadcast irreversível); o cron das 12:20 UTC entrega o card novo. Se algo sair torto na imagem, olhar `app/api/boletim/route.tsx`.
 

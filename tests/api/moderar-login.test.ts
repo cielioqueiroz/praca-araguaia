@@ -1,4 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// A rota conta tentativas recentes no banco. O mock controla a contagem: por padrão
+// zero (caminho feliz), e um teste sobe para o limite. Sem env de Supabase, o
+// createServerClient real lançaria — o mock também isola disso.
+const contagem = { valor: 0 };
+vi.mock('@/lib/supabase/server', () => ({
+  createServerClient: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          gte: () => Promise.resolve({ count: contagem.valor, error: null }),
+        }),
+      }),
+      insert: () => Promise.resolve({ error: null }),
+    }),
+  }),
+}));
+
 import { POST } from '@/app/api/moderar/login/route';
 import { verificarToken, COOKIE_MODERACAO } from '@/lib/moderacao';
 
@@ -9,7 +27,10 @@ const req = (body: unknown) =>
     body: JSON.stringify(body),
   });
 
-beforeEach(() => vi.stubEnv('MODERACAO_SENHA', 'senha-de-teste'));
+beforeEach(() => {
+  contagem.valor = 0;
+  vi.stubEnv('MODERACAO_SENHA', 'senha-de-teste');
+});
 afterEach(() => vi.unstubAllEnvs());
 
 describe('POST /api/moderar/login', () => {
@@ -45,5 +66,12 @@ describe('POST /api/moderar/login', () => {
     expect(cookie).not.toContain('Secure'); // fora de produção
     const token = cookie.split(';')[0].split('=')[1];
     expect(verificarToken(token, Date.now(), 'senha-de-teste')).toBe(true);
+  });
+
+  it('429 quando estoura o limite de tentativas — mesmo com a senha certa', async () => {
+    contagem.valor = 10;
+    const res = await POST(req({ senha: 'senha-de-teste' }));
+    expect(res.status).toBe(429);
+    expect(res.headers.get('set-cookie')).toBeNull();
   });
 });

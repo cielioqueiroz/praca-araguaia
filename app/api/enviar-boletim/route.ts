@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { autorizadoPorCron } from '@/lib/cron';
 import { enviarFotoArquivo } from '@/lib/telegram';
 import { legendaBoletim, urlFotoBoletim } from '@/lib/telegram-boletim';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
@@ -7,12 +8,15 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(req: Request): Promise<Response> {
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!autorizadoPorCron(req)) {
     return new Response('unauthorized', { status: 401 });
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return new Response('config', { status: 500 });
+  // O segredo já existe (autorizadoPorCron não deixaria passar sem ele), mas quem lê
+  // esta linha não deveria precisar saber disso para entender que ela é segura.
+  const segredo = process.env.CRON_SECRET;
+  if (!token || !segredo) return new Response('config', { status: 500 });
 
   const supabase = createServerClient();
   const { data, error } = await supabase.from('assinantes_telegram').select('chat_id');
@@ -32,7 +36,7 @@ export async function GET(req: Request): Promise<Response> {
   // Renderiza o card UMA vez e envia os bytes para todo mundo. Antes mandávamos a URL,
   // e o Telegram tinha de buscá-la: como o card leva ~10s para desenhar, ele desistia
   // e o envio falhava (e, quando dava certo, servia a foto do cache dele).
-  const resposta = await fetch(urlFotoBoletim(agora));
+  const resposta = await fetch(urlFotoBoletim(agora, segredo));
   if (!resposta.ok) {
     console.error('enviar-boletim: card não renderizou', resposta.status);
     return new Response('card indisponivel', { status: 502 });

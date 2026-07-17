@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { autorizadoPorCron } from '@/lib/cron';
 import { enviarTexto } from '@/lib/telegram';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
 import { detectarMovers, montarMensagemAlerta } from '@/lib/telegram-alertas';
@@ -8,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(req: Request): Promise<Response> {
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!autorizadoPorCron(req)) {
     return new Response('unauthorized', { status: 401 });
   }
 
