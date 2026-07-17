@@ -37,8 +37,8 @@ function mockCard(ok = true) {
   return blob;
 }
 
-const req = (auth: string | null = `Bearer ${SECRET}`) =>
-  new Request('http://localhost/api/enviar-boletim', {
+const req = (auth: string | null = `Bearer ${SECRET}`, qs = '') =>
+  new Request(`http://localhost/api/enviar-boletim${qs}`, {
     headers: auth !== null ? { authorization: auth } : {},
   });
 
@@ -46,6 +46,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv('CRON_SECRET', SECRET);
   vi.stubEnv('TELEGRAM_BOT_TOKEN', 'TOKEN123');
+  vi.stubEnv('TELEGRAM_DONO_CHAT_ID', '8896839605');
   mockCard();
 });
 afterEach(() => {
@@ -112,6 +113,28 @@ describe('GET /api/enviar-boletim', () => {
     expect(del).toHaveBeenCalled();
     expect(inFn).toHaveBeenCalledWith('chat_id', [2]);
     expect(await res.json()).toEqual({ enviados: 2, removidos: 1, falhas: 0 });
+  });
+
+  it('modo prévia manda SÓ para o dono, sem ler nem podar a lista de inscritos', async () => {
+    const { select, del } = mockSupabase([10, 20, 30]); // inscritos existem, mas são ignorados
+    const res = await GET(req(`Bearer ${SECRET}`, '?previa=1'));
+    expect(res.status).toBe(200);
+    // Não consulta a tabela de inscritos na prévia.
+    expect(select).not.toHaveBeenCalled();
+    // Envia uma vez, para o chat do dono.
+    expect(enviar).toHaveBeenCalledTimes(1);
+    expect(enviar.mock.calls[0][1]).toBe(8896839605);
+    expect(enviar.mock.calls[0][3]).toContain('Prévia');
+    expect(del).not.toHaveBeenCalled();
+    expect(await res.json()).toEqual({ enviados: 1, removidos: 0, falhas: 0 });
+  });
+
+  it('prévia sem TELEGRAM_DONO_CHAT_ID responde 500 e não envia', async () => {
+    mockSupabase([10]);
+    vi.stubEnv('TELEGRAM_DONO_CHAT_ID', '');
+    const res = await GET(req(`Bearer ${SECRET}`, '?previa=1'));
+    expect(res.status).toBe(500);
+    expect(enviar).not.toHaveBeenCalled();
   });
 
   it('lista vazia responde 200 zerado, sem renderizar card nem enviar', async () => {

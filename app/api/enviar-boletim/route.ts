@@ -18,20 +18,39 @@ export async function GET(req: Request): Promise<Response> {
   const segredo = process.env.CRON_SECRET;
   if (!token || !segredo) return new Response('config', { status: 500 });
 
+  // Modo prévia (?previa=1): manda o card SÓ para o chat do dono, para ele conferir
+  // como a peça chega no celular antes de ela ir para os inscritos. Nunca faz
+  // broadcast. Sem TELEGRAM_DONO_CHAT_ID, não há para quem mandar a prévia.
+  const previa = new URL(req.url).searchParams.get('previa') !== null;
+
   const supabase = createServerClient();
-  const { data, error } = await supabase.from('assinantes_telegram').select('chat_id');
-  if (error) {
-    console.error('enviar-boletim: leitura dos inscritos falhou', error);
-    return new Response('erro', { status: 500 });
+
+  let chatIds: number[];
+  if (previa) {
+    const donoRaw = process.env.TELEGRAM_DONO_CHAT_ID;
+    const dono = Number(donoRaw);
+    // String vazia vira 0 no Number e passaria como "finito": exige valor de fato.
+    if (!donoRaw || !Number.isFinite(dono) || dono === 0) {
+      return new Response('sem TELEGRAM_DONO_CHAT_ID', { status: 500 });
+    }
+    chatIds = [dono];
+  } else {
+    const { data, error } = await supabase.from('assinantes_telegram').select('chat_id');
+    if (error) {
+      console.error('enviar-boletim: leitura dos inscritos falhou', error);
+      return new Response('erro', { status: 500 });
+    }
+    chatIds = (data ?? []).map((r) => r.chat_id as number);
   }
 
-  const chatIds = (data ?? []).map((r) => r.chat_id as number);
   if (chatIds.length === 0) {
     return Response.json({ enviados: 0, removidos: 0, falhas: 0 });
   }
 
   const agora = new Date();
-  const caption = legendaBoletim(agora);
+  const caption = previa
+    ? `📋 Prévia (só para você). ${legendaBoletim(agora)}`
+    : legendaBoletim(agora);
 
   // Renderiza o card UMA vez e envia os bytes para todo mundo. Antes mandávamos a URL,
   // e o Telegram tinha de buscá-la: como o card leva ~10s para desenhar, ele desistia
@@ -48,7 +67,9 @@ export async function GET(req: Request): Promise<Response> {
     enviar: (chatId) => enviarFotoArquivo(token, chatId, imagem, caption),
   });
 
-  if (bloqueados.length > 0) {
+  // Só o broadcast poda inscrito que bloqueou o bot. Na prévia, o "chat" é o dono —
+  // um bloqueio dele não é motivo para apagar ninguém da lista de inscritos.
+  if (!previa && bloqueados.length > 0) {
     const { error: delErro } = await supabase.from('assinantes_telegram').delete().in('chat_id', bloqueados);
     if (delErro) console.error('enviar-boletim: remoção de bloqueados falhou', delErro);
   }
