@@ -85,7 +85,7 @@ export function agregar(colhidos: Colhido[], limite = LIMITE_NOTICIAS): Noticia[
 
   for (const { feed, itens } of colhidos) {
     for (const item of itens) {
-      if (!relevante(item, feed.nicho)) continue;
+      if (!relevante(item)) continue;
 
       const id = normalizarLink(item.link);
       if (porLink.has(id)) continue;

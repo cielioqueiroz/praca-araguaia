@@ -3,8 +3,11 @@ import type { Feed } from '@/types/noticia';
 // Registry de feeds — mesma ideia do lib/fontes/registry.ts: adicionar veículo é
 // acrescentar uma linha aqui, e mais nada.
 //
-// `nicho: true` = veículo só de agro; tudo que ele publica interessa. `false` = o
-// feed é amplo (economia geral) e passa pelo filtro de relevância do classificar.ts.
+// TODO FEED PASSA PELO MESMO FILTRO (23/07/2026). Antes havia `nicho: true` para o
+// veículo de agro, que dispensava a relevância — "tudo que ele publica interessa".
+// Não interessava: Compre Rural mandou "Angelina Jolie trocou Hollywood pelas
+// colmeias" e a Globo Rural, "Como montar uma horta em casa" e "mini-horses criados
+// como pets". A origem diz de onde a matéria vem, não do que ela trata.
 //
 // REGRA DESTA LISTA: nenhuma URL entra sem ter respondido 200 com <item> parseável.
 // Feed que cair é removido daqui, não "deixado quieto para ver se volta" — a página
@@ -21,13 +24,13 @@ import type { Feed } from '@/types/noticia';
 // itens nunca apareceriam; seria só uma requisição jogada fora a cada revalidação.
 
 export const FEEDS: Feed[] = [
-  { id: 'g1-agro', veiculo: 'G1 Agronegócios', url: 'https://g1.globo.com/rss/g1/economia/agronegocios/', nicho: true }, // 100
-  { id: 'globo-rural', veiculo: 'Globo Rural', url: 'https://g1.globo.com/rss/g1/economia/agronegocios/globo-rural/', nicho: true }, // 100
-  { id: 'g1-economia', veiculo: 'G1 Economia', url: 'https://g1.globo.com/rss/g1/economia/', nicho: false }, // 98
-  { id: 'canal-rural', veiculo: 'Canal Rural', url: 'https://www.canalrural.com.br/feed/', nicho: true }, // 10
-  { id: 'cnn', veiculo: 'CNN Brasil', url: 'https://www.cnnbrasil.com.br/feed/', nicho: false }, // 60
-  { id: 'infomoney', veiculo: 'InfoMoney', url: 'https://www.infomoney.com.br/feed/', nicho: false }, // 10
-  { id: 'money-times', veiculo: 'Money Times', url: 'https://www.moneytimes.com.br/feed/', nicho: false }, // 10
-  { id: 'compre-rural', veiculo: 'Compre Rural', url: 'https://www.comprerural.com/feed/', nicho: true }, // 10
-  { id: 'beefpoint', veiculo: 'BeefPoint', url: 'https://www.beefpoint.com.br/feed/', nicho: true }, // 10 — só pecuária
+  { id: 'g1-agro', veiculo: 'G1 Agronegócios', url: 'https://g1.globo.com/rss/g1/economia/agronegocios/' }, // 100
+  { id: 'globo-rural', veiculo: 'Globo Rural', url: 'https://g1.globo.com/rss/g1/economia/agronegocios/globo-rural/' }, // 100
+  { id: 'g1-economia', veiculo: 'G1 Economia', url: 'https://g1.globo.com/rss/g1/economia/' }, // 98
+  { id: 'canal-rural', veiculo: 'Canal Rural', url: 'https://www.canalrural.com.br/feed/' }, // 10
+  { id: 'cnn', veiculo: 'CNN Brasil', url: 'https://www.cnnbrasil.com.br/feed/' }, // 60
+  { id: 'infomoney', veiculo: 'InfoMoney', url: 'https://www.infomoney.com.br/feed/' }, // 10
+  { id: 'money-times', veiculo: 'Money Times', url: 'https://www.moneytimes.com.br/feed/' }, // 10
+  { id: 'compre-rural', veiculo: 'Compre Rural', url: 'https://www.comprerural.com/feed/' }, // 10
+  { id: 'beefpoint', veiculo: 'BeefPoint', url: 'https://www.beefpoint.com.br/feed/' }, // 10 — só pecuária
 ];

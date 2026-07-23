@@ -68,6 +68,9 @@ export function TabelaMercado({ itens }: { itens: ItemMercado[] }) {
             </span>
             {i.variacaoPct === null ? (
               <span className="var-vazia">—</span>
+            ) : i.variacaoPct === 0 ? (
+              // Preço parado: traço neutro. Seta verde em 0% afirmava alta que não houve.
+              <span className="var flat"><span className="ar">–</span>0%</span>
             ) : (
               <span className={`var ${subiu ? 'up' : 'down'}`}>
                 <span className="ar">{subiu ? '▲' : '▼'}</span>

@@ -22,9 +22,12 @@ function brl(n: number): string {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
 
+// 0% não é alta: ganha traço e cor neutra. Enquanto `pct >= 0` mandava, preço
+// parado saía com seta verde para cima — uma subida afirmada que não aconteceu.
 function Variacao({ pct }: { pct: number | null }) {
   if (pct === null) return <span className="var-vazia">—</span>;
-  const subiu = pct >= 0;
+  if (pct === 0) return <span className="var flat"><span className="ar">–</span>0%</span>;
+  const subiu = pct > 0;
   return (
     <span className={`var ${subiu ? 'up' : 'down'}`}>
       <span className="ar">{subiu ? '▲' : '▼'}</span>

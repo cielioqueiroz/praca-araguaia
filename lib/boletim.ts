@@ -5,6 +5,7 @@ import {
   UNIDADE_PORTEIRA,
   FONTE_PORTEIRA,
   NAO_E_MOEDA,
+  prazoDesatualizadoMs,
 } from '@/lib/tipos-ui';
 import { NOME_UF, ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
@@ -12,7 +13,13 @@ import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 // Linha crua vinda de `cotacoes` (tipos já convertidos pelo chamador).
 export type LinhaCotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null };
 
-export type Variacao = { texto: string; direcao: 'alta' | 'baixa' };
+/**
+ * 'estavel' existe porque 0% NÃO É ALTA. Enquanto `pct >= 0` virava 'alta', o card
+ * punha seta verde para cima em preço que não mexeu — soja do Tocantins, milho de
+ * MT, da Bahia e de Pernambuco saíram assim em 23/07/2026. Uma seta que afirma uma
+ * subida que não houve é um número inventado, ainda que o número esteja certo.
+ */
+export type Variacao = { texto: string; direcao: 'alta' | 'baixa' | 'estavel' };
 
 export type LinhaUfBoletim = { nome: string; valorFmt: string; variacao?: Variacao };
 
@@ -75,21 +82,29 @@ function variacaoDe(pct: number | null): Variacao | undefined {
   if (pct === null) return undefined;
   return {
     texto: `${Math.abs(pct).toLocaleString('pt-BR')}%`,
-    direcao: pct >= 0 ? 'alta' : 'baixa',
+    direcao: pct === 0 ? 'estavel' : pct > 0 ? 'alta' : 'baixa',
   };
 }
 
-// A CONAB fecha a semana (segunda a sexta) — mostra o intervalo. Datagro e Scot
-// publicam por dia — mostram o dia. O nome da fonte vem junto: o produtor precisa
-// saber quem apurou aquele preço.
-export function rodapeDaFonte(tipo: string, iso: string): string {
+// A CONAB fecha a semana (segunda a sexta) — mostra o intervalo. A Scot publica por
+// dia — mostra o dia. O nome da fonte vem junto: o produtor precisa saber quem
+// apurou aquele preço.
+//
+// E, passado o prazo da fonte, o rodapé DIZ que o preço está velho. Sem isso o card
+// repetia o mesmo número dia após dia com cara de novidade — que foi como o dono
+// leu o gado parado. Preço velho não é vergonha; velho sem aviso é.
+export function rodapeDaFonte(tipo: string, iso: string, agora: Date = new Date()): string {
   const fonte = FONTE_PORTEIRA[tipo];
   const fim = new Date(iso);
   if (!fonte) return fmtDia.format(fim);
-  if (!fonte.semanal) return `${fonte.nome} · ${fmtDia.format(fim)}`;
+
+  const atrasado = agora.getTime() - fim.getTime() > prazoDesatualizadoMs(tipo);
+  const aviso = atrasado ? ' · desatualizado' : '';
+
+  if (!fonte.semanal) return `${fonte.nome} · ${fmtDia.format(fim)}${aviso}`;
 
   const inicio = new Date(fim.getTime() - 4 * 24 * 60 * 60 * 1000);
-  return `${fonte.nome} · semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}`;
+  return `${fonte.nome} · semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}${aviso}`;
 }
 
 const posicao = (tipo: string) => {
@@ -132,7 +147,7 @@ export function montarBoletim(
         tipo,
         titulo: TITULOS[tipo] ?? tipo,
         unidade: UNIDADE_PORTEIRA[tipo] ?? '',
-        rodape: rodapeDaFonte(tipo, maisRecente.dataReferencia),
+        rodape: rodapeDaFonte(tipo, maisRecente.dataReferencia, agora),
         ufs: lugares.map((p) => ({
           nome: p.nome,
           valorFmt: numero(p.valor, 2),

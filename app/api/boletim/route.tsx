@@ -18,13 +18,24 @@ const MUTED = '#7a6f58';
 const LINHA = '#d9cdb2';
 
 // A fonte default do Satori não tem os glifos ▲/▼ — as setas são triângulos SVG.
-function Seta({ direcao, tamanho = 16 }: { direcao: 'alta' | 'baixa'; tamanho?: number }) {
+// 'estavel' desenha um traço: preço parado não sobe nem desce, e a seta verde que
+// ele ganhava antes afirmava uma alta que não existiu.
+const TINTA_DA_DIRECAO: Record<Variacao['direcao'], string> = {
+  alta: ALTA,
+  baixa: BAIXA,
+  estavel: MUTED,
+};
+
+const CAMINHO_DA_DIRECAO: Record<Variacao['direcao'], string> = {
+  alta: 'M12 5l8 13H4z',
+  baixa: 'M12 19L4 6h16z',
+  estavel: 'M4 11h16v2H4z',
+};
+
+function Seta({ direcao, tamanho = 16 }: { direcao: Variacao['direcao']; tamanho?: number }) {
   return (
     <svg width={tamanho} height={tamanho} viewBox="0 0 24 24" style={{ marginRight: 5 }}>
-      <path
-        d={direcao === 'alta' ? 'M12 5l8 13H4z' : 'M12 19L4 6h16z'}
-        fill={direcao === 'alta' ? ALTA : BAIXA}
-      />
+      <path d={CAMINHO_DA_DIRECAO[direcao]} fill={TINTA_DA_DIRECAO[direcao]} />
     </svg>
   );
 }
@@ -40,7 +51,7 @@ function Variacao({ v, tamanho = 22 }: { v?: Variacao; tamanho?: number }) {
         width: 84,
         fontSize: tamanho,
         fontWeight: 600,
-        color: v.direcao === 'alta' ? ALTA : BAIXA,
+        color: TINTA_DA_DIRECAO[v.direcao],
       }}
     >
       <Seta direcao={v.direcao} tamanho={tamanho - 6} />

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { variacaoDoLugar, type LugarSalvo } from '@/lib/coleta';
 import type {
   Cotacao,
   CotacaoRepo,
@@ -9,6 +10,15 @@ import type {
   PrecoUf,
   PrecoUfRepo,
 } from '@/types/cotacao';
+
+/** Linha crua de cotacoes_uf/cotacoes_praca → o que `variacaoDoLugar` espera. */
+function lugarSalvo(r: { valor: unknown; variacao_pct: unknown; data_referencia: unknown }): LugarSalvo {
+  return {
+    valor: Number(r.valor),
+    dataReferencia: r.data_referencia as string,
+    variacaoPct: r.variacao_pct === null ? null : Number(r.variacao_pct),
+  };
+}
 
 export function supabaseRepo(
   client: SupabaseClient,
@@ -59,13 +69,31 @@ export function supabaseRepo(
 
     async salvarPrecosUf(precos: PrecoUf[]) {
       if (precos.length === 0) return;
+
+      // O preço que já estava salvo em cada estado, para tirar dele a variação
+      // quando a fonte não publica nenhuma (novilha e bezerro da Scot são assim).
+      const { data: antes, error: erroLeitura } = await client
+        .from('cotacoes_uf')
+        .select('tipo, uf, valor, variacao_pct, data_referencia')
+        .in('tipo', [...new Set(precos.map((p) => p.tipo))]);
+      if (erroLeitura) throw new Error(erroLeitura.message);
+
+      const anterior = new Map<string, LugarSalvo>(
+        (antes ?? []).map((r) => [`${r.tipo}|${r.uf}`, lugarSalvo(r)]),
+      );
+
       const { error } = await client.from('cotacoes_uf').upsert(
         precos.map((p) => ({
           tipo: p.tipo,
           uf: p.uf,
           valor: p.valor,
           unidade: p.unidade,
-          variacao_pct: p.variacaoPct,
+          variacao_pct: variacaoDoLugar(
+            p.valor,
+            p.dataReferencia,
+            anterior.get(`${p.tipo}|${p.uf}`),
+            p.variacaoPct,
+          ),
           data_referencia: p.dataReferencia,
           atualizado_em: new Date().toISOString(),
         })),
@@ -76,6 +104,19 @@ export function supabaseRepo(
 
     async salvarPrecosPraca(precos: PrecoPraca[]) {
       if (precos.length === 0) return;
+
+      // Boi e vaca chegam SEMPRE sem variação: a Scot não a publica por praça. Sem
+      // isto, o gado sai no card sem seta nenhuma e parece parado ao lado da soja.
+      const { data: antes, error: erroAnterior } = await client
+        .from('cotacoes_praca')
+        .select('tipo, praca, uf, valor, variacao_pct, data_referencia')
+        .in('tipo', [...new Set(precos.map((p) => p.tipo))]);
+      if (erroAnterior) throw new Error(erroAnterior.message);
+
+      const anterior = new Map<string, LugarSalvo>(
+        (antes ?? []).map((r) => [`${r.tipo}|${r.praca}|${r.uf}`, lugarSalvo(r)]),
+      );
+
       const { error } = await client.from('cotacoes_praca').upsert(
         precos.map((p) => ({
           tipo: p.tipo,
@@ -83,7 +124,12 @@ export function supabaseRepo(
           uf: p.uf,
           valor: p.valor,
           unidade: p.unidade,
-          variacao_pct: p.variacaoPct,
+          variacao_pct: variacaoDoLugar(
+            p.valor,
+            p.dataReferencia,
+            anterior.get(`${p.tipo}|${p.praca}|${p.uf}`),
+            p.variacaoPct,
+          ),
           valor_prazo: p.valorPrazo ?? null,
           data_referencia: p.dataReferencia,
           atualizado_em: new Date().toISOString(),

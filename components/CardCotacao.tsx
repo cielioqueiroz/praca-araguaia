@@ -15,14 +15,20 @@ const fmtValor = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maxi
 const fmtData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
 export function CardCotacao({ titulo, valor, unidade, variacaoPct, dataReferencia, desatualizado, legenda, historico }: CardCotacaoProps) {
-  const subiu = (variacaoPct ?? 0) >= 0;
+  // 0% é estável, não alta: seta verde em preço parado afirma uma subida que não houve.
+  const parado = variacaoPct === 0;
+  const subiu = (variacaoPct ?? 0) > 0;
   return (
     <div className="relative h-full overflow-hidden rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)] transition group-hover:border-pasto/40 group-hover:shadow-md">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-tinta/60">{titulo}</h2>
         {variacaoPct !== null && (
-          <p className={`text-sm font-semibold tabular-nums ${subiu ? 'text-emerald-600' : 'text-red-600'}`}>
-            {subiu ? '▲' : '▼'} {Math.abs(variacaoPct).toLocaleString('pt-BR')}%
+          <p
+            className={`text-sm font-semibold tabular-nums ${
+              parado ? 'text-tinta/45' : subiu ? 'text-emerald-600' : 'text-red-600'
+            }`}
+          >
+            {parado ? '–' : subiu ? '▲' : '▼'} {Math.abs(variacaoPct).toLocaleString('pt-BR')}%
           </p>
         )}
       </div>

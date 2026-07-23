@@ -16,7 +16,7 @@ const item = (extra: Partial<ItemBruto> = {}): ItemBruto => ({
 });
 
 const feed = (extra: Partial<Feed> = {}): Feed => ({
-  id: 'g1', veiculo: 'G1', url: 'https://g1.globo.com/rss', nicho: false, ...extra,
+  id: 'g1', veiculo: 'G1', url: 'https://g1.globo.com/rss', ...extra,
 });
 
 const rss = (itens: string) => `<?xml version="1.0"?><rss version="2.0"><channel>
@@ -166,37 +166,76 @@ describe('categoria', () => {
 });
 
 describe('relevante', () => {
-  it('veículo de nicho passa tudo', () => {
-    expect(relevante(item({ titulo: 'Assembleia da cooperativa' }), true)).toBe(true);
-  });
-
-  it('veículo amplo só passa o que é do ramo', () => {
-    expect(relevante(item({ titulo: 'Preço da soja dispara' }), false)).toBe(true);
-    expect(relevante(item({ titulo: 'Atriz lança filme novo' }), false)).toBe(false);
+  it('passa o que é do ramo', () => {
+    expect(relevante(item({ titulo: 'Preço da soja dispara' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Atriz lança filme novo' }))).toBe(false);
   });
 
   it('não confunde palavra dentro de outra palavra', () => {
     // 'ouro' dentro de 'tesouro' e 'boi' dentro de 'boinas' fariam a home encher de lixo.
-    expect(relevante(item({ titulo: 'Tesouro Direto muda regras' }), false)).toBe(false);
-    expect(relevante(item({ titulo: 'Loja de boinas fecha' }), false)).toBe(false);
+    expect(relevante(item({ titulo: 'Tesouro Direto muda regras' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Loja de boinas fecha' }))).toBe(false);
   });
 
   it('barra o lixo que os feeds reais tentaram passar', () => {
     // Estes três entraram de verdade numa checagem contra os feeds em 16/07/2026.
     // Futebol ('campo'), JCP ('juros') e PIB ('previsão') não são notícia da praça.
-    expect(relevante(item({ titulo: 'Vitória x Vasco: escalações e onde assistir ao Brasileirão' }), false)).toBe(false);
-    expect(relevante(item({ titulo: 'Telefônica Brasil (VIVT3) aprova R$ 500 milhões em JCP' }), false)).toBe(false);
-    expect(relevante(item({ titulo: 'Boletim Macrofiscal eleva previsão do PIB de 2026' }), false)).toBe(false);
+    expect(relevante(item({ titulo: 'Vitória x Vasco: escalações e onde assistir ao Brasileirão' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Telefônica Brasil (VIVT3) aprova R$ 500 milhões em JCP' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Boletim Macrofiscal eleva previsão do PIB de 2026' }))).toBe(false);
   });
 
   it('não barra o mercado que a praça acompanha', () => {
-    expect(relevante(item({ titulo: 'Dólar fecha em alta' }), false)).toBe(true);
-    expect(relevante(item({ titulo: 'Ouro renova máxima histórica' }), false)).toBe(true);
-    expect(relevante(item({ titulo: 'Exportação de carne bovina cresce' }), false)).toBe(true);
+    expect(relevante(item({ titulo: 'Dólar fecha em alta' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Ouro renova máxima histórica' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Exportação de carne bovina cresce' }))).toBe(true);
   });
 
   it('acha a palavra no resumo, não só no título', () => {
-    expect(relevante(item({ titulo: 'Mercado reage', resumo: 'A saca de milho subiu' }), false)).toBe(true);
+    expect(relevante(item({ titulo: 'Mercado reage', resumo: 'A saca de milho subiu' }))).toBe(true);
+  });
+
+  // ------------------------------------------------------------------
+  // O veículo de nicho DEIXOU de passar direto (23/07/2026).
+  //
+  // Enquanto `nicho: true` dispensava o filtro, a home recebia lifestyle e
+  // celebridade de sites de agro. Todos os títulos abaixo saíram dos feeds reais
+  // naquele dia — o dono pediu o recorte "mercado e produção".
+  // ------------------------------------------------------------------
+  it('barra o lifestyle que vinha dos veículos de agro', () => {
+    expect(relevante(item({ titulo: 'Angelina Jolie trocou Hollywood pelas colmeias em projeto que já protege milhões de abelhas' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Como montar uma horta em casa' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Menores que um pônei, mini-horses conquistam brasileiros e são criados como pets' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Quer criar minhocas? Veja guia para iniciantes' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Receita Nosso Campo: aprenda a fazer um delicioso cupim casqueirado' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Cidade espanhola presenteia campeões da Copa com tomates equivalentes ao próprio peso; veja vídeo' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Por que ovos de codorna têm manchas e cores diferentes? Entenda' }))).toBe(false);
+  });
+
+  it('deixa passar a notícia de mercado e de produção dos mesmos veículos', () => {
+    expect(relevante(item({ titulo: 'Arroba do boi gordo: cotações seguem em alta com escalas de abate em baixa' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Demanda aquecida no mercado de soja segura preços firmes' }))).toBe(true);
+    expect(relevante(item({ titulo: 'CMN regulamenta renegociação de dívidas rurais e fixa prazo' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Temporais castigam cafezais e produtores aceleram colheita para salvar a safra' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Câmara aprova anistia a multas de caminhoneiros e reforça piso do frete' }))).toBe(true);
+    expect(relevante(item({ titulo: 'Mapa desmente nova tarifa da China sobre carne bovina brasileira' }))).toBe(true);
+  });
+
+  it('clima sozinho não basta: foguete e conta de luz não são notícia da praça', () => {
+    // Os dois entraram de verdade em 23/07/2026 só porque diziam 'clima'/'El Niño'.
+    // Clima que interessa aqui vem colado em safra, lavoura ou produtor — e é por
+    // essas palavras que ele entra. 'clima' segue valendo para a CATEGORIA.
+    expect(relevante(item({ titulo: 'Starship 13 é adiado novamente por causa do clima; veja nova data' }))).toBe(false);
+    expect(relevante(item({ titulo: 'El Niño: governo antecipa contratos de reserva de energia' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Seca castiga a lavoura no Tocantins' }))).toBe(true);
+  });
+
+  it('barra entretenimento mesmo quando a palavra do agro aparece', () => {
+    // 'A Fazenda' é reality show; 'boi' vira nome de bloco de carnaval. A palavra
+    // do ramo sozinha não pode abrir a porta para a página de entretenimento.
+    expect(relevante(item({ titulo: 'A Fazenda 17: peão é expulso após briga no reality' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Novela sobre uma fazenda estreia hoje na TV' }))).toBe(false);
+    expect(relevante(item({ titulo: 'Boi Bumbá: veja a escalação dos artistas do festival' }))).toBe(false);
   });
 });
 
@@ -335,12 +374,15 @@ describe('agregar', () => {
     expect(r[0].veiculo).toBe('G1'); // o primeiro a publicar fica
   });
 
-  it('joga fora o irrelevante de veículo amplo, mantém o do nicho', () => {
+  it('joga fora o irrelevante, venha do veículo que vier', () => {
+    // O filtro passou a valer também para o veículo de agro (23/07/2026): era por
+    // ali que entrava lifestyle.
     const r = agregar([
-      { feed: feed({ nicho: false }), itens: [item({ titulo: 'Novela estreia hoje', link: 'https://a.com/1' })] },
-      { feed: feed({ id: 'cr', veiculo: 'Canal Rural', nicho: true }), itens: [item({ titulo: 'Leilão na cooperativa', link: 'https://b.com/2' })] },
+      { feed: feed(), itens: [item({ titulo: 'Novela estreia hoje', link: 'https://a.com/1' })] },
+      { feed: feed({ id: 'cr', veiculo: 'Canal Rural' }), itens: [item({ titulo: 'Leilão de gado na cooperativa', link: 'https://b.com/2' })] },
+      { feed: feed({ id: 'gr', veiculo: 'Globo Rural' }), itens: [item({ titulo: 'Como montar uma horta em casa', link: 'https://c.com/3' })] },
     ]);
-    expect(r.map((n) => n.titulo)).toEqual(['Leilão na cooperativa']);
+    expect(r.map((n) => n.titulo)).toEqual(['Leilão de gado na cooperativa']);
   });
 
   it('item sem data vai para o fim, mas não some', () => {
@@ -356,7 +398,7 @@ describe('agregar', () => {
   it('respeita o limite', () => {
     const itens = Array.from({ length: 60 }, (_, i) =>
       item({ titulo: `Boi ${i}`, link: `https://a.com/${i}` }));
-    expect(agregar([{ feed: feed({ nicho: true }), itens }], 40)).toHaveLength(40);
+    expect(agregar([{ feed: feed(), itens }], 40)).toHaveLength(40);
   });
 
   it('sem feed nenhum devolve [] — a página mostra vazio, não quebra', () => {
@@ -369,7 +411,7 @@ describe('agregar', () => {
     // Em produção são 10 feeds: 10 x 6 = 60 candidatos para 40 vagas, então o teto
     // morde. O cenário aqui espelha isso (8 veículos x 10 itens para 40 vagas).
     const colhidos = Array.from({ length: 8 }, (_, v) => ({
-      feed: feed({ id: `v${v}`, veiculo: `Veículo ${v}`, nicho: true }),
+      feed: feed({ id: `v${v}`, veiculo: `Veículo ${v}` }),
       itens: Array.from({ length: 10 }, (_, i) =>
         item({ titulo: `Boi ${v}-${i}`, link: `https://v${v}.com/${i}`, publicadoEm: `2026-07-15T${String(i).padStart(2, '0')}:00:00Z` })),
     }));
@@ -388,8 +430,8 @@ describe('agregar', () => {
     const pequeno = [item({ titulo: 'Arroba do boi em Redenção', link: 'https://beefpoint.com/1', publicadoEm: '2026-07-15T11:00:00Z' })];
 
     const r = agregar([
-      { feed: feed({ id: 'cnn', veiculo: 'CNN', nicho: true }), itens: enxurrada },
-      { feed: feed({ id: 'bp', veiculo: 'BeefPoint', nicho: true }), itens: pequeno },
+      { feed: feed({ id: 'cnn', veiculo: 'CNN' }), itens: enxurrada },
+      { feed: feed({ id: 'bp', veiculo: 'BeefPoint' }), itens: pequeno },
     ], 40);
 
     expect(r.some((n) => n.veiculo === 'BeefPoint')).toBe(true);
@@ -399,7 +441,7 @@ describe('agregar', () => {
     // Se metade dos feeds cair, é melhor 10 notícias de um veículo do que 6 e um buraco.
     const itens = Array.from({ length: 20 }, (_, i) =>
       item({ titulo: `Boi ${i}`, link: `https://a.com/${i}` }));
-    expect(agregar([{ feed: feed({ nicho: true }), itens }], 10)).toHaveLength(10);
+    expect(agregar([{ feed: feed(), itens }], 10)).toHaveLength(10);
   });
 });
 

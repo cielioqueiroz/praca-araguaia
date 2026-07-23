@@ -20,10 +20,15 @@ export type Noticia = ItemBruto & {
   internacional: boolean;
 };
 
-/** Um feed no registry. `nicho: true` = veículo só de agro, dispensa filtro de relevância. */
+/**
+ * Um feed no registry.
+ *
+ * Não há mais `nicho`: ser um veículo de agro dispensava o filtro de relevância, e
+ * era por essa porta que lifestyle e celebridade entravam na home (ver
+ * lib/noticias/classificar.ts). Hoje todo item passa pela mesma régua.
+ */
 export type Feed = {
   id: string;
   veiculo: string;
   url: string;
-  nicho: boolean;
 };

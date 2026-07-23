@@ -49,23 +49,82 @@ const SO_PARA_CATEGORIA = new Set(['tarifa', 'tarifas']);
 
 // 'tempo' sozinho trazia "tempo real" e "tempo de jogo"; 'previsao' trazia
 // "previsão do PIB". Viraram frase, que é como aparecem quando é clima de verdade.
+//
+// CLIMA VALE PARA A CATEGORIA, NÃO PARA A RELEVÂNCIA (23/07/2026). Enquanto valia
+// para as duas, "Starship 13 é adiado por causa do clima" e "El Niño: governo
+// antecipa contratos de reserva de energia" entravam na home — os dois únicos itens
+// que passaram só por clima numa medição contra os feeds reais, e os dois fora do
+// ramo. O clima que interessa aqui vem colado em safra, lavoura, colheita ou
+// produtor, e é por essas palavras que ele entra; o chip continua dizendo 'clima'.
 const CLIMA = [
   'chuva', 'chuvas', 'seca', 'estiagem', 'clima', 'previsao do tempo', 'la nina',
-  'el nino', 'geada', 'temporal', 'enchente',
+  'el nino', 'geada', 'temporal', 'temporais', 'enchente',
 ];
 
 // Palavras que sozinhas já dizem "isto é do agro", sem apontar categoria.
 // 'campo' saiu: futebol é jogado em campo, e o Brasileirão vazava para a home.
 const AGRO_GERAL = [
   'agro', 'agronegocio', 'agropecuaria', 'agricola', 'agricolas', 'agricultura',
-  'fazenda', 'fazendas', 'produtor', 'produtores', 'rural', 'cooperativa', 'embrapa',
+  'fazenda', 'fazendas', 'produtor', 'produtores', 'rural', 'rurais', 'cooperativa',
+  'embrapa', 'mapa desmente', 'sanidade', 'aftosa', 'brucelose', 'mosca-varejeira',
 ];
 
-// O que decide se a notícia de um veículo amplo ENTRA. Estrito de propósito.
+// O custo e a logística da porteira: não são "o preço", mas mexem no bolso de quem
+// produz, e é por isso que entram no recorte "mercado e produção" que o dono pediu.
+// Sem esta lista, "Câmara aprova piso do frete" e "renegociação de dívidas rurais"
+// — notícia dura de Canal Rural — caíam junto com o lifestyle.
+const CUSTOS = [
+  'frete', 'diesel', 'combustivel', 'maquinas agricolas', 'trator', 'tratores',
+  'colheitadeira', 'colheitadeiras', 'plano safra', 'credito rural', 'divida rural',
+  'dividas rurais', 'armazenagem', 'silo', 'silos', 'irrigacao', 'pastagem',
+  'pastagens', 'confinamento', 'racao', 'caminhoneiros',
+];
+
+// O que decide se a notícia ENTRA. Estrito de propósito — e desde 23/07/2026 vale
+// para TODO veículo, inclusive os de agro (ver `relevante`).
 const TERMOS_RELEVANCIA = [
-  ...PECUARIA, ...GRAOS, ...CLIMA, ...AGRO_GERAL,
+  ...PECUARIA, ...GRAOS, ...AGRO_GERAL, ...CUSTOS,
   ...MERCADO.filter((t) => !SO_PARA_CATEGORIA.has(t)),
 ];
+
+// ---------------------------------------------------------------------------
+// O que NUNCA entra, mesmo trazendo palavra do ramo.
+//
+// A palavra do agro sozinha abria a porta para a página de entretenimento: 'fazenda'
+// é o reality show da Record; 'boi' é o Boi Bumbá; 'colmeia' veio com Angelina Jolie
+// num feed de agro. Todos abaixo saíram de itens reais dos feeds, medidos em
+// 23/07/2026 — ou são o caso clássico do veículo (novela, futebol, receita).
+//
+// Vale sobre título + resumo e ganha da relevância: bloqueio é veto, não empate.
+const BLOQUEIO = [
+  // entretenimento e celebridade
+  'reality', 'bbb', 'novela', 'novelas', 'famoso', 'famosos', 'celebridade',
+  'celebridades', 'ator', 'atriz', 'cantor', 'cantora', 'apresentador',
+  'apresentadora', 'hollywood', 'netflix', 'filme', 'filmes', 'serie', 'series',
+  'minisserie', 'bumba', 'carnaval', 'ao vivo na tv', 'estreia', 'estreou',
+  // 'peão' ficou de fora: na Record é o participante do reality, mas na praça é o
+  // trabalhador da fazenda — e notícia de peão de fazenda é notícia daqui.
+  // esporte
+  'brasileirao', 'libertadores', 'escalacoes', 'escalacao', 'onde assistir',
+  'gols', 'campeonato', 'copa do mundo', 'olimpiadas', 'jogador', 'jogadores',
+  'torcida', 'campeoes',
+  // culinária e lifestyle
+  'aprenda a fazer', 'modo de preparo', 'receita nosso campo', 'horta em casa',
+  'jardim', 'jardinagem', 'pets', 'mini-horses', 'curiosidades',
+  // O gênero "dicas de cultivo" — a maior sobra depois do primeiro corte, quase toda
+  // da Globo Rural: plantio de oliveiras, coco anão, mirtilo, microverdes, avestruz.
+  // É agro de verdade, mas não é o segmento da praça (boi, vaca, soja, milho) nem
+  // mexe no preço de nada aqui. O padrão é a manchete de tutorial, não a palavra.
+  'dicas', 'guia para iniciantes', 'passo a passo', 'quer produzir', 'quer criar',
+  'como cultivar', 'como criar', 'como montar', 'como armazenar', 'como plantar',
+  'como fazer', 'para que serve', 'voce conhece', 'saiba o que', 'veja como funciona',
+];
+
+/** Assunto que a praça não quer ver, custe o que custar. Veto sobre a relevância. */
+export function bloqueado(item: ItemBruto): boolean {
+  const texto = textoDe(item);
+  return BLOQUEIO.some((t) => contem(texto, t));
+}
 
 const GRUPOS: Array<{ categoria: Categoria; termos: string[] }> = [
   { categoria: 'pecuaria', termos: PECUARIA },
@@ -123,12 +182,23 @@ export function categoria(item: ItemBruto): Categoria {
 }
 
 /**
- * Vale a pena mostrar? Veículo de nicho (Canal Rural, Notícias Agrícolas...) passa
- * direto — lá tudo é agro. Veículo amplo precisa de pelo menos uma palavra do ramo,
- * senão a home da praça enche de política e celebridade.
+ * Vale a pena mostrar?
+ *
+ * DUAS REGRAS, e a mesma régua para todo veículo (mudou em 23/07/2026):
+ *
+ * 1. Nada de bloqueado. Entretenimento, esporte e receita saem mesmo trazendo
+ *    palavra do ramo — 'fazenda' é o reality, 'boi' é o bumbá.
+ * 2. Pelo menos uma palavra de mercado ou de produção, no título ou no resumo.
+ *
+ * POR QUE O VEÍCULO DE AGRO PERDEU O PASSE LIVRE: enquanto `nicho: true` dispensava
+ * o filtro, quem publicava lifestyle entre as matérias de mercado entregava
+ * lifestyle na home — "Angelina Jolie trocou Hollywood pelas colmeias" (Compre
+ * Rural), "Como montar uma horta em casa" e "mini-horses criados como pets" (Globo
+ * Rural) chegaram assim. Ser um site de agro diz de onde a matéria vem, não do que
+ * ela trata; quem decide isso é o texto.
  */
-export function relevante(item: ItemBruto, nicho: boolean): boolean {
-  if (nicho) return true;
+export function relevante(item: ItemBruto): boolean {
+  if (bloqueado(item)) return false;
   const texto = textoDe(item);
   return TERMOS_RELEVANCIA.some((t) => contem(texto, t));
 }

@@ -58,7 +58,10 @@ describe('montarBoletim', () => {
     expect(b.mercado[0].valorFmt).toBe('R$ 5,1945');
   });
 
-  it('monta variação com direção; null fica sem variação; 0 conta como alta', () => {
+  it('monta variação com direção; null fica sem variação; 0 é estável, não alta', () => {
+    // 0% GANHOU DIREÇÃO PRÓPRIA (23/07/2026). Antes caía em 'alta' e o card
+    // desenhava seta verde para cima num preço que não mexeu — o dono leu como
+    // valor inventado, e com razão: a seta afirmava uma subida que não houve.
     const b = montarBoletim(
       [linha('dolar', 5, 'R$', 0.4), linha('euro', 6, 'R$', -1.54), linha('ouro', 678, 'R$/g', null), linha('bitcoin', 1, 'R$', 0)],
       [],
@@ -66,7 +69,7 @@ describe('montarBoletim', () => {
     expect(b.mercado[0].variacao).toEqual({ texto: '0,4%', direcao: 'alta' });
     expect(b.mercado[1].variacao).toEqual({ texto: '1,54%', direcao: 'baixa' });
     expect(b.mercado[2].variacao).toBeUndefined();
-    expect(b.mercado[3].variacao).toEqual({ texto: '0%', direcao: 'alta' });
+    expect(b.mercado[3].variacao).toEqual({ texto: '0%', direcao: 'estavel' });
   });
 
   it('a commodity sem preço por estado não entra na porteira (nada de média disfarçada)', () => {
@@ -74,19 +77,39 @@ describe('montarBoletim', () => {
     expect(b.porteira).toEqual([]);
   });
 
+  // As três chamadas fixam `agora` no dia seguinte ao fechamento: sem isso o teste
+  // usaria o relógio real, e a partir de 23/07/2026 o rodapé passou a acusar atraso
+  // (ver 'marca no rodapé o preço que passou do prazo'). O que se mede aqui é o
+  // FORMATO do rótulo, não o frescor.
+  const logoDepois = new Date('2026-07-04T12:00:00Z');
+
   it('rotula a CONAB pelo intervalo da semana (segunda a sexta) e credita a fonte', () => {
-    const b = montarBoletim([], [uf('soja', 'TO', 112.2, 2.19)]);
+    const b = montarBoletim([], [uf('soja', 'TO', 112.2, 2.19)], [], logoDepois);
     expect(b.porteira[0].rodape).toBe('CONAB · semana de 29/06 a 03/07');
   });
 
   // A Scot fecha por DIA — rotular de "semana" seria mentir na data. Só a CONAB
   // (grãos) fecha semana; desde a fatia 17 todo o gado é Scot.
   it('rotula os indicadores diários pelo dia do fechamento', () => {
-    const b = montarBoletim([], [uf('vaca', 'PA', 298.36, 0.13)]);
+    const b = montarBoletim([], [uf('vaca', 'PA', 298.36, 0.13)], [], logoDepois);
     expect(b.porteira[0].rodape).toBe('Scot Consultoria · 03/07');
 
-    const c = montarBoletim([], [uf('bezerro', 'MT', 3546.23, null)]);
+    const c = montarBoletim([], [uf('bezerro', 'MT', 3546.23, null)], [], logoDepois);
     expect(c.porteira[0].rodape).toBe('Scot Consultoria · 03/07');
+  });
+
+  // O card NUNCA avisava que o preço estava velho: repetia o mesmo número dia após
+  // dia com cara de novidade. Se a fonte cair, o produtor precisa ver isso escrito.
+  it('marca no rodapé o preço que passou do prazo da fonte', () => {
+    // Scot fecha por dia e tolera 5 (fim de semana e feriado). 12 dias é fonte parada.
+    const b = montarBoletim([], [uf('vaca', 'PA', 298.36, 0.13)], [], new Date('2026-07-15T12:00:00Z'));
+    expect(b.porteira[0].rodape).toBe('Scot Consultoria · 03/07 · desatualizado');
+  });
+
+  it('dentro do prazo, o rodapé não alarma', () => {
+    // A CONAB fecha semana e tolera 10 dias: 05/07 sobre um fechamento de 03/07 é normal.
+    const b = montarBoletim([], [uf('soja', 'TO', 112.2, 2.19)], [], new Date('2026-07-05T12:00:00Z'));
+    expect(b.porteira[0].rodape).toBe('CONAB · semana de 29/06 a 03/07');
   });
 
   it('data por extenso em pt-BR no fuso do Araguaia', () => {

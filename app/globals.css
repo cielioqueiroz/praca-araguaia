@@ -488,6 +488,8 @@ a.mrow:hover{background:var(--paper-warm)}
 .mrow .mspk{width:110px;height:26px;justify-self:end}
 .var{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;justify-self:end}
 .var.up{color:var(--moss)}.var.down{color:var(--rust)}
+/* 0% é preço parado, não alta: traço e cor neutra, nunca a seta verde. */
+.var.flat{color:var(--muted)}
 .var .ar{font-size:8.5px;transform:translateY(-1px)}
 .var-vazia{font-family:var(--mono);font-size:11.5px;color:var(--rule-strong);justify-self:end}
 
