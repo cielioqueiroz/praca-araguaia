@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { arrobasDeBoi, valorEmReais, sacasParaKg } from '@/lib/calculadora';
 import { normalizarValor } from '@/lib/termometro';
 import { TITULOS } from '@/lib/tipos-ui';
+import { ValorContado } from '@/components/redesign/ValorContado';
 
-const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+// Quantidades (arrobas, kg) mostram até 2 casas sem forçar o ",00"; o dinheiro é o
+// ValorContado, que sempre traz as duas casas.
+const fmtQtd = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const num = (s: string) => normalizarValor(s);
 const precoInicial = (v?: number) =>
   v !== undefined && Number.isFinite(v) ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '';
@@ -13,7 +16,12 @@ const precoInicial = (v?: number) =>
 /** Todo preço que o painel publica pode entrar numa conta aqui. */
 export type Precos = Partial<Record<string, number>>;
 
-type GadoArroba = 'boi' | 'vaca' | 'novilha';
+// Boi e vaca vão na BALANÇA (R$/@): a conta é peso vivo → arrobas de carcaça.
+type GadoArroba = 'boi' | 'vaca';
+// Bezerro e novilha são REPOSIÇÃO (R$/cabeça): a praça negocia por cabeça, não por
+// arroba. Novilha estava na balança e por isso saía 13× o valor — a arroba multiplicava
+// um preço que já era por cabeça. Ver lib/termometro.ts e lib/fontes/pecuaria.ts.
+type Reposicao = 'bezerro' | 'novilha';
 type Grao = 'soja' | 'milho';
 // O Ibovespa fica de fora de propósito: é índice, não tem lote nem quantidade — não
 // existe "quanto vale o meu Ibovespa".
@@ -27,23 +35,27 @@ const UNIDADE_ATIVO: Record<Ativo, { qtd: string; preco: string }> = {
   ethereum: { qtd: 'Ethers (ETH)', preco: 'Preço (R$/ETH)' },
 };
 
-const campo =
-  'mt-1 w-full rounded-lg border border-linha bg-papel px-3 py-2.5 text-base text-tinta focus-visible:outline-2 focus-visible:outline-pasto';
-const secao = 'rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)]';
-
-function Resultado({ rotulo, valor, testId }: { rotulo: string; valor: number; testId: string }) {
+function Campo({
+  rotulo,
+  valor,
+  onChange,
+  aria,
+}: {
+  rotulo: string;
+  valor: string;
+  onChange: (v: string) => void;
+  aria: string;
+}) {
   return (
-    <p className="text-sm text-tinta/60">
-      {rotulo}:{' '}
-      <span data-testid={testId} className="font-sans text-2xl font-bold tabular-nums text-mata">
-        R$ {fmt.format(valor)}
-      </span>
-    </p>
+    <label className="ccampo">
+      <span>{rotulo}</span>
+      <input aria-label={aria} inputMode="decimal" value={valor} onChange={(e) => onChange(e.target.value)} />
+    </label>
   );
 }
 
 export function Calculadora({ precos }: { precos: Precos }) {
-  // ---------- Gado na balança: boi, vaca e novilha (a conta é a mesma, muda o preço)
+  // ---------- Boi e vaca na balança: do peso vivo às arrobas de carcaça (R$/@)
   const [gado, setGado] = useState<GadoArroba>('boi');
   const [peso, setPeso] = useState('');
   const [rendimento, setRendimento] = useState('50');
@@ -51,10 +63,11 @@ export function Calculadora({ precos }: { precos: Precos }) {
   const arrobas = arrobasDeBoi(num(peso), num(rendimento));
   const valorGado = valorEmReais(arrobas, num(precoGado));
 
-  // ---------- Bezerro: a praça negocia por CABEÇA, não por arroba
+  // ---------- Reposição: bezerro e novilha, por CABEÇA (R$/cabeça)
+  const [reposicao, setReposicao] = useState<Reposicao>('bezerro');
   const [cabecas, setCabecas] = useState('');
-  const [precoBezerro, setPrecoBezerro] = useState(precoInicial(precos.bezerro));
-  const valorBezerro = valorEmReais(num(cabecas), num(precoBezerro));
+  const [precoReposicao, setPrecoReposicao] = useState(precoInicial(precos.bezerro));
+  const valorReposicao = valorEmReais(num(cabecas), num(precoReposicao));
 
   // ---------- Colheita
   const [grao, setGrao] = useState<Grao>('soja');
@@ -70,15 +83,16 @@ export function Calculadora({ precos }: { precos: Precos }) {
   const valorAtivo = valorEmReais(num(quantidade), num(precoAtivo));
 
   return (
-    <div className="mt-8 flex flex-col gap-8">
-      <section className={secao}>
-        <h2 className="font-display text-lg font-bold text-mata">Gado na balança</h2>
-        <p className="mt-0.5 text-sm text-tinta/50">
-          Boi, vaca ou novilha: do peso vivo às arrobas de carcaça.
-        </p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-4">
-          <label className="block text-sm font-medium text-tinta/70">
-            Categoria
+    <div className="calc" data-grupo-cartoes>
+      {/* ---------- Boi e vaca (balança) ---------- */}
+      <section className="csec" data-cartao>
+        <div className="cshead">
+          <h2>Boi e vaca na balança</h2>
+          <p>Do peso vivo às arrobas de carcaça — a arroba é 15 kg de carcaça.</p>
+        </div>
+        <div className="cgrid quatro">
+          <label className="ccampo">
+            <span>Categoria</span>
             <select
               aria-label="categoria do gado"
               value={gado}
@@ -87,59 +101,72 @@ export function Calculadora({ precos }: { precos: Precos }) {
                 setGado(g);
                 setPrecoGado(precoInicial(precos[g]));
               }}
-              className={campo}
             >
-              {(['boi', 'vaca', 'novilha'] as GadoArroba[]).map((g) => (
+              {(['boi', 'vaca'] as GadoArroba[]).map((g) => (
                 <option key={g} value={g}>
                   {TITULOS[g]}
                 </option>
               ))}
             </select>
           </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Peso vivo (kg)
-            <input aria-label="peso vivo (kg)" inputMode="decimal" value={peso} onChange={(e) => setPeso(e.target.value)} className={campo} />
-          </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Rendimento (%)
-            <input aria-label="rendimento (%)" inputMode="decimal" value={rendimento} onChange={(e) => setRendimento(e.target.value)} className={campo} />
-          </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Preço (R$/@)
-            <input aria-label="preço (R$/@)" inputMode="decimal" value={precoGado} onChange={(e) => setPrecoGado(e.target.value)} className={campo} />
-          </label>
+          <Campo rotulo="Peso vivo (kg)" aria="peso vivo (kg)" valor={peso} onChange={setPeso} />
+          <Campo rotulo="Rendimento (%)" aria="rendimento (%)" valor={rendimento} onChange={setRendimento} />
+          <Campo rotulo="Preço (R$/@)" aria="preço (R$/@)" valor={precoGado} onChange={setPrecoGado} />
         </div>
-        <div className="mt-4 flex flex-wrap items-baseline gap-x-8 gap-y-2">
-          <p className="text-sm text-tinta/60">
-            Arrobas: <span data-testid="boi-arrobas" className="font-sans text-xl font-bold tabular-nums text-tinta">{fmt.format(arrobas)}</span>
-          </p>
-          <Resultado rotulo="Valor do lote" valor={valorGado} testId="boi-valor" />
+        <div className="cresultado">
+          <span className="cqtd">
+            <b data-testid="boi-arrobas">{fmtQtd.format(arrobas)}</b> arrobas
+          </span>
+          <span className="cvalor">
+            Valor do lote <ValorContado valor={valorGado} testId="boi-valor" />
+          </span>
         </div>
       </section>
 
-      <section className={secao}>
-        <h2 className="font-display text-lg font-bold text-mata">Lote de bezerro</h2>
-        <p className="mt-0.5 text-sm text-tinta/50">Bezerro se compra por cabeça — não por arroba.</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-tinta/70">
-            Cabeças
-            <input aria-label="cabeças" inputMode="decimal" value={cabecas} onChange={(e) => setCabecas(e.target.value)} className={campo} />
-          </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Preço (R$/cabeça)
-            <input aria-label="preço (R$/cabeça)" inputMode="decimal" value={precoBezerro} onChange={(e) => setPrecoBezerro(e.target.value)} className={campo} />
-          </label>
+      {/* ---------- Reposição: bezerro e novilha (por cabeça) ---------- */}
+      <section className="csec" data-cartao>
+        <div className="cshead">
+          <h2>Reposição — bezerro e novilha</h2>
+          <p>Comprados por cabeça, nunca por arroba: é a fêmea e o macho de recria da praça.</p>
         </div>
-        <div className="mt-4">
-          <Resultado rotulo="Valor do lote" valor={valorBezerro} testId="bezerro-valor" />
+        <div className="cgrid tres">
+          <label className="ccampo">
+            <span>Categoria</span>
+            <select
+              aria-label="categoria de reposição"
+              value={reposicao}
+              onChange={(e) => {
+                const r = e.target.value as Reposicao;
+                setReposicao(r);
+                setPrecoReposicao(precoInicial(precos[r]));
+              }}
+            >
+              {(['bezerro', 'novilha'] as Reposicao[]).map((r) => (
+                <option key={r} value={r}>
+                  {TITULOS[r]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Campo rotulo="Cabeças" aria="cabeças" valor={cabecas} onChange={setCabecas} />
+          <Campo rotulo="Preço (R$/cabeça)" aria="preço (R$/cabeça)" valor={precoReposicao} onChange={setPrecoReposicao} />
+        </div>
+        <div className="cresultado">
+          <span className="cvalor">
+            Valor do lote <ValorContado valor={valorReposicao} testId="reposicao-valor" />
+          </span>
         </div>
       </section>
 
-      <section className={secao}>
-        <h2 className="font-display text-lg font-bold text-mata">Colheita de grãos</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <label className="block text-sm font-medium text-tinta/70">
-            Produto
+      {/* ---------- Colheita de grãos ---------- */}
+      <section className="csec" data-cartao>
+        <div className="cshead">
+          <h2>Colheita de grãos</h2>
+          <p>Soja e milho, da saca de 60 kg ao valor da lavoura.</p>
+        </div>
+        <div className="cgrid tres">
+          <label className="ccampo">
+            <span>Produto</span>
             <select
               aria-label="produto"
               value={grao}
@@ -148,37 +175,33 @@ export function Calculadora({ precos }: { precos: Precos }) {
                 setGrao(g);
                 setPrecoGrao(precoInicial(precos[g]));
               }}
-              className={campo}
             >
               <option value="soja">Soja</option>
               <option value="milho">Milho</option>
             </select>
           </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Sacas (60 kg)
-            <input aria-label="sacas" inputMode="decimal" value={sacas} onChange={(e) => setSacas(e.target.value)} className={campo} />
-          </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            Preço (R$/sc)
-            <input aria-label="preço (R$/sc)" inputMode="decimal" value={precoGrao} onChange={(e) => setPrecoGrao(e.target.value)} className={campo} />
-          </label>
+          <Campo rotulo="Sacas (60 kg)" aria="sacas" valor={sacas} onChange={setSacas} />
+          <Campo rotulo="Preço (R$/sc)" aria="preço (R$/sc)" valor={precoGrao} onChange={setPrecoGrao} />
         </div>
-        <div className="mt-4 flex flex-wrap items-baseline gap-x-8 gap-y-2">
-          <p className="text-sm text-tinta/60">
-            Equivale a <span data-testid="graos-kg" className="font-semibold tabular-nums text-tinta">{fmt.format(kg)}</span> kg
-          </p>
-          <Resultado rotulo="Valor da colheita" valor={valorGrao} testId="graos-valor" />
+        <div className="cresultado">
+          <span className="cqtd">
+            <b data-testid="graos-kg">{fmtQtd.format(kg)}</b> kg
+          </span>
+          <span className="cvalor">
+            Valor da colheita <ValorContado valor={valorGrao} testId="graos-valor" />
+          </span>
         </div>
       </section>
 
-      <section className={secao}>
-        <h2 className="font-display text-lg font-bold text-mata">Mercado</h2>
-        <p className="mt-0.5 text-sm text-tinta/50">
-          Quanto vale, em real, o que você tem em dólar, euro, ouro ou cripto.
-        </p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <label className="block text-sm font-medium text-tinta/70">
-            Ativo
+      {/* ---------- Mercado ---------- */}
+      <section className="csec" data-cartao>
+        <div className="cshead">
+          <h2>Mercado</h2>
+          <p>Quanto vale, em real, o que você tem em dólar, euro, ouro ou cripto.</p>
+        </div>
+        <div className="cgrid tres">
+          <label className="ccampo">
+            <span>Ativo</span>
             <select
               aria-label="ativo"
               value={ativo}
@@ -187,7 +210,6 @@ export function Calculadora({ precos }: { precos: Precos }) {
                 setAtivo(a);
                 setPrecoAtivo(precoInicial(precos[a]));
               }}
-              className={campo}
             >
               {(Object.keys(UNIDADE_ATIVO) as Ativo[]).map((a) => (
                 <option key={a} value={a}>
@@ -196,29 +218,13 @@ export function Calculadora({ precos }: { precos: Precos }) {
               ))}
             </select>
           </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            {UNIDADE_ATIVO[ativo].qtd}
-            <input
-              aria-label="quantidade"
-              inputMode="decimal"
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
-              className={campo}
-            />
-          </label>
-          <label className="block text-sm font-medium text-tinta/70">
-            {UNIDADE_ATIVO[ativo].preco}
-            <input
-              aria-label="preço do ativo"
-              inputMode="decimal"
-              value={precoAtivo}
-              onChange={(e) => setPrecoAtivo(e.target.value)}
-              className={campo}
-            />
-          </label>
+          <Campo rotulo={UNIDADE_ATIVO[ativo].qtd} aria="quantidade" valor={quantidade} onChange={setQuantidade} />
+          <Campo rotulo={UNIDADE_ATIVO[ativo].preco} aria="preço do ativo" valor={precoAtivo} onChange={setPrecoAtivo} />
         </div>
-        <div className="mt-4">
-          <Resultado rotulo="Vale hoje" valor={valorAtivo} testId="mercado-valor" />
+        <div className="cresultado">
+          <span className="cvalor">
+            Vale hoje <ValorContado valor={valorAtivo} testId="mercado-valor" />
+          </span>
         </div>
       </section>
     </div>

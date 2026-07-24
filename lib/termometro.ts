@@ -5,10 +5,17 @@ import { MUNICIPIOS } from '@/lib/fontes/chuva';
 export type ProdutoTermometro = 'boi' | 'vaca' | 'novilha' | 'bezerro' | 'soja' | 'milho';
 
 // Faixas plausíveis: bloqueiam erro de digitação/troll, não a variação real de mercado.
+//
+// NOVILHA É POR CABEÇA, não por arroba (corrigido em 24/07/2026). Ela é REPOSIÇÃO —
+// a fêmea nelore de 18 meses da Scot, em R$/cabeça (ver lib/fontes/pecuaria.ts e a
+// unidade em tipos-ui.ts). Enquanto esta faixa era 'R$/@, 130–550', o Termômetro
+// rejeitava o reporte correto de uma novilha (~R$ 2.971/cab) como "fora da faixa" e
+// rotulava a unidade errada no gráfico. A faixa acompanha o bezerro, que é a mesma
+// reposição por cabeça.
 export const PRODUTOS: Record<ProdutoTermometro, { rotulo: string; unidade: string; min: number; max: number }> = {
   boi: { rotulo: 'Boi gordo', unidade: 'R$/@', min: 150, max: 600 },
   vaca: { rotulo: 'Vaca gorda', unidade: 'R$/@', min: 130, max: 550 },
-  novilha: { rotulo: 'Novilha', unidade: 'R$/@', min: 130, max: 550 },
+  novilha: { rotulo: 'Novilha', unidade: 'R$/cabeça', min: 800, max: 6000 },
   bezerro: { rotulo: 'Bezerro', unidade: 'R$/cabeça', min: 800, max: 6000 },
   soja: { rotulo: 'Soja', unidade: 'R$/sc 60kg', min: 40, max: 300 },
   milho: { rotulo: 'Milho', unidade: 'R$/sc 60kg', min: 20, max: 200 },

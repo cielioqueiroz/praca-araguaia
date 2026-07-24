@@ -34,6 +34,15 @@ describe('validarReporte', () => {
     expect(v2.tipo).toBe('invalido');
   });
 
+  it('aceita a novilha de reposição pela faixa de cabeça, não a de arroba', () => {
+    // O bug: novilha estava em 'R$/@, 130–550' e barrava o reporte real (~R$ 2.971
+    // por cabeça). Agora o preço de reposição passa, e um preço de arroba não.
+    expect(validarReporte(corpo({ produto: 'novilha', valor: 2971 })).tipo).toBe('valido');
+    const arroba = validarReporte(corpo({ produto: 'novilha', valor: 300 }));
+    expect(arroba.tipo).toBe('invalido');
+    if (arroba.tipo === 'invalido') expect(arroba.erro).toMatch(/cabeça/);
+  });
+
   it('rejeita valor não numérico ou corpo malformado', () => {
     expect(validarReporte(corpo({ valor: 'trezentos' })).tipo).toBe('invalido');
     expect(validarReporte(null).tipo).toBe('invalido');
@@ -133,7 +142,8 @@ describe('constantes', () => {
   it('cobre as 6 categorias da porteira, na mesma ordem dela', () => {
     expect(ORDEM_PRODUTOS).toEqual(['boi', 'vaca', 'novilha', 'bezerro', 'soja', 'milho']);
     expect(PRODUTOS.bezerro.unidade).toBe('R$/cabeça');
-    expect(PRODUTOS.novilha.unidade).toBe('R$/@');
+    // Novilha é reposição, por cabeça — como o bezerro, e não como o boi.
+    expect(PRODUTOS.novilha.unidade).toBe('R$/cabeça');
   });
 
   it('o Termômetro cobre exatamente o que a porteira publica', () => {
