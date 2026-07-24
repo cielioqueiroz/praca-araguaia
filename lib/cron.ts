@@ -12,11 +12,28 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // ---------------------------------------------------------------------------
 // OS HORÁRIOS (o vercel.json é JSON e não aceita comentário — a razão mora aqui)
 //
-//   /api/coletar        22:00 UTC = 19:00 BRT  ← coleta, no fim da tarde
-//   /api/enviar-boletim 12:20 UTC = 09:20 BRT  ← card do dia para os inscritos
-//   /api/alertas        12:25 UTC = 09:25 BRT
+// SEGUNDA A SEXTA, sempre (`1-5` no cron). Feriado nacional é barrado dentro das
+// rotas, em lib/dia-util.ts: o cron da Vercel sabe que dia da semana é hoje, mas
+// não sabe que hoje é Natal.
 //
-// A COLETA MUDOU DE 09:00 PARA 19:00 BRT EM 23/07/2026, e este é o motivo:
+//   /api/enviar-boletim?sessao=abertura    10:30 UTC = 07:30 BRT
+//   /api/coletar                           20:30 UTC = 17:30 BRT
+//   /api/enviar-boletim?sessao=fechamento  21:00 UTC = 18:00 BRT
+//   /api/alertas                           21:15 UTC = 18:15 BRT
+//
+// DUAS ENTREGAS POR DIA (23/07/2026, a pedido do dono):
+//
+//   ABERTURA, 07:30 — o preço com que o dia COMEÇA. À essa hora não existe dado
+//   novo: a B3 abre às 10h e a Scot publica à tarde. Então o card leva o
+//   fechamento do pregão anterior, que é literalmente o número com que o mercado
+//   abre. A legenda diz isso com todas as letras, para ninguém achar que é o
+//   preço de agora.
+//
+//   FECHAMENTO, 18:00 — depois que tudo fechou. A coleta roda 30 min antes, às
+//   17:30: a B3 encerra às 17:00 e a Scot já publicou. É o card com o número do
+//   dia apurado, e é ele que vale.
+//
+// A COLETA SAIU DE 09:00 PARA 17:30 BRT, e este é o motivo:
 //
 // As páginas da Scot publicam o fechamento do dia à tarde. Coletando às 09:00 BRT,
 // o app pegava a página ANTES da atualização e gravava o fechamento retrasado.
@@ -29,12 +46,9 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // repetiam o mesmo número de sexta a terça. Foi o que o dono descreveu como "o gado
 // congelou num preço antigo".
 //
-// Coletando às 19:00, o card da manhã seguinte carrega o fechamento mais novo que
-// existe. De quebra, o Ibovespa passa a entrar com o fechamento real do pregão (que
-// encerra às 17:00 BRT) em vez do número da véspera.
-//
-// O envio segue de manhã: o boletim é "bom dia", e o produtor lê o preço com que a
-// praça abre o dia. São três crons porque o plano grátis da Vercel não dá mais.
+// Coletando às 17:30, o card do fechamento sai com o número do próprio dia, e o da
+// manhã seguinte carrega o fechamento mais novo que existe. De quebra, o Ibovespa
+// passa a entrar com o fechamento real do pregão em vez do número da véspera.
 // ---------------------------------------------------------------------------
 
 /** SHA-256 dos dois lados iguala o comprimento, exigência do timingSafeEqual. */

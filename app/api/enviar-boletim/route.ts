@@ -1,7 +1,8 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { autorizadoPorCron } from '@/lib/cron';
+import { diaUtil } from '@/lib/dia-util';
 import { enviarFotoArquivo } from '@/lib/telegram';
-import { legendaBoletim, urlFotoBoletim } from '@/lib/telegram-boletim';
+import { legendaBoletim, urlFotoBoletim, type Sessao } from '@/lib/telegram-boletim';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
 
 export const dynamic = 'force-dynamic';
@@ -12,16 +13,37 @@ export async function GET(req: Request): Promise<Response> {
     return new Response('unauthorized', { status: 401 });
   }
 
+  const params = new URL(req.url).searchParams;
+
+  // Qual das duas entregas do dia é esta. Sem o parâmetro, 'abertura' — é a que
+  // existia sozinha antes, então um disparo antigo continua fazendo o de sempre.
+  const sessao: Sessao = params.get('sessao') === 'fechamento' ? 'fechamento' : 'abertura';
+
+  // Modo prévia (?previa=1): manda o card SÓ para o chat do dono, para ele conferir
+  // como a peça chega no celular antes de ela ir para os inscritos. Nunca faz
+  // broadcast. Sem TELEGRAM_DONO_CHAT_ID, não há para quem mandar a prévia.
+  const previa = params.get('previa') !== null;
+
+  // SÁBADO, DOMINGO E FERIADO NACIONAL NÃO TÊM BOLETIM. O card fala de pregão e de
+  // arroba negociada: sem mercado aberto, ele só repetiria o número de sexta com a
+  // data de hoje — a mesma cara de "congelado" que o dono relatou. O cron já
+  // recorta segunda a sexta, mas ele não conhece feriado; esta é a tranca que vale.
+  //
+  // A prévia passa: ela vai só para o dono, que pode querer conferir a peça num
+  // domingo justamente porque tem tempo.
+  if (!previa) {
+    const veredito = diaUtil();
+    if (!veredito.ehDiaUtil) {
+      console.log(`enviar-boletim: sem envio hoje (${veredito.motivo})`);
+      return Response.json({ enviados: 0, removidos: 0, falhas: 0, pulado: veredito.motivo });
+    }
+  }
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   // O segredo já existe (autorizadoPorCron não deixaria passar sem ele), mas quem lê
   // esta linha não deveria precisar saber disso para entender que ela é segura.
   const segredo = process.env.CRON_SECRET;
   if (!token || !segredo) return new Response('config', { status: 500 });
-
-  // Modo prévia (?previa=1): manda o card SÓ para o chat do dono, para ele conferir
-  // como a peça chega no celular antes de ela ir para os inscritos. Nunca faz
-  // broadcast. Sem TELEGRAM_DONO_CHAT_ID, não há para quem mandar a prévia.
-  const previa = new URL(req.url).searchParams.get('previa') !== null;
 
   const supabase = createServerClient();
 
@@ -49,8 +71,8 @@ export async function GET(req: Request): Promise<Response> {
 
   const agora = new Date();
   const caption = previa
-    ? `📋 Prévia (só para você). ${legendaBoletim(agora)}`
-    : legendaBoletim(agora);
+    ? `📋 Prévia (só para você). ${legendaBoletim(agora, sessao)}`
+    : legendaBoletim(agora, sessao);
 
   // Renderiza o card UMA vez e envia os bytes para todo mundo. Antes mandávamos a URL,
   // e o Telegram tinha de buscá-la: como o card leva ~10s para desenhar, ele desistia

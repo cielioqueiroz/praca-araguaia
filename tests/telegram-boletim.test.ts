@@ -14,6 +14,27 @@ describe('legendaBoletim', () => {
   it('credita o criador', () => {
     expect(legendaBoletim(AGORA)).toContain('Cielio Queiroz');
   });
+
+  // Duas entregas por dia (23/07/2026). Sem distinguir as duas, o segundo card
+  // chegaria como uma repetição do primeiro — e card repetido foi justamente o
+  // que fez o dono achar que o sistema tinha congelado.
+  it('a abertura diz que o preço é o fechamento de ontem', () => {
+    const l = legendaBoletim(AGORA, 'abertura');
+    expect(l).toContain('Bom dia');
+    expect(l).toContain('abre');
+    expect(l).toContain('fechamento de ontem');
+  });
+
+  it('o fechamento diz que o pregão encerrou e o preço é de hoje', () => {
+    const l = legendaBoletim(AGORA, 'fechamento');
+    expect(l).toContain('fechamento do dia');
+    expect(l).toContain('apurados hoje');
+    expect(l).not.toContain('Bom dia');
+  });
+
+  it('sem sessão, é a abertura — o disparo antigo continua fazendo o de sempre', () => {
+    expect(legendaBoletim(AGORA)).toBe(legendaBoletim(AGORA, 'abertura'));
+  });
 });
 
 describe('urlFotoBoletim', () => {

@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { autorizadoPorCron } from '@/lib/cron';
+import { diaUtil } from '@/lib/dia-util';
 import { enviarTexto } from '@/lib/telegram';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
 import { detectarMovers, montarMensagemAlerta } from '@/lib/telegram-alertas';
@@ -17,6 +18,15 @@ export async function GET(req: Request): Promise<Response> {
   if (!token) return new Response('config', { status: 500 });
 
   const zero = { alertados: 0, enviados: 0, removidos: 0, falhas: 0 };
+
+  // Mesma regra do boletim: sem mercado aberto, não há movimento para alertar.
+  // Um "o boi subiu 3%" no domingo estaria comparando o mesmo fechamento de sexta
+  // consigo mesmo. O cron já recorta segunda a sexta; o feriado é código.
+  const veredito = diaUtil();
+  if (!veredito.ehDiaUtil) {
+    console.log(`alertas: sem disparo hoje (${veredito.motivo})`);
+    return Response.json({ ...zero, pulado: veredito.motivo });
+  }
   const supabase = createServerClient();
 
   // O resumo de audiência pega carona neste cron: o plano grátis da Vercel limita

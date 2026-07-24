@@ -1,9 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
-// Entrada suave (fade + subida) quando entra na viewport — estilo Dribbble.
+// Entrada suave (fade + subida) quando o bloco entra na viewport.
 export function Revelar({
   children,
   delay = 0,
@@ -15,6 +15,12 @@ export function Revelar({
   y?: number;
   className?: string;
 }) {
+  // Quem pediu menos movimento no sistema recebe o conteúdo parado, e não uma
+  // versão mais lenta do mesmo deslize. Sem esta guarda o bloco ainda começava em
+  // opacity 0 e subia — justamente o que a preferência pede para não acontecer.
+  const semMovimento = useReducedMotion();
+  if (semMovimento) return <div className={className}>{children}</div>;
+
   return (
     <motion.div
       className={className}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { IconeCommodity, FOTO_COMMODITY } from './iconesCommodity';
+import { Numero } from './Numero';
 import { NOME_UF } from '@/lib/praca';
 
 export type PrecoUfUI = { uf: string; valor: number; variacaoPct: number | null };
@@ -70,7 +71,7 @@ export function CardPorteira(p: CardPorteiraProps) {
               o destaque do SuaPraca acerta a linha sem precisar saber disso. */}
           {p.pracas ? (
             <ul className="ufs pracas">
-              {p.pracas.map((u) => (
+              {p.pracas.map((u, i) => (
                 // Só data-cidade: com data-uf, um usuário no Pará acendia "você" em
                 // Marabá, Redenção E Paragominas ao mesmo tempo — ninguém está em três
                 // praças. A praça é o lugar exato, não o estado.
@@ -83,7 +84,7 @@ export function CardPorteira(p: CardPorteiraProps) {
                     {u.praca !== (NOME_UF[u.uf] ?? '') && <i>{u.uf}</i>}
                     <b className="badge">você</b>
                   </span>
-                  <span className="valor tnum">{brl(u.valor)}</span>
+                  <Numero className="valor tnum" valor={u.valor} casas={2} atraso={i * 0.05} />
                   <Variacao pct={u.variacaoPct} />
                 </li>
               ))}
@@ -91,13 +92,13 @@ export function CardPorteira(p: CardPorteiraProps) {
             </ul>
           ) : (
             <ul className="ufs">
-              {p.precos.map((u) => (
+              {p.precos.map((u, i) => (
                 <li key={u.uf} data-uf={u.uf}>
                   <span className="lugar">
                     {NOME_UF[u.uf] ?? u.uf}
                     <b className="badge">sua praça</b>
                   </span>
-                  <span className="valor tnum">{brl(u.valor)}</span>
+                  <Numero className="valor tnum" valor={u.valor} casas={2} atraso={i * 0.05} />
                   <Variacao pct={u.variacaoPct} />
                 </li>
               ))}
