@@ -637,26 +637,6 @@ a.mrow:hover{background:var(--paper-warm)}
   text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .chleitura span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(246,239,216,.9)}
 
-/* ——— A chuva caindo, em CSS ———
-   Fios finos e ESPARSOS, quase verticais, as duas camadas no MESMO ângulo (senão
-   se cruzam e viram rede) — só a densidade e a velocidade mudam, o que dá
-   profundidade. Só translateY (na GPU). Discreto de propósito: é para dar vida à
-   foto, não competir com ela. */
-.chuva-fios{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:.4}
-.chuva-camada{position:absolute;left:-25%;right:-25%;top:-50%;height:200%;background-repeat:repeat}
-.chuva-camada.perto{
-  background-image:repeating-linear-gradient(99deg,transparent 0 26px,rgba(233,244,247,.85) 26px 26.8px,transparent 26.8px 30px);
-  animation:chuva-cai .5s linear infinite;opacity:.7}
-.chuva-camada.longe{
-  background-image:repeating-linear-gradient(99deg,transparent 0 40px,rgba(215,230,234,.6) 40px 40.6px,transparent 40.6px 46px);
-  animation:chuva-cai .85s linear infinite;opacity:.5}
-@keyframes chuva-cai{from{transform:translateY(-26%)}to{transform:translateY(26%)}}
-/* As duas classes por nome: `.chuva-camada` sozinho (0,1,0) perde em
-   especificidade para `.chuva-camada.perto` (0,2,0), e a chuva não parava. */
-@media (prefers-reduced-motion: reduce){
-  .chuva-camada.perto,.chuva-camada.longe{animation:none;opacity:.22}
-}
-
 /* Cabeçalho de seção: título, régua até o fim, legenda à direita. */
 .chsec{margin-top:44px}
 .chsechead{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;margin-bottom:18px}
@@ -691,7 +671,11 @@ a.mrow:hover{background:var(--paper-warm)}
   border-radius:18px;padding:24px 24px 22px}
 .chrecado-tit{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--agua)}
 .chrecado-frase{margin-top:10px;font-family:var(--serif);font-size:26px;line-height:1.18;color:var(--ink)}
-.chrecado-det{margin-top:10px;font-family:var(--sans);font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+/* As três leituras: rótulo em mono à esquerda, a frase ao lado. */
+.chrecado-linhas{margin-top:18px;display:flex;flex-direction:column;gap:13px}
+.chrecado-linha{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:baseline}
+.chrecado-rot{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--agua);padding-top:2px}
+.chrecado-txt{font-family:var(--sans);font-size:14.5px;line-height:1.45;color:var(--ink-2)}
 /* Os números sobem para o pé do card, separados por um filete. */
 .chrecado-nums{margin-top:auto;padding-top:16px;display:flex;flex-wrap:wrap;gap:6px 22px;
   border-top:1px solid var(--rule);font-family:var(--mono);font-size:11px;letter-spacing:.04em;

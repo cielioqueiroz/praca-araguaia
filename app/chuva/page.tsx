@@ -3,7 +3,6 @@ import { buscarPrevisao, MUNICIPIOS, type PrevisaoMunicipio } from '@/lib/fontes
 import { resumirChuva } from '@/lib/chuva-resumo';
 import { CardChuva } from '@/components/CardChuva';
 import { SuaRegiaoChuva } from '@/components/redesign/SuaRegiaoChuva';
-import { ChuvaAnimada } from '@/components/redesign/ChuvaAnimada';
 import { FaixaSemana } from '@/components/redesign/FaixaSemana';
 import { AnimarBarrasChuva } from '@/components/redesign/AnimarBarrasChuva';
 
@@ -102,14 +101,12 @@ export default async function Chuva() {
           </div>
         </div>
 
-        {/* A lavoura sob a tempestade que se aproxima — a chuva que a página conta,
-            no que ela importa: no que está plantado. A chuva cai animada por cima
-            (CSS), e a leitura da semana vai escrita sobre a foto. */}
+        {/* Gado no pasto em dia chuvoso — a chuva no que ela importa aqui: no
+            que está no cocho. A leitura da semana vai escrita sobre a foto. */}
         <div className="chfoto">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/chuva-lavoura.jpg" alt="Lavoura sob nuvens de tempestade no Vale do Araguaia" />
+          <img src="/assets/chuva-pasto.jpg" alt="Gado no pasto sob nuvens de chuva" />
           <div className="chfoto-tinta" />
-          <ChuvaAnimada seca={semDados || resumo.semanaSeca} />
           <span className="tag">Vale do Araguaia</span>
           <div className="chleitura">
             <b>{semDados ? '—' : resumo.totalMm.toLocaleString('pt-BR')}</b>
