@@ -5,13 +5,36 @@ export const dynamic = 'force-dynamic';
 const PADRAO = { cidade: 'Vale do Araguaia', uf: '', lat: -15.89, lon: -52.26 };
 const URL = 'https://api.open-meteo.com/v1/forecast';
 
+/**
+ * O header de geo vem percent-encoded ('S%C3%A3o Paulo'). Se vier malformado, o
+ * decodeURIComponent lança URIError — e a rota inteira virava 500 por causa de um
+ * header. A fatia 20 corrigiu isto em /api/geo e /api/visita; esta rota ficou de
+ * fora e repetia o defeito. Header quebrado agora só perde o nome da cidade.
+ */
+function decodificarCidade(bruto: string | null): string {
+  if (!bruto) return PADRAO.cidade;
+  try {
+    return decodeURIComponent(bruto);
+  } catch {
+    return bruto;
+  }
+}
+
+/** Coordenada de header só vale se for número dentro do planeta. */
+function coordenada(bruto: string | null, padrao: number, limite: number): number {
+  if (!bruto) return padrao;
+  const n = Number(bruto);
+  return Number.isFinite(n) && Math.abs(n) <= limite ? n : padrao;
+}
+
 export async function GET(req: Request): Promise<Response> {
   const h = req.headers;
-  const cidadeRaw = h.get('x-vercel-ip-city');
-  const cidade = cidadeRaw ? decodeURIComponent(cidadeRaw) : PADRAO.cidade;
+  const cidade = decodificarCidade(h.get('x-vercel-ip-city'));
   const uf = h.get('x-vercel-ip-country-region') || PADRAO.uf;
-  const lat = h.get('x-vercel-ip-latitude') ? Number(h.get('x-vercel-ip-latitude')) : PADRAO.lat;
-  const lon = h.get('x-vercel-ip-longitude') ? Number(h.get('x-vercel-ip-longitude')) : PADRAO.lon;
+  // Sem a checagem, um header não-numérico virava `latitude=NaN` na URL da
+  // Open-Meteo: uma ida à rede garantidamente perdida a cada visita.
+  const lat = coordenada(h.get('x-vercel-ip-latitude'), PADRAO.lat, 90);
+  const lon = coordenada(h.get('x-vercel-ip-longitude'), PADRAO.lon, 180);
 
   try {
     const r = await fetch(

@@ -29,10 +29,42 @@ describe('CardChuva', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(7);
   });
 
-  it('destaca chuva forte (>= 10 mm) e não destaca chuva fraca', () => {
+  // O card foi reescrito em 23/07/2026: saiu dos utilitários do Tailwind e passou
+  // a marcar a LINHA com o peso do dia — seco, molhado ou forte. O teste segue a
+  // classificação, e não mais o nome de uma classe de estilo.
+  it('classifica a linha por peso: seco, molhado e forte (>= 10 mm)', () => {
     render(<CardChuva previsao={previsao} />);
-    expect(screen.getByText('12,3 mm')).toHaveClass('font-semibold');
-    expect(screen.getByText('1,5 mm')).not.toHaveClass('font-semibold');
+    const linhas = screen.getAllByRole('listitem');
+
+    expect(linhas[0]).toHaveClass('seco'); // 0 mm
+    expect(linhas[1]).toHaveClass('molhado'); // 1,5 mm
+    expect(linhas[1]).not.toHaveClass('forte');
+    expect(linhas[2]).toHaveClass('forte'); // 12,3 mm
+  });
+
+  it('o dia seco vira traço, e não "0 mm"', () => {
+    // Repetir "0 mm" e "0%" em 5 das 7 linhas era o que deixava o olho sem saber
+    // onde pousar. Ausência é traço.
+    render(<CardChuva previsao={previsao} />);
+    expect(screen.queryByText('0 mm')).toBeNull();
+    expect(screen.getByText('12,3 mm')).toBeInTheDocument();
+  });
+
+  it('soma o total da semana em pt-BR', () => {
+    // 0 + 1,5 + 12,3 + 0 + 0 + 4,2 + 0 = 18 mm. Vírgula, não ponto: o número
+    // saía como "18.0 mm" antes de passar pelo toLocaleString.
+    render(<CardChuva previsao={previsao} />);
+    expect(screen.getByText('18')).toBeInTheDocument();
+    expect(screen.getByText('mm em 7 dias')).toBeInTheDocument();
+  });
+
+  it('semana sem chuva nenhuma diz isso, em vez de somar zero', () => {
+    render(
+      <CardChuva
+        previsao={{ municipio: 'Confresa', uf: 'MT', dias: [dia('2026-07-03', 0, 0)] }}
+      />,
+    );
+    expect(screen.getByText('sem chuva nos 7 dias')).toBeInTheDocument();
   });
 
   it('mostra temperaturas mín/máx arredondadas', () => {

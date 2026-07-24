@@ -2,6 +2,18 @@ import type { IconType } from 'react-icons';
 import { LuSun, LuCloudSun, LuCloudDrizzle, LuCloudRain, LuCloudRainWind } from 'react-icons/lu';
 import type { PrevisaoMunicipio } from '@/lib/fontes/chuva';
 
+// O card de 7 dias de um município.
+//
+// REESCRITO EM 23/07/2026. Antes ele vivia em utilitários do Tailwind enquanto o
+// resto do site fala pelo CSS editorial (papel creme, serifa, mono) — a página de
+// chuva era a única órfã, e era por isso que parecia fraca. Agora usa a mesma
+// linguagem dos cards da porteira.
+//
+// A MUDANÇA QUE MAIS IMPORTA é de peso: numa semana seca, 30 das 35 linhas eram um
+// traço e uma barra vazia, todas com o mesmo destaque. O dia seco agora RECUA
+// (linha fina, tinta apagada, sem barra) e o dia de chuva AVANÇA (barra colorida,
+// milímetros em negrito). A diferença de peso é o dado.
+
 // Meio-dia UTC evita a data cair no dia anterior ao formatar (data vem sem hora).
 const fmtDia = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', timeZone: 'UTC' });
 const diaCurto = (iso: string) => fmtDia.format(new Date(`${iso}T12:00:00Z`)).replace('.', '');
@@ -30,75 +42,66 @@ export function CardChuva({
   etiqueta?: string;
   tempAtual?: number | null;
 }) {
+  const totalMm = previsao.dias.reduce((s, d) => s + d.chuvaMm, 0);
+  const temChuva = totalMm >= CHUVA_MIN_MM;
+
   return (
-    <div className="group rounded-2xl border border-rule bg-paper p-5 shadow-[0_1px_2px_rgba(28,38,32,0.04)] transition duration-200 hover:-translate-y-1 hover:border-rule-strong hover:shadow-[0_18px_40px_-24px_rgba(38,48,26,0.35)]">
-      {etiqueta && (
-        <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-agua">{etiqueta}</p>
-      )}
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink2/70">{previsao.municipio}</h2>
-        <div className="flex items-center gap-2">
-          {tempAtual != null && (
-            <span className="font-sans text-lg font-bold tabular-nums leading-none text-ink">{tempAtual}°</span>
-          )}
-          {previsao.uf && (
-            <span className="rounded-md bg-paper-warm px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-              {previsao.uf}
-            </span>
-          )}
+    <article className={`chcard${etiqueta ? ' destaque' : ''}`}>
+      <header className="chhead">
+        <div className="chnome">
+          {etiqueta && <span className="chetiq">{etiqueta}</span>}
+          <h3>{previsao.municipio}</h3>
         </div>
+        <div className="chmeta">
+          {tempAtual != null && <span className="chtemp">{tempAtual}°</span>}
+          {previsao.uf && <span className="chuf">{previsao.uf}</span>}
+        </div>
+      </header>
+
+      {/* O total da semana no cabeçalho do card: quem só quer saber "vai chover em
+          Redenção?" para de ler aqui. */}
+      <div className="chtotal">
+        {temChuva ? (
+          <>
+            {/* toLocaleString e não o número cru: sem isto saía "1.4 mm" com ponto
+                decimal de inglês, no meio de uma página em português. */}
+            <b>{(Math.round(totalMm * 10) / 10).toLocaleString('pt-BR')}</b> <i>mm em 7 dias</i>
+          </>
+        ) : (
+          <i className="seco">sem chuva nos 7 dias</i>
+        )}
       </div>
 
-      <ul className="mt-3">
-        {previsao.dias.map((dia, i) => {
+      <ul className="chdias" data-grupo-barras>
+        {previsao.dias.map((dia) => {
           const forte = dia.chuvaMm >= CHUVA_FORTE_MM;
           const chove = dia.chuvaMm >= CHUVA_MIN_MM;
-          const larg = Math.max(chove ? 7 : 0, Math.min(100, (dia.chuvaMm / BARRA_MAX_MM) * 100));
+          const larg = chove ? Math.max(7, Math.min(100, (dia.chuvaMm / BARRA_MAX_MM) * 100)) : 0;
           const { Icone, rotulo } = iconeDoDia(dia.chuvaMm, dia.probMax);
           const temProb = dia.probMax !== null && dia.probMax > 0;
 
           return (
-            <li
-              key={dia.data}
-              // Grid de colunas fixas: os 7 dias (e as cidades entre si) ficam alinhados.
-              className={`grid grid-cols-[2.25rem_1rem_1fr_3.5rem_2.5rem_3.5rem] items-center gap-x-2.5 py-2.5 text-sm tabular-nums ${
-                i > 0 ? 'border-t border-dashed border-rule/50' : ''
-              }`}
-            >
-              <span className="font-mono text-[11px] uppercase text-muted">{diaCurto(dia.data)}</span>
+            <li key={dia.data} className={chove ? (forte ? 'molhado forte' : 'molhado') : 'seco'}>
+              <span className="chdia">{diaCurto(dia.data)}</span>
 
-              <Icone role="img" aria-label={rotulo} className={`h-4 w-4 ${chove ? 'text-agua' : 'text-muted/70'}`} />
+              <Icone role="img" aria-label={rotulo} className="chicone" />
 
-              <span className="relative h-2.5 overflow-hidden rounded-full bg-[#e7decd]" aria-hidden="true">
-                <span
-                  className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
-                  style={{
-                    width: `${larg}%`,
-                    background: forte ? 'linear-gradient(90deg,#5c93a0,#2f5b66)' : 'linear-gradient(90deg,#9fbdc6,#5b8b97)',
-                  }}
-                />
+              <span className="chtrilho" aria-hidden="true">
+                {chove && <span className="chbarra" data-barra="x" style={{ ['--larg' as string]: `${larg}%` }} />}
               </span>
 
               {/* Dia seco não repete "0 mm" e "0%": vira traço, e o olho vai direto no que chove. */}
-              <span
-                className={`text-right font-sans ${
-                  forte ? 'font-semibold text-agua' : chove ? 'font-medium text-agua/90' : 'text-ink2/40'
-                }`}
-              >
-                {chove ? `${dia.chuvaMm.toLocaleString('pt-BR')} mm` : '—'}
-              </span>
+              <span className="chmm">{chove ? `${dia.chuvaMm.toLocaleString('pt-BR')} mm` : '—'}</span>
 
-              <span className={`text-right font-mono text-xs ${temProb ? 'text-agua/80' : 'text-ink2/40'}`}>
-                {temProb ? `${dia.probMax}%` : '—'}
-              </span>
+              <span className="chprob">{temProb ? `${dia.probMax}%` : '—'}</span>
 
-              <span className="whitespace-nowrap text-right font-mono text-xs text-ink/55">
+              <span className="chtempo">
                 {Math.round(dia.tempMin)}°/{Math.round(dia.tempMax)}°
               </span>
             </li>
           );
         })}
       </ul>
-    </div>
+    </article>
   );
 }

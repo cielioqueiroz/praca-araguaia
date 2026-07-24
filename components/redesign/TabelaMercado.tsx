@@ -15,13 +15,6 @@ export type ItemMercado = {
   moeda?: boolean;
 };
 
-function brl(n: number, casas: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: casas,
-    maximumFractionDigits: casas,
-  }).format(n);
-}
-
 // Sparkline mínima: só a linha. Sem área, sem baseline — a tabela é o assunto.
 //
 // A linha se DESENHA da esquerda para a direita, que é a direção do tempo que ela

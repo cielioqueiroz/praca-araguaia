@@ -607,3 +607,123 @@ a.mrow:hover{background:var(--paper-warm)}
   .section-head .meta{display:none}
   .efoot{padding:24px 16px 40px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHUVA NA REGIÃO — refeita em 23/07/2026.
+
+   A página era a única do site ainda escrita em utilitários do Tailwind, presa
+   num max-w-3xl, sem hero e sem síntese: 5 municípios × 7 dias = 35 linhas de
+   igual peso, e numa semana seca 30 delas eram um traço e uma barra vazia. Quem
+   entrava para saber "vai chover?" tinha de fazer a conta sozinho.
+
+   Agora fala a mesma língua do resto do site (papel creme, serifa, mono,
+   hairlines) e responde primeiro: o pluviômetro do hero marca o total da semana,
+   a faixa mostra em que dia a chuva chega, e só então vêm os municípios.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* O hero herda a moldura de /cotacoes; só o instrumento entra no lugar da foto. */
+.chhero h1{font-size:66px}
+.chpluvi{position:relative;display:flex;align-items:center;justify-content:center;
+  border-left:1px solid var(--rule);background:linear-gradient(170deg,#eef3f2 0%,#e4ebe6 100%);padding:26px}
+.chpluvi .pluvi{width:100%;max-width:250px;height:auto}
+.chpluvi .tag{color:var(--ink-2);border-color:var(--rule-strong);background:rgba(251,248,241,.6)}
+/* A leitura escrita. O tubo mostra a FORMA (cheio, pela metade, vazio); o número
+   diz de quanto se trata — num julho de 0,6 mm o desenho sozinho não informa. */
+.chleitura{position:absolute;left:0;right:0;bottom:24px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.chleitura b{font-family:var(--serif);font-size:40px;line-height:1;color:var(--agua);font-variant-numeric:tabular-nums}
+.chleitura span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+/* Abre espaço embaixo para a leitura não encostar no desenho. */
+.chpluvi .pluvi{margin-bottom:52px}
+
+/* Cabeçalho de seção: título, régua até o fim, legenda à direita. */
+.chsec{margin-top:44px}
+.chsechead{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;margin-bottom:18px}
+.chsechead h2{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-2)}
+.chsechead .regra{height:1px;background:var(--rule)}
+.chlegenda{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ——— A semana em uma linha ——— */
+.fsemana{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;
+  border:1px solid var(--rule);border-radius:18px;background:var(--paper);padding:20px 18px 16px}
+.fdia{display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;border-radius:12px;padding:8px 4px;
+  transition:background .2s}
+.fdia.molhado{background:rgba(127,169,180,.11)}
+/* Hoje é marcado pela PALAVRA "hoje" na linha da data, e não por um filete de
+   cor: o filete aparecia solto embaixo da coluna e parecia sujeira, além de
+   exigir que o leitor adivinhasse o que ele queria dizer. */
+.fcol{display:flex;align-items:flex-end;justify-content:center;width:100%;height:86px}
+.fbarra{display:block;width:16px;height:var(--alt,0%);min-height:3px;border-radius:8px 8px 3px 3px;
+  transform-origin:bottom center;background:linear-gradient(180deg,#7fa9b4,#2f5b66)}
+.fdia:not(.molhado) .fbarra{height:3px;background:var(--rule);border-radius:3px}
+.fmm{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--agua);font-variant-numeric:tabular-nums;line-height:1}
+.fmm i{font-style:normal;font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--muted);margin-left:2px}
+.fmm .fseco{color:var(--rule-strong);font-weight:400}
+.fdata{display:flex;flex-direction:column;gap:1px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.fdata b{font-weight:600;color:var(--ink-2)}
+.fdata span{color:var(--muted)}
+.fquantos{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);min-height:12px}
+
+/* ——— Cards dos municípios ——— */
+.chgrade{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+.chcard{background:var(--paper);border:1px solid var(--rule);border-radius:18px;padding:20px 20px 8px;
+  transition:transform .28s cubic-bezier(.22,1,.36,1),border-color .28s,box-shadow .28s}
+.chcard:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 18px 40px -26px rgba(38,48,26,.4)}
+/* O card da região do usuário: filete de água à esquerda, e nada mais. */
+.chcard.destaque{border-color:var(--agua-claro);box-shadow:inset 3px 0 0 var(--agua)}
+.chhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.chetiq{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--agua);margin-bottom:3px}
+.chnome h3{font-family:var(--serif);font-size:22px;line-height:1.1;color:var(--ink)}
+.chmeta{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.chtemp{font-family:var(--sans);font-size:19px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.chuf{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--muted);
+  border:1px solid var(--rule);border-radius:4px;padding:2px 6px}
+.chtotal{margin-top:6px;font-family:var(--sans);font-size:13px;color:var(--ink-2)}
+.chtotal b{font-size:20px;font-weight:700;color:var(--agua);font-variant-numeric:tabular-nums}
+.chtotal i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chtotal .seco{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--rule-strong)}
+
+.chdias{margin-top:12px}
+.chdias li{display:grid;grid-template-columns:2.1rem 1rem 1fr 4.1rem 2.4rem 3.6rem;align-items:center;gap:9px;
+  padding:8px 0;border-top:1px dashed var(--rule);font-variant-numeric:tabular-nums}
+.chdias li:first-child{border-top:1px solid var(--rule)}
+.chdia{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;color:var(--muted)}
+.chicone{width:15px;height:15px;color:var(--rule-strong)}
+.chdias li.molhado .chicone{color:var(--agua)}
+.chtrilho{position:relative;display:block;height:8px;border-radius:6px;background:#ece3d1;overflow:hidden}
+.chbarra{position:absolute;inset:0 auto 0 0;width:var(--larg,0%);border-radius:6px;transform-origin:left center;
+  background:linear-gradient(90deg,#9fbdc6,#5b8b97)}
+.chdias li.forte .chbarra{background:linear-gradient(90deg,#5c93a0,#2f5b66)}
+.chmm{text-align:right;font-family:var(--sans);font-size:13.5px;color:var(--rule-strong)}
+.chdias li.molhado .chmm{color:var(--agua);font-weight:600}
+.chdias li.forte .chmm{font-weight:700}
+.chprob{text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--rule-strong)}
+.chdias li.molhado .chprob{color:var(--agua)}
+.chtempo{text-align:right;white-space:nowrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);opacity:.6}
+
+.chvazio{margin-top:44px}
+.chvazio .mono{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.chvazio a{color:var(--olive);text-decoration:underline}
+
+/* Movimento é escolha do usuário. As barras já vêm no tamanho final do servidor,
+   então basta impedir o hover de mexer — o anime.js não roda (ver AnimarBarrasChuva). */
+@media (prefers-reduced-motion: reduce){
+  .chcard{transition:none}
+  .chcard:hover{transform:none}
+}
+
+@media (max-width:1000px){
+  .chhero h1{font-size:48px}
+  .chpluvi{padding:18px}
+  .chpluvi .pluvi{max-width:190px}
+}
+
+@media (max-width:760px){
+  /* Sete colunas não cabem num celular: viram duas linhas de scroll horizontal,
+     que é como o dedo lê uma semana. */
+  .fsemana{grid-template-columns:repeat(7,minmax(64px,1fr));overflow-x:auto;gap:6px;padding:16px 12px 12px}
+  .fcol{height:64px}
+  .chgrade{grid-template-columns:1fr}
+  .chdias li{grid-template-columns:2rem .9rem 1fr 3.6rem 2.2rem 3.2rem;gap:7px}
+  .chsechead{grid-template-columns:auto 1fr;gap:12px}
+  .chlegenda{display:none}
+}

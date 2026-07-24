@@ -1,7 +1,43 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-23.
+> **Documento de retomada.** Última atualização: 2026-07-24.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
+
+---
+
+## 🌧️ A seção de chuva refeita, GSAP + anime.js, e a revisão (24/07/2026)
+
+A página `/chuva` era a única do site ainda em utilitários do Tailwind, presa num
+`max-w-3xl`, sem hero e sem síntese: 5 municípios × 7 dias = 35 linhas de igual
+peso, e numa semana seca 30 delas eram traço e barra vazia. Agora:
+
+- **`lib/chuva-resumo.ts`** (lógica pura, 13 testes) resume os municípios numa
+  leitura da região: total da semana, primeiro dia relevante (≥ 1 mm — orvalho de
+  0,2 mm **não** vira manchete), dia mais molhado, escala do maior dia.
+- **Hero editorial** com manchete que sai do dado ("A chuva chega sexta-feira" /
+  "Sem chuva à vista" / "Previsão indisponível") e um **pluviômetro em SVG**
+  animado com **GSAP** (a água sobe, a superfície ondula, a chuva cai).
+- **Faixa da semana** (7 colunas) e **cards** redesenhados na linguagem do site;
+  as barras entram com **stagger do anime.js**. O dia seco recua, o de chuva avança.
+- GSAP e anime.js entram por **import dinâmico** — só baixam nesta rota, depois da
+  primeira pintura. Nenhum byte deles pesa na home nem no painel.
+
+**A revisão de código encontrou e corrigiu 3 defeitos reais além do redesign:**
+
+1. **"Sem chuva à vista" com a API fora do ar** — a página montava a manchete a
+   partir do resumo de uma lista vazia, então negava chuva sem ter dado. Falha de
+   fonte agora tem manchete própria e o pluviômetro marca "—", não 0,0 mm. (É o
+   mesmo princípio do "preço zero é mentira, ausência é verdade".)
+2. **`/api/chuva-local` derrubava com header malformado** — `decodeURIComponent`
+   sem try/catch e coordenada sem validação (virava `latitude=NaN` na URL). A
+   fatia 20 já tinha corrigido isso em `/api/geo` e `/api/visita`; esta rota tinha
+   ficado de fora. Agora com 6 testes (`tests/api/chuva-local.test.ts`).
+3. **Barras horizontais animadas no eixo errado** — o anime.js achatava a barra
+   do card na vertical durante a entrada. O eixo agora vem declarado no HTML
+   (`data-barra="x"` / `"y"`).
+
+521 testes passando; build limpo; verificado no navegador (desktop, mobile,
+reduced-motion, e os dois eixos de barra terminando visíveis).
 
 ---
 

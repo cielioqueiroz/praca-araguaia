@@ -64,12 +64,19 @@ export function SuaRegiaoChuva() {
   // temperatura de agora. Antes, esta lista era uma segunda implementação dos 7 dias,
   // e por isso ficou para trás quando os cards ganharam ícone e traço no dia seco.
   return (
-    <section className="mt-8 grid gap-4 sm:grid-cols-2">
-      <CardChuva
-        previsao={{ municipio: loc.cidade, uf: loc.uf, dias: loc.dias }}
-        etiqueta="Sua região"
-        tempAtual={loc.tempAtual}
-      />
+    <section className="chsec">
+      <div className="chsechead">
+        <h2>Onde você está</h2>
+        <span className="regra" />
+        <span className="chlegenda">pela sua localização</span>
+      </div>
+      <div className="chgrade">
+        <CardChuva
+          previsao={{ municipio: loc.cidade, uf: loc.uf, dias: loc.dias }}
+          etiqueta="Sua região"
+          tempAtual={loc.tempAtual}
+        />
+      </div>
     </section>
   );
 }
