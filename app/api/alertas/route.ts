@@ -29,10 +29,9 @@ export async function GET(req: Request): Promise<Response> {
   }
   const supabase = createServerClient();
 
-  // O resumo de audiência pega carona neste cron: o plano grátis da Vercel limita
-  // cron e o vercel.json já tem três. Vai ANTES de tudo de propósito — a rota
-  // retorna cedo quando não há variação relevante, e é assim na maioria dos dias:
-  // pendurado no fim, o dono quase nunca receberia.
+  // O resumo de audiência pega carona neste cron em vez de ter o seu. Vai ANTES de
+  // tudo de propósito — a rota retorna cedo quando não há variação relevante, e é
+  // assim na maioria dos dias: pendurado no fim, o dono quase nunca receberia.
   //
   // Vai só para o chat do dono (TELEGRAM_DONO_CHAT_ID), nunca para os inscritos.
   // Em try/catch porque contagem de audiência jamais pode derrubar um alerta de preço.

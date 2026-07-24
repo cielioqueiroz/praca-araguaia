@@ -16,6 +16,10 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // rotas, em lib/dia-util.ts: o cron da Vercel sabe que dia da semana é hoje, mas
 // não sabe que hoje é Natal.
 //
+// São QUATRO crons, e o plano aceita — conferido com `vercel crons ls` depois do
+// deploy de 23/07/2026. (Havia aqui a anotação de que "o plano grátis só dá três";
+// era chute, e estava errado.)
+//
 //   /api/enviar-boletim?sessao=abertura    10:30 UTC = 07:30 BRT
 //   /api/coletar                           20:30 UTC = 17:30 BRT
 //   /api/enviar-boletim?sessao=fechamento  21:00 UTC = 18:00 BRT

@@ -1,7 +1,66 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-17.
+> **Documento de retomada.** Última atualização: 2026-07-23.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
+
+---
+
+## 🐄 O gado "congelado", as notícias fora do ramo e a nova agenda (23/07/2026)
+
+O dono relatou três coisas: o card do Telegram chegava com o gado parado num preço
+antigo, apareciam notícias de celebridade, e os valores tinham cara de mockados.
+**Não havia nada mockado no código** — nenhum fallback com número fixo, e a tabela
+`reportes` está vazia. Era isto:
+
+1. **A coleta rodava cedo demais.** Às 09:00 BRT as páginas da Scot ainda não tinham
+   publicado o fechamento do dia. Medido em 23/07: a coleta das 09:40 gravou boi com
+   fechamento de **21/07**; às 20:27 a mesma página já mostrava 22/07. O card de
+   quinta dizia "Scot · 21/07" — dois dias atrás — e, com o fim de semana, boi e vaca
+   repetiam o mesmo número de sexta a terça.
+2. **O gado não tinha seta nenhuma.** A Scot não publica variação por praça
+   (boi/vaca) nem nas páginas de reposição (novilha/bezerro): os quatro chegavam com
+   `variacaoPct` null enquanto soja e milho mostravam a da CONAB. Agora
+   `variacaoDoLugar` (lib/coleta.ts) tira a variação do preço anterior salvo para
+   aquele mesmo lugar — preservando a variação quando o fechamento se repete, para o
+   cron diário não zerar a alta de sexta no sábado.
+3. **"▲ 0%" verde.** `pct >= 0` caía em 'alta'. 0% virou direção própria
+   (`estavel`): traço e cor neutra, no card e nas três telas do site.
+4. **Notícias.** `nicho: true` dispensava o filtro de relevância — foi por aí que
+   entrou "Angelina Jolie trocou Hollywood pelas colmeias" (Compre Rural) e "Como
+   montar uma horta em casa" (Globo Rural). O passe livre acabou; entrou lista de
+   bloqueio (entretenimento, esporte, culinária, o gênero "dicas de cultivo") e clima
+   deixou de bastar sozinho. Medido: G1 Agro 100→53, Globo Rural 100→48.
+5. **O card avisa quando o preço está velho** ("· desatualizado", passado o prazo da
+   fonte). Repetir número parado com cara de novidade foi o que criou a impressão de
+   dado inventado.
+
+### A agenda nova (4 crons, todos `1-5`)
+
+| Rota | UTC | BRT | O quê |
+|---|---|---|---|
+| `/api/enviar-boletim?sessao=abertura` | 10:30 | 07:30 | o preço com que o dia começa |
+| `/api/coletar` | 20:30 | 17:30 | depois da B3 (17:00) e da Scot |
+| `/api/enviar-boletim?sessao=fechamento` | 21:00 | 18:00 | o número do dia, apurado |
+| `/api/alertas` | 21:15 | 18:15 | movimentos + resumo de audiência |
+
+**O plano aceita 4 crons** — conferido com `vercel crons ls` depois do deploy (o
+comentário antigo de "o plano grátis só dá três" está superado).
+
+Sábado, domingo e **feriado nacional** não têm envio: o cron recorta segunda a sexta,
+mas quem conhece feriado é `lib/dia-util.ts` (fixos + os três móveis de Páscoa, via
+algoritmo gregoriano anônimo). Nenhum feriado municipal ou estadual. A prévia do dono
+passa no domingo.
+
+### Motion
+
+O quadro se preenchendo: cada preço sobe uma fração de linha e ganha nitidez,
+escalonado; a seta chega do lado para onde aponta; a sparkline se desenha da esquerda
+para a direita. CSS puro, `prefers-reduced-motion` respeitado.
+
+> **Registrado para não repetir:** a primeira versão fazia o número VIAJAR do preço de
+> ontem até o de hoje. No navegador, a arroba de Goiás saía
+> `316,50 → 313,49 → … → 316,50`: o 313,49 aparece na hidratação, e por um instante a
+> tela mostrava um preço falso. **Anima-se o lugar do número, nunca o valor.**
 
 ---
 
