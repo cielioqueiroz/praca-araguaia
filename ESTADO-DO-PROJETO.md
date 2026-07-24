@@ -5,6 +5,29 @@
 
 ---
 
+## 🧮 Calculadora: novilha por cabeça (bug), e página refeita (24/07/2026)
+
+**O bug (relatado pelo dono):** na seção "Gado na balança", a novilha usava a conta
+do boi — `peso × rendimento ÷ 15 = arrobas`, × preço. Mas neste projeto a novilha é
+**reposição, vendida por cabeça**, igual ao bezerro. Com R$ 2.988/cabeça num campo
+"R$/@", uma novilha de 400 kg dava **R$ 39.840** (13× o real). **Correção:** novilha
+saiu da balança para uma seção de reposição (R$/cabeça) ao lado do bezerro; a balança
+ficou só com boi e vaca.
+
+**Mesma raiz, no Termômetro:** `lib/termometro.ts` marcava `novilha: R$/@, 130–550` —
+rejeitava o reporte real (~R$ 2.971/cab) como fora da faixa. Corrigido para
+`R$/cabeça, 800–6000`.
+
+**Página refeita** no sistema editorial (como a /chuva): hero com uma **balança
+animada em GSAP** (assenta o fiel ao carregar) e o **resultado de cada conta contando
+até o total em anime.js**. A contagem do resultado NÃO fere a regra "nunca animar o
+valor de um preço" — ali é cotação publicada; aqui é a conta do próprio produtor, e o
+valor final é cravado exato. Ver [[agro-app-nunca-animar-o-valor-do-preco]].
+
+520 testes; build limpo; verificado no navegador e em produção.
+
+---
+
 ## 🌧️ A seção de chuva refeita, GSAP + anime.js, e a revisão (24/07/2026)
 
 A página `/chuva` era a única do site ainda em utilitários do Tailwind, presa num
