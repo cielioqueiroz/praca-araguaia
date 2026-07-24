@@ -554,7 +554,7 @@ a.mrow:hover{background:var(--paper-warm)}
   .burger{display:flex}
   .gaveta{display:flex}
   .hero{grid-template-columns:1fr}
-  .hero .photo{min-height:240px;border-left:none;border-top:1px solid var(--rule)}
+  .hero .photo,.chfoto{min-height:240px;border-left:none;border-top:1px solid var(--rule)}
   .ndestaque{grid-template-columns:1fr}
   .ndestaque .nfoto{min-height:230px}
   .ndestaque .ncorpo{padding:26px 24px}
@@ -621,19 +621,41 @@ a.mrow:hover{background:var(--paper-warm)}
    a faixa mostra em que dia a chuva chega, e só então vêm os municípios.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* O hero herda a moldura de /cotacoes; só o instrumento entra no lugar da foto. */
+/* O hero herda a moldura de /cotacoes; no lugar da foto do touro, a lavoura sob a
+   tempestade, com a chuva caindo animada por cima. */
 .chhero h1{font-size:66px}
-.chpluvi{position:relative;display:flex;align-items:center;justify-content:center;
-  border-left:1px solid var(--rule);background:linear-gradient(170deg,#eef3f2 0%,#e4ebe6 100%);padding:26px}
-.chpluvi .pluvi{width:100%;max-width:250px;height:auto}
-.chpluvi .tag{color:var(--ink-2);border-color:var(--rule-strong);background:rgba(251,248,241,.6)}
-/* A leitura escrita. O tubo mostra a FORMA (cheio, pela metade, vazio); o número
-   diz de quanto se trata — num julho de 0,6 mm o desenho sozinho não informa. */
-.chleitura{position:absolute;left:0;right:0;bottom:24px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.chleitura b{font-family:var(--serif);font-size:40px;line-height:1;color:var(--agua);font-variant-numeric:tabular-nums}
-.chleitura span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-/* Abre espaço embaixo para a leitura não encostar no desenho. */
-.chpluvi .pluvi{margin-bottom:52px}
+.chfoto{position:relative;overflow:hidden;border-left:1px solid var(--rule);background:var(--olive-deep)}
+.chfoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+/* Tinta quente por cima: casa a foto (cinza da tempestade) com a paleta terrosa do
+   site e garante contraste para a leitura escrita no canto. */
+.chfoto-tinta{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(24,32,16,.12) 0%,rgba(24,32,16,0) 30%,rgba(24,32,16,.2) 62%,rgba(24,32,16,.66) 100%)}
+.chfoto .tag{color:#F6EFD8;border-color:rgba(246,239,216,.4);background:rgba(24,32,16,.25)}
+/* A leitura da semana, escrita sobre a foto. */
+.chleitura{position:absolute;left:26px;bottom:22px;display:flex;flex-direction:column;gap:1px;z-index:2}
+.chleitura b{font-family:var(--serif);font-size:46px;line-height:1;color:#F6EFD8;font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.chleitura span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(246,239,216,.9)}
+
+/* ——— A chuva caindo, em CSS ———
+   Fios finos e ESPARSOS, quase verticais, as duas camadas no MESMO ângulo (senão
+   se cruzam e viram rede) — só a densidade e a velocidade mudam, o que dá
+   profundidade. Só translateY (na GPU). Discreto de propósito: é para dar vida à
+   foto, não competir com ela. */
+.chuva-fios{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:.4}
+.chuva-camada{position:absolute;left:-25%;right:-25%;top:-50%;height:200%;background-repeat:repeat}
+.chuva-camada.perto{
+  background-image:repeating-linear-gradient(99deg,transparent 0 26px,rgba(233,244,247,.85) 26px 26.8px,transparent 26.8px 30px);
+  animation:chuva-cai .5s linear infinite;opacity:.7}
+.chuva-camada.longe{
+  background-image:repeating-linear-gradient(99deg,transparent 0 40px,rgba(215,230,234,.6) 40px 40.6px,transparent 40.6px 46px);
+  animation:chuva-cai .85s linear infinite;opacity:.5}
+@keyframes chuva-cai{from{transform:translateY(-26%)}to{transform:translateY(26%)}}
+/* As duas classes por nome: `.chuva-camada` sozinho (0,1,0) perde em
+   especificidade para `.chuva-camada.perto` (0,2,0), e a chuva não parava. */
+@media (prefers-reduced-motion: reduce){
+  .chuva-camada.perto,.chuva-camada.longe{animation:none;opacity:.22}
+}
 
 /* Cabeçalho de seção: título, régua até o fim, legenda à direita. */
 .chsec{margin-top:44px}
@@ -662,6 +684,20 @@ a.mrow:hover{background:var(--paper-warm)}
 .fdata b{font-weight:600;color:var(--ink-2)}
 .fdata span{color:var(--muted)}
 .fquantos{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);min-height:12px}
+
+/* ——— "Onde você está": o card da sua região + o recado ao lado ——— */
+.chvoce{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.chrecado{display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--rule);
+  border-radius:18px;padding:24px 24px 22px}
+.chrecado-tit{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--agua)}
+.chrecado-frase{margin-top:10px;font-family:var(--serif);font-size:26px;line-height:1.18;color:var(--ink)}
+.chrecado-det{margin-top:10px;font-family:var(--sans);font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+/* Os números sobem para o pé do card, separados por um filete. */
+.chrecado-nums{margin-top:auto;padding-top:16px;display:flex;flex-wrap:wrap;gap:6px 22px;
+  border-top:1px solid var(--rule);font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted)}
+.chrecado-nums b{font-family:var(--sans);font-size:16px;font-weight:700;color:var(--agua);
+  letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums;margin-right:4px}
 
 /* ——— Cards dos municípios ——— */
 .chgrade{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
@@ -713,8 +749,6 @@ a.mrow:hover{background:var(--paper-warm)}
 
 @media (max-width:1000px){
   .chhero h1{font-size:48px}
-  .chpluvi{padding:18px}
-  .chpluvi .pluvi{max-width:190px}
 }
 
 @media (max-width:760px){
@@ -738,9 +772,9 @@ a.mrow:hover{background:var(--paper-warm)}
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .calchero h1{font-size:64px}
-.cbalancabox{position:relative;display:flex;align-items:center;justify-content:center;
-  border-left:1px solid var(--rule);background:linear-gradient(165deg,#f4efe3 0%,#ece3cf 100%);padding:24px}
-.cbalanca{width:100%;max-width:260px;height:auto}
+/* O hero da calculadora usa a mesma foto-panel de /cotacoes: os campos coloridos
+   do Vale, com zoom lento no hover (herda .photo, .overlay e .tag do hero). */
+.calcfoto img{object-position:50% 55%}
 
 /* As quatro contas, uma embaixo da outra. */
 .calc{display:flex;flex-direction:column;gap:20px;margin-top:32px}
@@ -786,9 +820,9 @@ a.mrow:hover{background:var(--paper-warm)}
 
 @media (max-width:1000px){
   .calchero h1{font-size:46px}
-  .cbalanca{max-width:190px}
 }
 @media (max-width:760px){
+  .chvoce{grid-template-columns:1fr}
   .cgrid.tres,.cgrid.quatro{grid-template-columns:1fr}
   .csec{padding:20px 18px 18px}
   .cshead h2{font-size:21px}

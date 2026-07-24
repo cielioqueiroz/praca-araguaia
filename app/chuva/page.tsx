@@ -3,7 +3,7 @@ import { buscarPrevisao, MUNICIPIOS, type PrevisaoMunicipio } from '@/lib/fontes
 import { resumirChuva } from '@/lib/chuva-resumo';
 import { CardChuva } from '@/components/CardChuva';
 import { SuaRegiaoChuva } from '@/components/redesign/SuaRegiaoChuva';
-import { Pluviometro } from '@/components/redesign/Pluviometro';
+import { ChuvaAnimada } from '@/components/redesign/ChuvaAnimada';
 import { FaixaSemana } from '@/components/redesign/FaixaSemana';
 import { AnimarBarrasChuva } from '@/components/redesign/AnimarBarrasChuva';
 
@@ -102,18 +102,19 @@ export default async function Chuva() {
           </div>
         </div>
 
-        {/* O instrumento no lugar da foto: é ele que marca o que a página conta.
-            A leitura vai ESCRITA embaixo — num tubo quase vazio, que é o julho do
-            Araguaia, o desenho sozinho não diz de quanto se trata. */}
-        <div className="chpluvi">
-          <Pluviometro totalMm={semDados ? 0 : resumo.totalMm} semanaSeca={semDados || resumo.semanaSeca} />
+        {/* A lavoura sob a tempestade que se aproxima — a chuva que a página conta,
+            no que ela importa: no que está plantado. A chuva cai animada por cima
+            (CSS), e a leitura da semana vai escrita sobre a foto. */}
+        <div className="chfoto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/chuva-lavoura.jpg" alt="Lavoura sob nuvens de tempestade no Vale do Araguaia" />
+          <div className="chfoto-tinta" />
+          <ChuvaAnimada seca={semDados || resumo.semanaSeca} />
+          <span className="tag">Vale do Araguaia</span>
           <div className="chleitura">
-            {/* Sem dado, o instrumento não marca zero: marca traço. Zero seria uma
-                medição; traço é a ausência dela. */}
             <b>{semDados ? '—' : resumo.totalMm.toLocaleString('pt-BR')}</b>
             <span>{semDados ? 'sem leitura' : 'mm previstos em 7 dias'}</span>
           </div>
-          <span className="tag">Vale do Araguaia</span>
         </div>
       </section>
 

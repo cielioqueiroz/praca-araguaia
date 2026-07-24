@@ -1,6 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
 import { Calculadora, type Precos } from '@/components/Calculadora';
-import { BalancaHero } from '@/components/redesign/BalancaHero';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -26,7 +25,7 @@ export default async function CalculadoraPage() {
           <h1>
             Quanto vale
             <br />
-            <em>o seu</em>.
+            <em>o que é seu</em>.
           </h1>
           <p className="lede">
             O boi na balança, o lote de reposição, a colheita e o que você guarda em ouro, dólar ou
@@ -36,8 +35,13 @@ export default async function CalculadoraPage() {
             <div className="mono">Preços de hoje · fonte: painel da praça</div>
           </div>
         </div>
-        <div className="cbalancabox">
-          <BalancaHero />
+        {/* A terra que vale: os campos do Vale ao fim da tarde, no mesmo trato de
+            foto dos outros heros do site. */}
+        <div className="photo calcfoto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/calc-campos.jpg" alt="Campos de lavoura do Vale do Araguaia" />
+          <div className="overlay" />
+          <span className="tag">Vale do Araguaia</span>
         </div>
       </section>
 
