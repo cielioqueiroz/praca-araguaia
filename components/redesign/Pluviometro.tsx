@@ -1,191 +1,234 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
-// O PLUVIÔMETRO — a tese da página de chuva.
+// O PLUVIÔMETRO — o instrumento de vidro da porteira, com a água de verdade dentro.
 //
-// O instrumento da chuva no campo é o pluviômetro do mourão da cerca. É ele que o
-// produtor olha para saber quanto caiu. Então a página abre com um, e o que ele
-// marca é o total previsto para os 7 dias na região.
+// A primeira versão era um tubo chapado que o dono chamou de horrível, com razão.
+// Este é vidro: cilindro com brilho e reflexo, um funil, a graduação gravada — e a
+// água ENCHE ao carregar, com a superfície ondulando (duas ondas cruzadas), bolhas
+// subindo e a chuva caindo atrás. O que ele marca é o total previsto para os 7 dias.
 //
-// A CENA MUDA COM A ESTAÇÃO, e é isso que a torna honesta: em julho, no seco do
-// Araguaia, o tubo fica vazio e a página diz "sem chuva à vista" — que é
-// exatamente o que o produtor precisa saber. Quando as águas chegam, o tubo enche
-// e a chuva cai atrás. Não é enfeite: é o dado tomando forma.
+// A água sobe (scaleY 0→1 a partir do fundo, ease-out forte) porque é a entrada da
+// página — vista uma vez, é onde vale um gesto. As ondas correm em laço linear
+// (movimento contínuo). Tudo em transform/opacity, na GPU.
 //
-// ESCALA. O tubo cheio = 60 mm na semana, que é uma semana boa de águas na região.
-// Acima disso a água encosta no topo e o número escrito manda — o tubo satura, mas
-// não mente: quem lê 82 mm vê 82 mm.
-//
-// GSAP faz a orquestração: a água sobe, a superfície ondula e as gotas caem em
-// sequência. É um trecho com várias partes dependentes no tempo, que é onde a
-// timeline dele ganha de um punhado de animações soltas.
+// SEM PISCAR: o GSAP é importado estático e a animação começa em useLayoutEffect,
+// antes da primeira pintura. Sem JS, o SVG já está cheio no nível certo (o rise é só
+// entrada). prefers-reduced-motion deixa a água parada no nível, sem onda nem bolha.
 
-const ESCALA_CHEIA_MM = 60;
+const VB = 200;
+const TUBO = { l: 58, r: 142, top: 86, bottom: 300 }; // x-esquerda, x-direita, y-topo, y-fundo
+const LARG = TUBO.r - TUBO.l; // 84
+const ALT = TUBO.bottom - TUBO.top; // 214
+const ESCALA_CHEIA_MM = 60; // tubo cheio = uma semana boa de águas
+const WL = 42; // comprimento de onda (px)
 
-// Coordenadas do tubo dentro do viewBox — a água se move entre elas.
-const TUBO = { x: 60, largura: 76, topo: 78, base: 300 };
+const useIso = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-type PluviometroProps = {
-  totalMm: number;
-  /** Nenhum município tem chuva em nenhum dos 7 dias. */
-  semanaSeca: boolean;
-};
+// A superfície ondulada, como um caminho fechado que enche para baixo. Larga o
+// bastante (uma onda a mais de cada lado) para o laço de translateX não mostrar
+// emenda: deslocar de 0 a -WL cai sobre um trecho idêntico.
+function ondaPath(baseY: number, amp: number, fase: number): string {
+  const x0 = TUBO.l - WL;
+  const x1 = TUBO.r + WL;
+  let d = '';
+  for (let x = x0; x <= x1; x += 4) {
+    const y = baseY + amp * Math.sin((2 * Math.PI * x) / WL + fase);
+    d += (d === '' ? 'M' : ' L') + ` ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return `${d} L ${x1} 330 L ${x0} 330 Z`;
+}
 
-export function Pluviometro({ totalMm, semanaSeca }: PluviometroProps) {
-  const raiz = useRef<SVGSVGElement>(null);
-  const fracao = Math.max(0, Math.min(1, totalMm / ESCALA_CHEIA_MM));
-  const alturaCheia = TUBO.base - TUBO.topo;
-  const alturaAgua = alturaCheia * fracao;
-  const yAgua = TUBO.base - alturaAgua;
+export function Pluviometro({ totalMm, semanaSeca }: { totalMm: number; semanaSeca: boolean }) {
+  const svg = useRef<SVGSVGElement>(null);
 
-  useEffect(() => {
-    const svg = raiz.current;
-    if (!svg) return;
+  const frac = Math.max(0, Math.min(1, totalMm / ESCALA_CHEIA_MM));
+  // Um fundo mínimo visível para o instrumento não parecer quebrado num julho seco;
+  // o número escrito ao lado é que dá a medida exata, e a marca dos 10 mm fica bem
+  // acima deste piso, então uma semana de garoa continua lendo "pouca água".
+  const alturaAgua = totalMm <= 0 ? 0 : Math.max(20, frac * ALT);
+  const yAgua = TUBO.bottom - alturaAgua;
 
-    // Preferência do sistema tem a palavra final: sem movimento, o desenho já está
-    // no estado final (o SVG é renderizado cheio no servidor) e nada roda.
-    const querParado = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (querParado.matches) return;
+  useIso(() => {
+    const raiz = svg.current;
+    if (!raiz) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (alturaAgua <= 0) return;
 
-    let vivo = true;
-    let matar: (() => void) | undefined;
+    const ctx = gsap.context(() => {
+      const agua = raiz.querySelector('[data-agua]');
+      const ondas = raiz.querySelectorAll('[data-onda]');
+      const bolhas = raiz.querySelectorAll<SVGCircleElement>('[data-bolha]');
+      const gotas = raiz.querySelectorAll('[data-gota]');
 
-    // Import dinâmico: o GSAP só é baixado nesta rota, e só depois da página
-    // pintar. Nenhum byte dele pesa na home nem no painel de cotações.
-    import('gsap').then(({ gsap }) => {
-      if (!vivo) return;
-
-      const agua = svg.querySelector('[data-agua]');
-      const onda = svg.querySelector('[data-onda]');
-      const gotas = svg.querySelectorAll('[data-gota]');
-      if (!agua) return;
-
-      const linha = gsap.timeline();
-
-      // A água sobe do fundo até a marca. `attr` porque o nível é a geometria do
-      // retângulo (y/height), não um transform — assim a superfície acompanha.
-      linha.fromTo(
-        [agua, onda].filter(Boolean),
-        { attr: { y: TUBO.base }, opacity: 0 },
-        {
-          attr: { y: (i: number) => (i === 0 ? yAgua : yAgua - 3) },
-          opacity: 1,
-          duration: 1.4,
-          ease: 'power3.out',
-        },
-      );
-      linha.fromTo(agua, { attr: { height: 0 } }, { attr: { height: alturaAgua }, duration: 1.4, ease: 'power3.out' }, 0);
-
-      // A superfície respira. Só quando há água: ondular um tubo vazio seria
-      // desenhar chuva que não existe.
-      if (onda && alturaAgua > 4) {
-        linha.to(onda, { attr: { rx: 30 }, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1 }, '>-0.2');
+      // A água sobe do fundo. svgOrigin no fundo do tubo para o scaleY nascer dali.
+      if (agua) {
+        gsap.set(agua, { transformOrigin: '50% 100%', svgOrigin: `100 ${TUBO.bottom}` });
+        gsap.from(agua, { scaleY: 0, duration: 1.5, ease: 'power2.out' });
       }
 
-      // A chuva atrás do tubo, em sequência. Na semana seca não cai gota nenhuma.
-      if (gotas.length > 0 && !semanaSeca) {
-        gsap.set(gotas, { opacity: 0 });
-        gsap.to(gotas, {
+      // A superfície respira: as duas ondas correm em sentidos opostos, em laço
+      // linear e sem fim — movimento constante, então linear (nunca ease).
+      ondas.forEach((onda, i) => {
+        gsap.fromTo(
+          onda,
+          { x: i === 0 ? 0 : -WL },
+          { x: i === 0 ? -WL : 0, duration: i === 0 ? 3.4 : 4.8, ease: 'none', repeat: -1 },
+        );
+      });
+
+      // Bolhas subindo do fundo até a superfície e sumindo, em tempos diferentes.
+      bolhas.forEach((b, i) => {
+        const x = Number(b.getAttribute('data-x'));
+        gsap.set(b, { attr: { cx: x, cy: TUBO.bottom - 6 }, opacity: 0 });
+        gsap.to(b, {
           keyframes: [
-            { opacity: 0.55, y: 26, duration: 0.5, ease: 'power1.in' },
-            { opacity: 0, y: 62, duration: 0.5, ease: 'power1.in' },
+            { opacity: 0.7, duration: 0.25 },
+            { attr: { cy: yAgua + 6 }, opacity: 0, duration: 2.4, ease: 'sine.in' },
           ],
-          stagger: { each: 0.22, repeat: -1, repeatDelay: 0.5 },
+          repeat: -1,
+          delay: i * 0.9,
+          repeatDelay: 1.1,
+        });
+      });
+
+      // Chuva atrás do tubo — só quando há chuva na semana.
+      if (!semanaSeca) {
+        gotas.forEach((g, i) => {
+          gsap.set(g, { opacity: 0 });
+          gsap.to(g, {
+            keyframes: [
+              { opacity: 0.5, y: 22, duration: 0.42, ease: 'power1.in' },
+              { opacity: 0, y: 52, duration: 0.42, ease: 'power1.in' },
+            ],
+            repeat: -1,
+            delay: i * 0.28,
+            repeatDelay: 0.5,
+          });
         });
       }
+    }, raiz);
 
-      matar = () => {
-        linha.kill();
-        gsap.killTweensOf(gotas);
-        if (onda) gsap.killTweensOf(onda);
-      };
-    });
-
-    return () => {
-      vivo = false;
-      matar?.();
-    };
+    return () => ctx.revert();
   }, [alturaAgua, yAgua, semanaSeca]);
 
-  // A graduação, de 10 em 10 mm. Vai até 50 e não até 60: a marca do topo cai
-  // exatamente na boca do funil, e o número ficava por cima do desenho.
   const marcas = Array.from({ length: 5 }, (_, i) => {
     const mm = (i + 1) * 10;
-    return { mm, y: TUBO.base - (alturaCheia * mm) / ESCALA_CHEIA_MM };
+    return { mm, y: TUBO.bottom - (ALT * mm) / ESCALA_CHEIA_MM };
   });
 
   return (
     <svg
-      ref={raiz}
+      ref={svg}
       className="pluvi"
-      viewBox="0 0 200 360"
+      viewBox={`0 0 ${VB} 360`}
       role="img"
       aria-label={
         semanaSeca
-          ? 'Pluviômetro vazio: nenhuma chuva prevista para os próximos 7 dias'
+          ? 'Pluviômetro quase vazio: sem chuva relevante nos próximos 7 dias'
           : `Pluviômetro marcando ${totalMm.toLocaleString('pt-BR')} milímetros previstos para os próximos 7 dias`
       }
     >
       <defs>
-        <clipPath id="pluvi-tubo">
-          <rect x={TUBO.x} y={TUBO.topo} width={TUBO.largura} height={TUBO.base - TUBO.topo} rx="12" />
-        </clipPath>
-        <linearGradient id="pluvi-agua" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#7fa9b4" />
-          <stop offset="100%" stopColor="#2f5b66" />
+        {/* Vidro do cilindro: claro nas bordas, sombra suave no meio-direita. */}
+        <linearGradient id="pv-vidro" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+          <stop offset="18%" stopColor="#eef2ee" stopOpacity="0.5" />
+          <stop offset="55%" stopColor="#cdd8d4" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#9fb0ac" stopOpacity="0.5" />
         </linearGradient>
+        <linearGradient id="pv-agua" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#8fc0cc" />
+          <stop offset="55%" stopColor="#4e8a99" />
+          <stop offset="100%" stopColor="#2c5b67" />
+        </linearGradient>
+        <linearGradient id="pv-onda" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#bfe0e7" />
+          <stop offset="100%" stopColor="#7fb1bd" />
+        </linearGradient>
+        <linearGradient id="pv-metal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#c9a86a" />
+          <stop offset="100%" stopColor="#9c7b3e" />
+        </linearGradient>
+        <clipPath id="pv-tubo">
+          <rect x={TUBO.l} y={TUBO.top} width={LARG} height={ALT} rx="18" />
+        </clipPath>
       </defs>
 
-      {/* A chuva cai ATRÁS do tubo. */}
-      <g stroke="#7fa9b4" strokeWidth="2.5" strokeLinecap="round" opacity="0">
+      {/* Chuva atrás do tubo — nas laterais, longe do funil, para não virar sujeira
+          em volta da boca. */}
+      <g stroke="#8fb6c0" strokeWidth="2.4" strokeLinecap="round">
         {[
-          [26, 40], [166, 58], [40, 92], [178, 104], [16, 132], [156, 150],
+          [26, 96], [174, 88], [16, 156], [184, 168], [30, 210], [170, 220],
         ].map(([x, y], i) => (
-          <line key={i} data-gota x1={x} y1={y} x2={x - 5} y2={y + 17} />
+          <line key={i} data-gota x1={x} y1={y} x2={x - 4} y2={y + 15} />
         ))}
       </g>
 
-      {/* O tubo: parede, água, graduação. */}
-      <rect
-        x={TUBO.x}
-        y={TUBO.topo}
-        width={TUBO.largura}
-        height={TUBO.base - TUBO.topo}
-        rx="12"
-        fill="#efe7d6"
-        stroke="#b9a882"
-        strokeWidth="2"
-      />
+      {/* Sombra no chão e o pé do instrumento (um pedestal, não um palito). */}
+      <ellipse cx="100" cy="336" rx="48" ry="7.5" fill="#000" opacity="0.06" />
+      <rect x="96" y="300" width="8" height="18" fill="url(#pv-metal)" />
+      <path d="M 74 332 L 84 318 L 116 318 L 126 332 Z" fill="url(#pv-metal)" />
+      <ellipse cx="100" cy="332" rx="26" ry="4" fill="#8a6a34" />
 
-      <g clipPath="url(#pluvi-tubo)">
-        <rect data-agua x={TUBO.x} y={yAgua} width={TUBO.largura} height={alturaAgua} fill="url(#pluvi-agua)" />
-        {alturaAgua > 4 && (
-          <ellipse data-onda cx={TUBO.x + TUBO.largura / 2} cy={yAgua} rx="42" ry="5" fill="#9fbdc6" opacity="0.9" />
-        )}
+      {/* A água, recortada pelo tubo. */}
+      <g clipPath="url(#pv-tubo)">
+        <g data-agua>
+          <rect x={TUBO.l} y={yAgua} width={LARG} height={TUBO.bottom - yAgua + 20} fill="url(#pv-agua)" />
+          {alturaAgua > 6 && (
+            <>
+              <g data-onda>
+                <path d={ondaPath(yAgua, 3.4, 0)} fill="url(#pv-onda)" opacity="0.55" />
+              </g>
+              <g data-onda>
+                <path d={ondaPath(yAgua, 2.4, Math.PI * 0.7)} fill="#bfe0e7" opacity="0.4" />
+              </g>
+              {/* Menisco: o vidro puxa a borda da água para cima. */}
+              <ellipse cx="100" cy={yAgua} rx={LARG / 2 - 2} ry="3.5" fill="#d7eef2" opacity="0.7" />
+            </>
+          )}
+        </g>
+
+        {alturaAgua > 22 &&
+          [40, 62, 96, 120, 150].map((x, i) => (
+            <circle key={i} data-bolha data-x={x} r={i % 2 ? 2.4 : 1.7} fill="#eaf6f8" />
+          ))}
       </g>
 
+      {/* O vidro por cima da água: reflexo, corpo e brilho. */}
+      <rect x={TUBO.l} y={TUBO.top} width={LARG} height={ALT} rx="18" fill="url(#pv-vidro)" />
+      <rect x={TUBO.l} y={TUBO.top} width={LARG} height={ALT} rx="18" fill="none" stroke="#9fb4ae" strokeWidth="2" />
+      {/* Faixa de luz na parede esquerda. */}
+      <rect x={TUBO.l + 8} y={TUBO.top + 12} width="9" height={ALT - 30} rx="4.5" fill="#ffffff" opacity="0.5" />
+      <rect x={TUBO.l + 22} y={TUBO.top + 16} width="4" height={ALT - 60} rx="2" fill="#ffffff" opacity="0.32" />
+
+      {/* Graduação gravada. */}
       {marcas.map(({ mm, y }) => (
         <g key={mm}>
-          <line x1={TUBO.x + TUBO.largura - 20} y1={y} x2={TUBO.x + TUBO.largura} y2={y} stroke="#b9a882" strokeWidth="1.5" />
-          <text x={TUBO.x + TUBO.largura + 9} y={y + 4} fontSize="11" fill="#7a6f58" fontFamily="var(--mono)">
+          <line x1={TUBO.r - 18} y1={y} x2={TUBO.r - 4} y2={y} stroke="#7a8f8a" strokeWidth="1.6" />
+          <text x={TUBO.r - 24} y={y + 4} fontSize="11" fill="#5f726d" fontFamily="var(--mono)" textAnchor="end">
             {mm}
           </text>
         </g>
       ))}
 
-      {/* A boca do funil, que é o que faz um tubo virar pluviômetro. */}
+      {/* O tubo tem uma boca de vidro no topo; o funil assenta sobre ela, sem gap. */}
+      <ellipse cx="100" cy={TUBO.top} rx={LARG / 2} ry="6" fill="#e6ece9" stroke="#9fb4ae" strokeWidth="2" />
+
+      {/* O funil: a boca que faz do tubo um pluviômetro. Desce até encaixar na boca
+          do tubo (y = topo), sem flutuar. */}
       <path
-        d={`M${TUBO.x - 17} 78 L${TUBO.x + 4} 52 L${TUBO.x + TUBO.largura - 4} 52 L${TUBO.x + TUBO.largura + 17} 78 Z`}
+        d={`M ${TUBO.l - 20} 62 L ${TUBO.l + 6} ${TUBO.top + 1} L ${TUBO.r - 6} ${TUBO.top + 1} L ${TUBO.r + 20} 62 Z`}
         fill="#f6f0e2"
         stroke="#b9a882"
         strokeWidth="2"
         strokeLinejoin="round"
       />
-
-      {/* O mourão: é de cerca que o instrumento vive. */}
-      <rect x={TUBO.x + TUBO.largura / 2 - 5} y={TUBO.base} width="10" height="42" fill="#6e3e1e" opacity="0.55" />
-      <line x1="34" y1="342" x2="166" y2="342" stroke="#b9a882" strokeWidth="2" strokeLinecap="round" />
+      <ellipse cx="100" cy="62" rx={LARG / 2 + 20} ry="6" fill="#efe7d4" stroke="#b9a882" strokeWidth="1.8" />
+      {/* Aro de brilho na boca do funil. */}
+      <ellipse cx="100" cy="61" rx={LARG / 2 + 14} ry="4" fill="none" stroke="#ffffff" strokeWidth="1.4" opacity="0.6" />
     </svg>
   );
 }
