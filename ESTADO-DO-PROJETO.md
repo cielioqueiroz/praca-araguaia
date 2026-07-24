@@ -28,7 +28,35 @@ valor final é cravado exato. Ver [[agro-app-nunca-animar-o-valor-do-preco]].
 
 ---
 
+## 🖼️ Heros de foto (chuva e calculadora), recado da semana (24/07/2026, tarde)
+
+O dono não gostou dos SVGs (pluviômetro e balança) — pareciam cartoon num hero
+grande. Trocados por **foto real**, o padrão dos outros heros do site:
+
+- **/chuva**: lavoura verde sob tempestade, com **chuva animada por cima** (CSS,
+  fios finos e esparsos). A leitura da semana vai escrita sobre a foto.
+- **/calculadora**: campos coloridos do Vale, com zoom lento no hover. Manchete
+  completada: **"Quanto vale o que é seu."** (estava "Quanto vale o seu.").
+
+As fotos são **CC0** (domínio público, via Openverse/rawpixel) em `public/assets/`
+(`chuva-lavoura.jpg`, `calc-campos.jpg`) — sem atribuição, alinhado ao "só grátis".
+A **geração por IA (Gemini) tem cota zero no plano grátis** (exige billing pago), então
+ficou fora.
+
+**Recado da semana** (`lib/chuva-recado.ts`, 8 testes): a seção "Onde você está"
+tinha o lado direito vazio; agora um recado tirado dos 7 dias do usuário (quando a
+chuva chega, dia mais molhado, janela seca para pulverizar/colher) preenche o espaço.
+
+Removidos `Pluviometro.tsx`, `BalancaHero.tsx` e a dependência **gsap** (sem uso).
+`anime.js` continua (contagem do resultado da calculadora, barras da chuva).
+
+---
+
 ## 🌧️ A seção de chuva refeita, GSAP + anime.js, e a revisão (24/07/2026)
+
+> Nota: o pluviômetro/balança em SVG desta fatia foram **substituídos por foto** na
+> mesma tarde (ver acima). O resumo de chuva (`lib/chuva-resumo.ts`), a faixa da
+> semana e os cards seguem valendo.
 
 A página `/chuva` era a única do site ainda em utilitários do Tailwind, presa num
 `max-w-3xl`, sem hero e sem síntese: 5 municípios × 7 dias = 35 linhas de igual
