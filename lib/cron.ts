@@ -16,14 +16,22 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // rotas, em lib/dia-util.ts: o cron da Vercel sabe que dia da semana é hoje, mas
 // não sabe que hoje é Natal.
 //
-// São QUATRO crons, e o plano aceita — conferido com `vercel crons ls` depois do
-// deploy de 23/07/2026. (Havia aqui a anotação de que "o plano grátis só dá três";
-// era chute, e estava errado.)
+// O plano aceita QUATRO crons — conferido com `vercel crons ls` depois do deploy de
+// 23/07/2026. (Havia aqui a anotação de que "o plano grátis só dá três"; era chute, e
+// estava errado.)
 //
-//   /api/enviar-boletim?sessao=abertura    10:30 UTC = 07:30 BRT
 //   /api/coletar                           20:30 UTC = 17:30 BRT
-//   /api/enviar-boletim?sessao=fechamento  21:00 UTC = 18:00 BRT
 //   /api/alertas                           21:15 UTC = 18:15 BRT
+//
+// BOLETIM DIÁRIO PAUSADO em 28/07/2026, a pedido do dono ("até eu voltar e organizar
+// algumas coisas"). Os dois crons abaixo saíram do vercel.json; a ROTA continua de pé
+// (prévia e disparo manual funcionam). Para RETOMAR, basta devolvê-los ao array:
+//
+//   { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" }
+//   { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
+//
+// A coleta segue rodando: o site continua com preço fresco enquanto o Telegram
+// está em silêncio, e a retomada não começa de um banco desatualizado.
 //
 // DUAS ENTREGAS POR DIA (23/07/2026, a pedido do dono):
 //

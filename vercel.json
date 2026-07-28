@@ -1,8 +1,6 @@
 {
   "crons": [
-    { "path": "/api/enviar-boletim?sessao=abertura", "schedule": "30 10 * * 1-5" },
     { "path": "/api/coletar", "schedule": "30 20 * * 1-5" },
-    { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" },
     { "path": "/api/alertas", "schedule": "15 21 * * 1-5" }
   ]
 }

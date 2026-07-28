@@ -1,7 +1,28 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-24.
+> **Documento de retomada.** Última atualização: 2026-07-28.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
+
+---
+
+## ⏸️ Boletim diário do Telegram PAUSADO (28/07/2026)
+
+A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
+`/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
+(`?previa=1`) e disparo manual funcionam; só o automático parou.
+
+**Para retomar**, devolver as duas linhas ao array de `crons` do `vercel.json`:
+
+```json
+{ "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" },
+{ "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
+```
+
+**O que continua rodando:** `/api/coletar` (17:30 BRT) e `/api/alertas` (18:15 BRT).
+A coleta segue para o site não congelar e a retomada não começar de banco velho. Os
+**alertas de preço ainda mandam mensagem aos inscritos** quando um item varia forte —
+e é por esse cron que o resumo diário de audiência chega no Telegram do dono. Se o
+silêncio tiver de ser total, tirar `/api/alertas` também.
 
 ---
 
