@@ -20,18 +20,25 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // 23/07/2026. (Havia aqui a anotação de que "o plano grátis só dá três"; era chute, e
 // estava errado.)
 //
-//   /api/coletar                           20:30 UTC = 17:30 BRT
-//   /api/alertas                           21:15 UTC = 18:15 BRT
+//   /api/coletar                           20:30 UTC = 17:30 BRT  (ÚNICO cron ativo)
 //
-// BOLETIM DIÁRIO PAUSADO em 28/07/2026, a pedido do dono ("até eu voltar e organizar
-// algumas coisas"). Os dois crons abaixo saíram do vercel.json; a ROTA continua de pé
-// (prévia e disparo manual funcionam). Para RETOMAR, basta devolvê-los ao array:
+// TELEGRAM EM SILÊNCIO TOTAL. Só a coleta continua no vercel.json — e ela NÃO manda
+// mensagem nenhuma, apenas grava preço fresco para o site não congelar e a retomada
+// não começar de banco velho. TODAS as rotas que disparam Telegram estão fora do cron:
 //
-//   { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" }
-//   { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
+//   BOLETIM DIÁRIO — pausado em 28/07/2026 ("até eu voltar e organizar algumas
+//   coisas"). Para RETOMAR, devolver ao array de crons:
+//     { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" }
+//     { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
 //
-// A coleta segue rodando: o site continua com preço fresco enquanto o Telegram
-// está em silêncio, e a retomada não começa de um banco desatualizado.
+//   ALERTAS + RESUMO DE AUDIÊNCIA (18:15 BRT) — pausado em 04/08/2026, a pedido do
+//   dono: o /api/alertas seguia mandando mensagem à tarde (alerta de preço aos
+//   inscritos e o resumo de audiência no chat do dono). Saiu do vercel.json. Para
+//   RETOMAR, devolver ao array de crons:
+//     { "path": "/api/alertas", "schedule": "15 21 * * 1-5" }
+//
+// Em todos os casos a ROTA continua de pé: prévia e disparo manual seguem funcionando;
+// só o automático parou.
 //
 // DUAS ENTREGAS POR DIA (23/07/2026, a pedido do dono):
 //

@@ -1,28 +1,33 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-28.
+> **Documento de retomada.** Última atualização: 2026-08-04.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
 
-## ⏸️ Boletim diário do Telegram PAUSADO (28/07/2026)
+## 🔇 Telegram em SILÊNCIO TOTAL — alertas da tarde também pausados (04/08/2026)
 
-A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
-`/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
-(`?previa=1`) e disparo manual funcionam; só o automático parou.
+O dono avisou que **ainda chegava mensagem no Telegram à tarde**, mesmo com o boletim
+diário pausado. A origem era o `/api/alertas` (18:15 BRT), que continuava mandando:
+o **alerta de preço aos inscritos** quando um item varia forte, e o **resumo diário de
+audiência** no chat do dono. Esse cron saiu do `vercel.json` a pedido dele.
 
-**Para retomar**, devolver as duas linhas ao array de `crons` do `vercel.json`:
+Agora **o único cron ativo é `/api/coletar` (17:30 BRT)** — e ele NÃO manda mensagem
+nenhuma, só grava preço fresco para o site não congelar e a retomada não começar de
+banco velho.
+
+**Todas as rotas continuam de pé** — prévia (`?previa=1`) e disparo manual seguem
+funcionando; só o automático parou. **Para retomar**, devolver as linhas ao array de
+`crons` do `vercel.json`:
 
 ```json
+{ "path": "/api/alertas", "schedule": "15 21 * * 1-5" },
 { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" },
 { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
 ```
 
-**O que continua rodando:** `/api/coletar` (17:30 BRT) e `/api/alertas` (18:15 BRT).
-A coleta segue para o site não congelar e a retomada não começar de banco velho. Os
-**alertas de preço ainda mandam mensagem aos inscritos** quando um item varia forte —
-e é por esse cron que o resumo diário de audiência chega no Telegram do dono. Se o
-silêncio tiver de ser total, tirar `/api/alertas` também.
+(O boletim diário já estava pausado desde 28/07/2026, "até eu voltar e organizar
+algumas coisas".)
 
 ---
 
