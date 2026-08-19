@@ -43,6 +43,19 @@ export const UNIDADE_PORTEIRA: Record<string, string> = {
   milho: 'R$ por saca de 60 kg',
 };
 
+/**
+ * Só a unidade, sem a especificação do animal.
+ *
+ * O que vem depois do `·` (fêmea nelore de 18 meses, 12 meses e 240 kg) é essencial no
+ * cartão grande, onde o produtor confere se é o MESMO bicho que ele tem. Num cartão
+ * compacto, porém, ela quebra em duas linhas, empurra o "N lugares" para baixo e
+ * desalinha a faixa inteira — a leitura de relance, que é a razão da faixa existir,
+ * se perde. Aqui fica só a unidade; o detalhe está a um clique.
+ */
+export function unidadeCurta(tipo: string): string {
+  return (UNIDADE_PORTEIRA[tipo] ?? '').split(' · ')[0];
+}
+
 // Quem publica cada preço da porteira — e em que ritmo. A CONAB fecha a SEMANA; a
 // Scot publica por DIA. O rodapé de cada card diz qual é qual, para ninguém achar
 // que o bezerro de hoje foi apurado junto com a soja da semana.

@@ -980,15 +980,21 @@ a.mrow:hover{background:var(--paper-warm)}
   border-bottom:1px solid var(--rule-strong);padding-bottom:1px}
 .phlink:hover{color:var(--olive-deep);border-color:var(--olive)}
 .phgrade{margin-top:20px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
-.phgrade a{display:block;height:100%;padding:16px 16px 14px;background:var(--paper);border:1px solid var(--rule);
-  border-radius:14px;text-decoration:none;transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s}
+/* Coluna flex para o "N lugares" descer ao pé do cartão: com o texto solto, uma
+   unidade de duas linhas empurrava o rodapé de um cartão e desalinhava a faixa toda. */
+.phgrade a{display:flex;flex-direction:column;height:100%;padding:16px 16px 14px;background:var(--paper);
+  border:1px solid var(--rule);border-radius:14px;text-decoration:none;
+  transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s}
 .phgrade a:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 16px 32px -22px rgba(38,48,26,.42)}
 .ph-rot{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--olive)}
-.ph-val{display:block;margin-top:9px;font-family:var(--sans);font-size:20px;font-weight:700;color:var(--ink);
-  line-height:1.15;white-space:nowrap}
+.ph-val{display:block;margin-top:9px;font-family:var(--sans);font-size:clamp(16px,1.35vw,20px);font-weight:700;
+  color:var(--ink);line-height:1.15}
+.ph-val .n{white-space:nowrap}
 .ph-val i{font-style:normal;color:var(--muted);margin:0 3px;font-weight:400}
 .ph-un{display:block;margin-top:3px;font-family:var(--sans);font-size:11.5px;color:var(--muted);line-height:1.35}
-.ph-lug{display:block;margin-top:8px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+/* auto: gruda no pé, alinhado com o dos vizinhos. */
+.ph-lug{display:block;margin-top:auto;padding-top:10px;font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted)}
 .phpracas{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .phpracas span{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 /* 24px de altura é o mínimo do WCAG 2.5.8 (AA) para alvo de toque — estes links são
@@ -1004,7 +1010,7 @@ a.mrow:hover{background:var(--paper-warm)}
      `nowrap` empurrava a grade a 409px numa tela de 390 e a página inteira passava
      a rolar de lado. Aqui ela quebra em duas linhas — cresce em altura, não em
      largura, que é o único eixo que o telefone não perdoa. */
-  .ph-val{font-size:17px;white-space:normal}
+  .ph-val{font-size:17px}
   .phoje{margin-top:34px}
 }
 

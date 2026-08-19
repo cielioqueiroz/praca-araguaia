@@ -1,4 +1,4 @@
-import { PORTEIRA, TITULOS, UNIDADE_PORTEIRA } from '@/lib/tipos-ui';
+import { PORTEIRA, TITULOS, UNIDADE_PORTEIRA, unidadeCurta } from '@/lib/tipos-ui';
 
 /**
  * O resumo da porteira em uma linha — para quem chega e tem dois segundos.
@@ -18,6 +18,8 @@ export type FaixaProduto = {
   tipo: string;
   rotulo: string;
   unidade: string;
+  /** Sem a especificação do animal — para o cartão compacto não quebrar em duas linhas. */
+  unidadeCurta: string;
   min: number;
   max: number;
   /** Quantos lugares entraram na faixa (praças no gado, estados no grão). */
@@ -33,6 +35,7 @@ export function faixasDaPorteira(precos: PrecoDeLugar[]): FaixaProduto[] {
         tipo,
         rotulo: TITULOS[tipo] ?? tipo,
         unidade: UNIDADE_PORTEIRA[tipo] ?? '',
+        unidadeCurta: unidadeCurta(tipo),
         min: Math.min(...valores),
         max: Math.max(...valores),
         lugares: valores.length,

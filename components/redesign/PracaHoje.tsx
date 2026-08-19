@@ -50,18 +50,29 @@ export async function PracaHoje() {
           <li key={f.tipo}>
             <Link href={`/cotacao/${f.tipo}`}>
               <span className="ph-rot">{f.rotulo}</span>
+              {/* Cada número é um bloco que não quebra no meio; a faixa pode quebrar
+                  DEPOIS do travessão quando o cartão é estreito. Sem isto, "2.788,00–
+                  3.178,00" com nowrap estourava a largura do cartão. */}
               <span className="ph-val tnum">
                 {f.min === f.max ? (
-                  fmt.format(f.min)
+                  <span className="n">{fmt.format(f.min)}</span>
                 ) : (
                   <>
-                    {fmt.format(f.min)}
-                    <i>–</i>
-                    {fmt.format(f.max)}
+                    <span className="n">{fmt.format(f.min)}</span>
+                    {/* O travessão viaja COM o segundo número (solto, ficava órfão no
+                        fim da linha: "2.788,00 –"), e o <wbr/> é o ÚNICO ponto onde a
+                        faixa pode quebrar. Sem ele não havia espaço entre os spans, o
+                        navegador não tinha onde quebrar e "3.245,00–3.640,00" vazava
+                        para fora do cartão no celular. */}
+                    <wbr />
+                    <span className="n">
+                      <i>–</i>
+                      {fmt.format(f.max)}
+                    </span>
                   </>
                 )}
               </span>
-              <span className="ph-un">{f.unidade}</span>
+              <span className="ph-un">{f.unidadeCurta}</span>
               <span className="ph-lug mono">
                 {f.lugares === 1 ? 'um lugar' : `${f.lugares} lugares`}
               </span>

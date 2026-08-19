@@ -42,3 +42,27 @@ describe('faixasDaPorteira', () => {
     expect(faixasDaPorteira(comLixo)[0]).toMatchObject({ min: 330, max: 330, lugares: 1 });
   });
 });
+
+describe('unidade no cartão compacto', () => {
+  it('a faixa carrega a unidade curta, sem a especificação do animal', () => {
+    // "R$ por cabeça · fêmea nelore, 18 meses" quebrava em duas linhas no cartão
+    // estreito da home e desalinhava o rodapé de toda a faixa.
+    const faixas = faixasDaPorteira([
+      { tipo: 'novilha', valor: 3000 },
+      { tipo: 'bezerro', valor: 3400 },
+      { tipo: 'boi', valor: 330 },
+      { tipo: 'soja', valor: 120 },
+    ]);
+    const curta = Object.fromEntries(faixas.map((f) => [f.tipo, f.unidadeCurta]));
+    expect(curta.novilha).toBe('R$ por cabeça');
+    expect(curta.bezerro).toBe('R$ por cabeça');
+    // Onde não havia especificação, nada muda.
+    expect(curta.boi).toBe('R$ por arroba');
+    expect(curta.soja).toBe('R$ por saca de 60 kg');
+  });
+
+  it('a unidade completa continua disponível para o cartão grande', () => {
+    const [novilha] = faixasDaPorteira([{ tipo: 'novilha', valor: 3000 }]);
+    expect(novilha.unidade).toBe('R$ por cabeça · fêmea nelore, 18 meses');
+  });
+});
