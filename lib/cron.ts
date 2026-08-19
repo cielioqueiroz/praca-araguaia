@@ -23,15 +23,26 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 //   /api/coletar                           20:30 UTC = 17:30 BRT
 //   /api/alertas                           21:15 UTC = 18:15 BRT
 //
-// BOLETIM DIÁRIO PAUSADO em 28/07/2026, a pedido do dono ("até eu voltar e organizar
-// algumas coisas"). Os dois crons abaixo saíram do vercel.json; a ROTA continua de pé
-// (prévia e disparo manual funcionam). Para RETOMAR, basta devolvê-los ao array:
+// SILÊNCIO TOTAL NO TELEGRAM desde 19/08/2026, a pedido do dono: "não quero que volte
+// a disparar nada no Telegram ainda; só volto a mandar quando o sistema estiver 100%".
+//
+// O boletim já estava pausado desde 28/07; nesta rodada saiu TAMBÉM o /api/alertas,
+// que era o último cron capaz de mandar mensagem — o alerta de movimento forte para os
+// inscritos e o resumo diário de audiência para o dono. Foi ele que, na primeira pausa,
+// fez o dono continuar recebendo mensagem de tarde achando que tudo estava parado.
+//
+// O ÚNICO cron ativo é /api/coletar (17:30 BRT), que não envia nada: só grava preço
+// fresco para o site não congelar e para a retomada não começar de banco velho.
+//
+// As ROTAS continuam de pé — prévia (?previa=1) e disparo manual funcionam. Para
+// RETOMAR, devolver ao array de `crons` do vercel.json a linha que quiser:
 //
 //   { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" }
 //   { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
+//   { "path": "/api/alertas",                          "schedule": "15 21 * * 1-5" }
 //
-// A coleta segue rodando: o site continua com preço fresco enquanto o Telegram
-// está em silêncio, e a retomada não começa de um banco desatualizado.
+// A recomendação de 18/08 continua valendo para quando ele quiser voltar: começar só
+// pelo fechamento (18:00). Duas entregas por dia para uma lista pequena é ruído.
 //
 // DUAS ENTREGAS POR DIA (23/07/2026, a pedido do dono):
 //

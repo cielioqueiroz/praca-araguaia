@@ -32,9 +32,9 @@ cotação × reporte, gordo × reposição, fechamento, origem) e os três prime
    diferente → apaga (ouro 0005, novilha 0009); mesmo produto e unidade → marca.
 
 **B — distribuição (o objetivo do ciclo).**
-- **O boletim voltou, só no fechamento**: `{ "path": "/api/enviar-boletim?sessao=fechamento",
-  "schedule": "0 21 * * 1-5" }` de volta ao `vercel.json` (18:00 BRT). A abertura fica
-  fora até haver público — duas entregas/dia para 3 assinantes é ruído.
+- ~~**O boletim voltou, só no fechamento**~~ — **revertido em 19/08** a pedido do dono
+  (ver o bloco de silêncio total no topo). A decisão de qual linha religar primeiro
+  (o fechamento das 18:00) continua valendo para quando ele quiser voltar.
 - `lib/compartilhar.ts` + `BotaoCompartilhar`: link `wa.me/?text=` sem destinatário (quem
   envia é o usuário; nenhuma API paga), que vira folha nativa onde o aparelho tem.
 - **`ConviteDistribuicao`** — faixa escura do boca a boca (`.faixa-convite` no globals),
@@ -59,13 +59,24 @@ primeiros preços em `/moderar`; divulgar o link. A ferramenta está pronta, a l
 
 ---
 
-## ▶️ ~~Boletim diário do Telegram PAUSADO~~ — RETOMADO em 18/08/2026
+## 🔇 SILÊNCIO TOTAL NO TELEGRAM (19/08/2026) — nada dispara
 
-> **Situação atual:** volta **só o fechamento** (`0 21 * * 1-5`, 18:00 BRT). A abertura
-> das 07:30 segue fora por decisão do dono — uma entrega por dia útil enquanto a lista de
-> assinantes é pequena. O texto abaixo é o registro da pausa.
+> **Situação atual e vigente.** O dono: *"não quero que volte a disparar nada no Telegram
+> ainda, deixe tudo parado; só volto a mandar as notícias quando o sistema estiver 100%."*
+>
+> O boletim tinha sido religado em 18/08 (só o fechamento) e **foi desligado de novo no
+> dia seguinte**. Saiu junto o **`/api/alertas`**, que era o último cron capaz de mandar
+> mensagem — alerta de movimento forte para os inscritos e resumo de audiência para o
+> dono. Foi ele que, na primeira pausa, fez o dono seguir recebendo mensagem de tarde.
+>
+> **O único cron ativo é `/api/coletar` (17:30 BRT)**, que não envia nada: mantém o preço
+> fresco para o site não congelar e para a retomada não começar de banco velho.
+>
+> As rotas continuam de pé (prévia `?previa=1` e disparo manual funcionam). Para religar,
+> devolver ao `crons` do `vercel.json` a linha desejada — as três estão escritas em
+> [`lib/cron.ts`](lib/cron.ts). Recomendação quando voltar: **só o fechamento** (18:00).
 
-### O registro da pausa (28/07/2026)
+### O registro da primeira pausa (28/07/2026)
 
 A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
 `/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
