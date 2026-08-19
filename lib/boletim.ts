@@ -34,6 +34,11 @@ export type ItemPorteira = {
    *  No card, repetir as 5 cidades vazias em 6 produtos viraria 30 linhas de nada;
    *  o convite a reportar vive no site, que tem espaço para ele. */
   cidades: CidadeBoletim[];
+  /**
+   * De quem é a testemunha das cidades (ADR 0003). Vazio quando não há reporte —
+   * o card não escreve procedência de lista que não existe.
+   */
+  procedenciaCidades?: string;
 };
 
 export type ItemMercado = {
@@ -118,6 +123,8 @@ export function montarBoletim(
   reportes: ReporteCidade[] = [],
   agora: Date = new Date(),
   precosPraca: PrecoPraca[] = [],
+  /** tipo -> 'relatado por produtores' | 'apurado pela Praça' | a conta dos dois. */
+  procedenciaPorProduto: Record<string, string> = {},
 ): Boletim {
   // Porteira: só entra a commodity que tem preço por lugar — sem lugar, sem linha
   // (a média antiga não volta disfarçada).
@@ -161,6 +168,7 @@ export function montarBoletim(
             valorFmt: numero(r.mediana as number, 2),
             contagem: r.contagem,
           })),
+        procedenciaCidades: procedenciaPorProduto[tipo],
       },
     ];
   });

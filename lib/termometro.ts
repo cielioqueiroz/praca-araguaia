@@ -4,6 +4,23 @@ import { MUNICIPIOS } from '@/lib/fontes/chuva';
 // confrontar com o que está sendo pago na cidade dele.
 export type ProdutoTermometro = 'boi' | 'vaca' | 'novilha' | 'bezerro' | 'soja' | 'milho';
 
+/**
+ * De quem é a testemunha do preço (ADR 0003).
+ *
+ * 'produtor' — chegou pelo formulário público, anônimo, de quem negociou.
+ * 'praca'    — a Praça Araguaia apurou por telefone e lançou pela moderação.
+ *
+ * Os dois entram na mesma conta: é tudo preço real da região. Mas nenhuma tela pode
+ * mostrar o valor sem dizer de quem ele veio — foi a condição para semear o
+ * Termômetro em vez de esperar ele encher sozinho.
+ */
+export type OrigemReporte = 'produtor' | 'praca';
+
+export const ROTULO_ORIGEM: Record<OrigemReporte, string> = {
+  produtor: 'relatado por produtores',
+  praca: 'apurado pela Praça',
+};
+
 // Faixas plausíveis: bloqueiam erro de digitação/troll, não a variação real de mercado.
 //
 // NOVILHA É POR CABEÇA, não por arroba (corrigido em 24/07/2026). Ela é REPOSIÇÃO —
@@ -65,7 +82,27 @@ export function validarReporte(body: unknown): Validacao {
   return { tipo: 'valido', reporte: { produto, municipio, valor } };
 }
 
-export type ReporteAprovado = { produto: string; municipio: string; valor: number };
+export type ReporteAprovado = {
+  produto: string;
+  municipio: string;
+  valor: number;
+  /** Ausente = 'produtor': é o que todo reporte era antes de a coluna existir. */
+  origem?: OrigemReporte;
+};
+
+export type ContagemPorOrigem = { produtor: number; praca: number };
+
+/**
+ * A linha de procedência do card — o que a tela é OBRIGADA a dizer junto do número.
+ *
+ * Com uma origem só, a frase é a origem. Com as duas, o card mostra quantos vieram de
+ * cada lado, porque "2 de 7 apurados por nós" e "7 de 7" não merecem a mesma leitura.
+ */
+export function procedencia(origens: ContagemPorOrigem): string {
+  if (origens.praca === 0) return ROTULO_ORIGEM.produtor;
+  if (origens.produtor === 0) return ROTULO_ORIGEM.praca;
+  return `${origens.produtor} de produtores · ${origens.praca} ${origens.praca === 1 ? 'apurado' : 'apurados'} pela Praça`;
+}
 
 export type ResumoProduto = {
   produto: ProdutoTermometro;
@@ -74,6 +111,9 @@ export type ResumoProduto = {
   mediana: number;
   faixa: { min: number; max: number };
   contagem: number;
+  origens: ContagemPorOrigem;
+  /** Já pronta para a tela: ninguém monta esta frase por conta própria. */
+  procedencia: string;
   municipios: { municipio: string; mediana: number; contagem: number }[];
 };
 
@@ -111,12 +151,31 @@ export function cidadesDoProduto(reportes: ReporteAprovado[], produto: string): 
   }).sort((a, b) => (b.contagem > 0 ? 1 : 0) - (a.contagem > 0 ? 1 : 0)); // quem tem reporte primeiro
 }
 
+/**
+ * Quantos reportes de cada origem existem para UM produto.
+ *
+ * Serve às telas que mostram o Termômetro fora da página dele — o card da porteira
+ * em /cotacoes e o card do boletim —, que também não podem publicar o número sem
+ * dizer quem o testemunhou.
+ */
+export function origensDoProduto(reportes: ReporteAprovado[], produto: string): ContagemPorOrigem {
+  const doProduto = reportes.filter((r) => r.produto === produto);
+  return {
+    produtor: doProduto.filter((r) => (r.origem ?? 'produtor') === 'produtor').length,
+    praca: doProduto.filter((r) => r.origem === 'praca').length,
+  };
+}
+
 // Agrega reportes JÁ filtrados (aprovados, últimos 7 dias — responsabilidade da query).
 export function resumirReportes(reportes: ReporteAprovado[]): ResumoProduto[] {
   return ORDEM_PRODUTOS.flatMap((produto) => {
     const doProduto = reportes.filter((r) => r.produto === produto);
     if (doProduto.length === 0) return [];
     const valores = doProduto.map((r) => r.valor);
+    const origens: ContagemPorOrigem = {
+      produtor: doProduto.filter((r) => (r.origem ?? 'produtor') === 'produtor').length,
+      praca: doProduto.filter((r) => r.origem === 'praca').length,
+    };
     const municipios = MUNICIPIOS_TERMOMETRO.flatMap((municipio) => {
       const doMunicipio = doProduto.filter((r) => r.municipio === municipio).map((r) => r.valor);
       return doMunicipio.length === 0
@@ -131,6 +190,8 @@ export function resumirReportes(reportes: ReporteAprovado[]): ResumoProduto[] {
         mediana: mediana(valores),
         faixa: { min: Math.min(...valores), max: Math.max(...valores) },
         contagem: doProduto.length,
+        origens,
+        procedencia: procedencia(origens),
         municipios,
       },
     ];

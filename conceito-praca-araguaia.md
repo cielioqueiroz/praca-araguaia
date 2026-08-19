@@ -37,8 +37,12 @@ O preço local não existe em fonte nenhuma. Produtores que venderam **reportam 
 - Publicar **sempre** como "preço relatado por produtores", nunca como tabela oficial de frigorífico.
 - Isso protege juridicamente, cria comunidade e entrega o que ninguém mais tem.
 
-### 4.3. Proibido — dado proprietário de terceiros
-Não raspar nem republicar dados de serviços pagos/proprietários (ex.: Scot Consultoria). É o produto comercial deles. Se quiser esse dado, o caminho é **licenciar/parceria oficial**.
+### 4.3. Proibido — o que está atrás do balcão de terceiros
+Não raspar o **produto pago** de ninguém: área de assinante, relatório, planilha, qualquer coisa atrás de login. É o produto comercial deles, e o caminho para chegar lá é **licenciar/parceria oficial**.
+
+O que **é** permitido: ler o indicador onde ele foi **publicado abertamente** — página pública, sem paywall e sem contorno de autenticação — dando crédito a quem apurou **e** dizendo onde lemos. É assim que boi, vaca, novilha e bezerro chegam aqui: indicador da **Scot Consultoria**, lido na página aberta do **Notícias Agrícolas**. A regra original desta seção proibia a Scot pelo nome; a fatia 17 passou a usá-la e a contradição ficou de pé até 18/08/2026, quando foi fechada em [`docs/adr/0001`](docs/adr/0001-indicador-scot-via-noticias-agricolas.md) — leia o ADR antes de mexer nisto.
+
+Em qualquer caso: nunca apresentar número de terceiro como apuração nossa, e sair na hora se o titular pedir.
 
 ## 5. Funcionalidades por fase
 
@@ -131,7 +135,7 @@ alertas
 
 - **Credibilidade é frágil:** preço errado uma vez queima a confiança. Cuidar da fonte e marcar claramente o que é referência vs. relatado.
 - **Curadoria manual cansa:** migrar para crowdsourcing/parceria em poucos meses.
-- **Jurídico:** verificar termos do CEPEA antes de monetizar sobre os indicadores; nunca republicar dado proprietário (Scot etc.).
+- **Jurídico:** verificar termos do CEPEA antes de monetizar sobre os indicadores; nunca raspar o produto pago de ninguém (área de assinante, relatório) — indicador só onde foi publicado aberto, com crédito a quem apurou e a quem publicou (ver §4.3 e o ADR 0001).
 - **Não fazer delivery/logística no começo** — peso operacional alto demais para projeto solo.
 
 ## 12. Próximos passos sugeridos

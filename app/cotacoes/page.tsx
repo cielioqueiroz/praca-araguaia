@@ -1,12 +1,13 @@
 import { createPublicClient } from '@/lib/supabase/public';
 import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA } from '@/lib/tipos-ui';
 import { rodapeDaFonte } from '@/lib/boletim';
-import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
+import { cidadesDoProduto, origensDoProduto, procedencia, type ReporteAprovado } from '@/lib/termometro';
 import { ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
 import { CardPorteira, type PrecoCidadeUI, type PrecoPracaUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
 import { TabelaMercado, type ItemMercado } from '@/components/redesign/TabelaMercado';
 import { SuaPraca } from '@/components/redesign/SuaPraca';
 import { Revelar } from '@/components/redesign/Revelar';
+import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +53,7 @@ export default async function Home() {
       .order('data_referencia', { ascending: true }),
     supabase
       .from('reportes')
-      .select('produto, municipio, valor')
+      .select('produto, municipio, valor, origem')
       .eq('status', 'aprovado')
       .gte('criado_em', seteDias),
   ]);
@@ -102,9 +103,15 @@ export default async function Home() {
     produto: r.produto,
     municipio: r.municipio,
     valor: Number(r.valor),
+    origem: r.origem,
   }));
   const cidadesPorTipo = new Map<string, PrecoCidadeUI[]>(
     PORTEIRA.map((tipo) => [tipo, cidadesDoProduto(aprovados, tipo)]),
+  );
+  // Quem testemunhou o que está nas cidades — por produto, porque o boi pode estar
+  // cheio de reporte de produtor enquanto o milho só tem o que nós apuramos.
+  const procedenciaPorTipo = new Map<string, string>(
+    PORTEIRA.map((tipo) => [tipo, procedencia(origensDoProduto(aprovados, tipo))]),
   );
 
   const cotacoes = ((atuais ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
@@ -141,7 +148,8 @@ export default async function Home() {
           <div className="meta">
             <div className="big">{fmtHoje.format(agora)}</div>
             <div className="mono">
-              Atualizado {fmtHora.format(agora)}, fontes Scot, CONAB, BCB, B3, CoinGecko
+              Atualizado {fmtHora.format(agora)} · gado: Scot Consultoria, via Notícias Agrícolas · grão:
+              CONAB · mercado: BCB, B3, CoinGecko
             </div>
           </div>
           <SuaPraca />
@@ -184,6 +192,7 @@ export default async function Home() {
                     precos={precos}
                     pracas={pracas?.length ? pracas : undefined}
                     cidades={cidadesPorTipo.get(tipo)}
+                    procedenciaCidades={procedenciaPorTipo.get(tipo)}
                   />
                 </Revelar>
               );
@@ -208,6 +217,12 @@ export default async function Home() {
       {cotacoes.length === 0 && !temPorteira && (
         <p className="mono" style={{ marginTop: 48 }}>Ainda sem cotação — rode a coleta.</p>
       )}
+
+      <ConviteDistribuicao
+        alvo="cotacoes"
+        titulo={['O preço de hoje', 'vale mais no grupo.']}
+        linha="Manda para quem está pensando em vender esta semana. É de graça e não pede cadastro de ninguém."
+      />
     </div>
   );
 }

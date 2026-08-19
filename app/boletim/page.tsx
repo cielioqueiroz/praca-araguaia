@@ -1,30 +1,76 @@
 import Link from 'next/link';
+import { BotaoCompartilhar } from '@/components/redesign/BotaoCompartilhar';
+import { BotaoTelegram } from '@/components/redesign/BotaoTelegram';
 
-export const metadata = { title: 'Boletim do dia' };
+export const metadata = {
+  title: 'Boletim do dia',
+  description: 'O card com o preço do dia na porteira e no mercado, pronto para mandar no grupo.',
+};
 
+const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
+
+function IconeBaixar({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5" />
+      <path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17" />
+    </svg>
+  );
+}
+
+// A página existia para "baixar imagem" e mais nada — sendo que ela é, das nossas
+// páginas, a única cujo propósito INTEIRO é sair daqui e ir parar num grupo. Agora
+// as três saídas estão lado a lado: mandar agora, baixar para postar, receber todo
+// dia sozinho.
 export default function Boletim() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/cotacoes" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Para compartilhar</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Boletim do dia</h1>
-      <p className="mt-1 text-sm text-tinta/50">Baixe a imagem e compartilhe no Instagram ou WhatsApp.</p>
+    <div className="wrap">
+      <section className="bolhead">
+        <div className="kicker">Boletim do dia</div>
+        <h1>
+          O dia inteiro
+          <br />
+          <em>num card</em>.
+        </h1>
+        <p className="lede">
+          Porteira e mercado, com a data e a fonte de cada preço. Feito para caber na tela do celular de quem
+          está na lida.
+        </p>
+        <div className="bolmeta mono">{fmtHoje.format(new Date())}</div>
+      </section>
 
-      {/* Imagem dinâmica gerada pela rota; next/image não otimiza rota própria. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/api/boletim"
-        alt="Boletim do dia com as cotações da Praça Araguaia"
-        className="mt-6 w-full max-w-xl rounded-xl border border-linha shadow-sm"
-      />
+      <section className="bolgrade">
+        <div className="bolcard">
+          {/* Imagem dinâmica gerada pela rota; next/image não otimiza rota própria. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/api/boletim" alt="Boletim do dia com as cotações da Praça Araguaia" />
+        </div>
 
-      <a
-        href="/api/boletim"
-        download="boletim-praca-araguaia.png"
-        className="mt-5 inline-block rounded-lg bg-pasto px-4 py-2 text-sm font-semibold text-white transition hover:bg-mata focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
-      >
-        Baixar imagem
-      </a>
-    </main>
+        <div className="bolacoes">
+          <div className="bolt">O que fazer com ele</div>
+
+          <BotaoCompartilhar alvo="boletim" className="fc-btn bol-primario" rotulo="Mandar no WhatsApp" />
+
+          <a href="/api/boletim" download="boletim-praca-araguaia.png" className="fc-btn bol-secundario">
+            <IconeBaixar className="h-[18px] w-[18px]" />
+            Baixar a imagem
+          </a>
+
+          <div className="bolsep" />
+
+          <p className="bolnota">
+            Não quer lembrar de vir aqui? O bot manda o card no fim de cada dia útil, quando o preço do dia já
+            está apurado.
+          </p>
+          <BotaoTelegram className="fc-btn bol-secundario" />
+
+          <p className="bolrodape">
+            O card sai do mesmo dado do site — <Link href="/cotacoes">a praça hoje</Link> — e traz a data de
+            apuração de cada preço. Preço parado vem marcado como desatualizado; aqui número velho não passa
+            por novidade.
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }

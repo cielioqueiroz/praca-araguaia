@@ -60,7 +60,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
           {pontos.length === 0 ? (
             <p className="text-tinta/50">Sem histórico ainda.</p>
           ) : (
-            <GraficoCotacao pontos={pontos} titulo={titulo} unidade={atual.unidade} />
+            <GraficoCotacao pontos={pontos} titulo={titulo} unidade={atual.unidade} tipoCotacao={tipo} />
           )}
         </div>
       </section>

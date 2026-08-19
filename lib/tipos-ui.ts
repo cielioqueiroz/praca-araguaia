@@ -50,14 +50,42 @@ export const UNIDADE_PORTEIRA: Record<string, string> = {
 // Na fatia 17, boi e vaca saíram da CONAB/Datagro para a Scot, que pesquisa PRAÇA
 // (Marabá, Redenção…) em vez de estado; a novilha saiu da Datagro (novilha gorda,
 // R$/@) para a Scot (reposição, R$/cabeça) — é outro produto, decidido com o dono.
-export const FONTE_PORTEIRA: Record<string, { nome: string; semanal: boolean; porPraca?: boolean }> = {
-  boi: { nome: 'Scot Consultoria', semanal: false, porPraca: true },
-  vaca: { nome: 'Scot Consultoria', semanal: false, porPraca: true },
-  novilha: { nome: 'Scot Consultoria', semanal: false },
-  bezerro: { nome: 'Scot Consultoria', semanal: false },
+//
+// `via` é onde LEMOS o indicador, quando não é a própria fonte que publica para nós.
+// A Scot apura; quem publica aberto é o Notícias Agrícolas. Dizer as duas coisas é
+// obrigação, não gentileza — ver docs/adr/0001-indicador-scot-via-noticias-agricolas.md.
+export const FONTE_PORTEIRA: Record<string, { nome: string; via?: string; semanal: boolean; porPraca?: boolean }> = {
+  boi: { nome: 'Scot Consultoria', via: 'Notícias Agrícolas', semanal: false, porPraca: true },
+  vaca: { nome: 'Scot Consultoria', via: 'Notícias Agrícolas', semanal: false, porPraca: true },
+  novilha: { nome: 'Scot Consultoria', via: 'Notícias Agrícolas', semanal: false },
+  bezerro: { nome: 'Scot Consultoria', via: 'Notícias Agrícolas', semanal: false },
   soja: { nome: 'CONAB', semanal: true },
   milho: { nome: 'CONAB', semanal: true },
 };
+
+/**
+ * O crédito por extenso: quem apurou e, quando há, onde lemos.
+ *
+ * O card compacto continua com o nome curto + data ('Scot · 17/08') porque ali só
+ * cabem duas palavras; este é o crédito de onde há linha de texto — rodapé do site,
+ * linha de fontes, página do boletim.
+ */
+export function creditoFonte(tipo: string): string | undefined {
+  const f = FONTE_PORTEIRA[tipo];
+  if (!f) return undefined;
+  return f.via ? `${f.nome}, via ${f.via}` : f.nome;
+}
+
+/** Uma linha por fonte da porteira, sem repetir quem publica os mesmos produtos. */
+export function creditosDaPorteira(): { produtos: string; credito: string }[] {
+  const porCredito = new Map<string, string[]>();
+  for (const tipo of PORTEIRA) {
+    const credito = creditoFonte(tipo);
+    if (!credito) continue;
+    porCredito.set(credito, [...(porCredito.get(credito) ?? []), TITULOS[tipo] ?? tipo]);
+  }
+  return [...porCredito].map(([credito, titulos]) => ({ produtos: titulos.join(', '), credito }));
+}
 
 // Os tipos cujo preço vem praça a praça (e não por estado).
 export const PORTEIRA_POR_PRACA = new Set(

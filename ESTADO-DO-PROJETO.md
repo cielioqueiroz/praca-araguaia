@@ -1,11 +1,71 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-07-28.
+> **Documento de retomada.** Última atualização: 2026-08-18.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
 
 ---
 
-## ⏸️ Boletim diário do Telegram PAUSADO (28/07/2026)
+## 🗣️ Verdade das fontes, distribuição e a semente do Termômetro (18/08/2026)
+
+Veio de uma sessão de **grilling** com o dono. O diagnóstico, medido no banco: coleta
+viva e série sem buraco, **3 assinantes, 30 acessos em 9 dias (o último em 10/08), 0
+reportes e 0 fornecedores**. O produto está pronto e vazio — não falta software, falta
+gente. Spec completa em
+[`docs/superpowers/specs/2026-08-18-verdade-distribuicao-semente-design.md`](docs/superpowers/specs/2026-08-18-verdade-distribuicao-semente-design.md).
+
+**Nasceram os documentos de domínio:** [`CONTEXT.md`](CONTEXT.md) (glossário — praça,
+cotação × reporte, gordo × reposição, fechamento, origem) e os três primeiros ADRs em
+`docs/adr/`.
+
+**A — verdade das fontes.**
+1. **A contradição da Scot foi fechada** ([ADR 0001](docs/adr/0001-indicador-scot-via-noticias-agricolas.md)):
+   o §4.3 do conceito proibia a Scot pelo nome e o código a usava desde a fatia 17. A regra
+   passa a vetar o **produto pago** (área de assinante, relatório) e a permitir o indicador
+   **onde ele é publicado aberto**, com crédito duplo. Rodapé e `/cotacoes` agora dizem
+   **"Scot Consultoria, via Notícias Agrícolas"** — o crédito sai de `creditoFonte()`
+   (`lib/tipos-ui.ts`), fonte única. O card compacto segue "Scot · 17/08".
+2. **A emenda de fonte do gráfico virou marca** ([ADR 0002](docs/adr/0002-troca-de-fonte-marcada-nao-apagada.md)):
+   `lib/trocas-de-fonte.ts` (puro) registra boi (CONAB→Scot) e vaca (Datagro→Scot) em
+   15/07/2026; o `GraficoCotacao` desenha a linha tracejada e a nota "CONAB até 10/07 ·
+   Scot Consultoria desde 15/07". Só aparece na janela que contém a troca, e **nunca** no
+   gráfico do Termômetro (que não recebe `tipoCotacao`). Regra que fica: unidade/produto
+   diferente → apaga (ouro 0005, novilha 0009); mesmo produto e unidade → marca.
+
+**B — distribuição (o objetivo do ciclo).**
+- **O boletim voltou, só no fechamento**: `{ "path": "/api/enviar-boletim?sessao=fechamento",
+  "schedule": "0 21 * * 1-5" }` de volta ao `vercel.json` (18:00 BRT). A abertura fica
+  fora até haver público — duas entregas/dia para 3 assinantes é ruído.
+- `lib/compartilhar.ts` + `BotaoCompartilhar`: link `wa.me/?text=` sem destinatário (quem
+  envia é o usuário; nenhuma API paga), que vira folha nativa onde o aparelho tem.
+- **`ConviteDistribuicao`** — faixa escura do boca a boca (`.faixa-convite` no globals),
+  com texto próprio na home, em `/cotacoes` e no `/termometro`. Fica depois do conteúdo.
+- **`/boletim` refeita** na linguagem editorial: hero, card emoldurado e painel com as três
+  saídas (mandar no WhatsApp, baixar, assinar no Telegram). Antes só tinha "Baixar imagem".
+
+**C — a semente do Termômetro** ([ADR 0003](docs/adr/0003-reporte-apurado-pela-praca.md)).
+Migração **0014** (aplicada): `reportes.origem in ('produtor','praca')`. `POST
+/api/moderar/reporte` (cookie da moderação, mesma validação do formulário público) grava
+`aprovado` + `origem='praca'`; `FormReporteApurado` entra na aba Preços do `/moderar`,
+antes da fila. `procedencia()`/`origensDoProduto()` levam a frase para o card do
+Termômetro, o card da porteira e o card do boletim — **nenhuma tela mostra o valor sem
+dizer de quem ele veio**.
+
+**Verificação:** 559 testes, lint e build limpos; telas conferidas no navegador; E2E local
+contra o banco de produção da rota nova (401 sem cookie, 400 fora da faixa, 200 com
+cookie, selo "apurado pela Praça" na tela) com o registro de teste apagado por id.
+
+**O que só o dono pode fazer:** ligar para 3–5 produtores e 2–3 agropecuárias e lançar os
+primeiros preços em `/moderar`; divulgar o link. A ferramenta está pronta, a lista é dele.
+
+---
+
+## ▶️ ~~Boletim diário do Telegram PAUSADO~~ — RETOMADO em 18/08/2026
+
+> **Situação atual:** volta **só o fechamento** (`0 21 * * 1-5`, 18:00 BRT). A abertura
+> das 07:30 segue fora por decisão do dono — uma entrega por dia útil enquanto a lista de
+> assinantes é pequena. O texto abaixo é o registro da pausa.
+
+### O registro da pausa (28/07/2026)
 
 A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
 `/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { CardTermometro } from '@/components/CardTermometro';
-import { resumirReportes } from '@/lib/termometro';
+import { resumirReportes, ROTULO_ORIGEM, type OrigemReporte } from '@/lib/termometro';
+import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Termômetro da Praça' };
@@ -13,14 +14,19 @@ export default async function Termometro() {
   // A RLS só entrega aprovados para o client anon.
   const { data: reportes } = await supabase
     .from('reportes')
-    .select('produto, municipio, valor')
+    .select('produto, municipio, valor, origem')
     .gte('criado_em', desde);
 
   const { data: cotacoes } = await supabase.from('cotacoes').select('tipo, valor');
   const conab = new Map((cotacoes ?? []).map((c) => [c.tipo as string, Number(c.valor)]));
 
   const resumos = resumirReportes(
-    (reportes ?? []).map((r) => ({ produto: r.produto, municipio: r.municipio, valor: Number(r.valor) })),
+    (reportes ?? []).map((r) => ({
+      produto: r.produto,
+      municipio: r.municipio,
+      valor: Number(r.valor),
+      origem: (r.origem ?? 'produtor') as OrigemReporte,
+    })),
   );
 
   return (
@@ -28,7 +34,9 @@ export default async function Termometro() {
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Preço de quem tá na lida</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Termômetro da Praça</h1>
       <p className="mt-1 text-sm text-tinta/50">
-        Valor típico dos preços reportados por produtores da região nos últimos 7 dias — conferidos antes de entrar na conta e resistentes a um lance fora da curva.
+        Valor típico do que está sendo pago na região nos últimos 7 dias — conferido antes de entrar na conta e
+        resistente a um lance fora da curva. Cada card diz de onde veio o preço: {ROTULO_ORIGEM.produtor} ou{' '}
+        {ROTULO_ORIGEM.praca}.
       </p>
 
       <Link
@@ -57,6 +65,12 @@ export default async function Termometro() {
           ))}
         </section>
       )}
+
+      <ConviteDistribuicao
+        alvo="termometro"
+        titulo={['O preço daqui só', 'existe se a gente contar.']}
+        linha="Nenhuma consultoria pesquisa a nossa cidade. Manda para quem vendeu esta semana — o reporte é anônimo e leva um minuto."
+      />
     </main>
   );
 }

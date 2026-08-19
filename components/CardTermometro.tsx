@@ -13,6 +13,10 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
       <p className="mt-1 text-xs text-tinta/40">
         {resumo.contagem} {resumo.contagem === 1 ? 'reporte' : 'reportes'} · últimos 7 dias
       </p>
+      {/* De quem é a testemunha do número (ADR 0003) — obrigatória junto do valor. */}
+      <p className="mt-1 inline-flex items-center rounded-full bg-palha px-2 py-0.5 text-[11px] font-medium text-tinta/60">
+        {resumo.procedencia}
+      </p>
       {mostrarFaixa && (
         <p className="mt-1 text-xs text-tinta/50">
           faixa: R$ {fmt.format(resumo.faixa.min)}–{fmt.format(resumo.faixa.max)}

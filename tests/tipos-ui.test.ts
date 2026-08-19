@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { TITULOS, ORDEM_PAINEL, PORTEIRA, PECUARIA, LEGENDAS, NAO_E_MOEDA, prazoDesatualizadoMs } from '@/lib/tipos-ui';
+import {
+  TITULOS, ORDEM_PAINEL, PORTEIRA, PECUARIA, LEGENDAS, NAO_E_MOEDA, prazoDesatualizadoMs,
+  creditoFonte, creditosDaPorteira,
+} from '@/lib/tipos-ui';
 
 describe('tipos-ui', () => {
   it('tem título para os 11 tipos', () => {
@@ -42,6 +45,24 @@ describe('tipos-ui', () => {
     expect(LEGENDAS.milho).toBe('preço por estado · CONAB');
     expect(LEGENDAS.soja).toBe('preço por estado · CONAB');
     expect(LEGENDAS.dolar).toBeUndefined();
+  });
+
+  it('credita quem apurou E onde lemos o indicador', () => {
+    // A Scot apura; o Notícias Agrícolas é quem publica aberto. Esconder o segundo
+    // nome faria o site parecer que raspa a área paga da Scot — que é justamente o
+    // que o ADR 0001 proíbe.
+    expect(creditoFonte('boi')).toBe('Scot Consultoria, via Notícias Agrícolas');
+    expect(creditoFonte('bezerro')).toBe('Scot Consultoria, via Notícias Agrícolas');
+    // A CONAB publica o próprio arquivo: não há intermediário para creditar.
+    expect(creditoFonte('soja')).toBe('CONAB');
+    expect(creditoFonte('dolar')).toBeUndefined();
+  });
+
+  it('agrupa o crédito do rodapé por fonte, sem repetir linha', () => {
+    expect(creditosDaPorteira()).toEqual([
+      { produtos: 'Boi gordo, Vaca gorda, Novilha, Bezerro', credito: 'Scot Consultoria, via Notícias Agrícolas' },
+      { produtos: 'Soja, Milho', credito: 'CONAB' },
+    ]);
   });
 
   it('prazo de desatualizado: 48h para diárias, 5 dias para a Scot, 10 para a CONAB', () => {

@@ -17,6 +17,12 @@ export type CardPorteiraProps = {
   /** Quando vem preenchido, a lista de cima é por PRAÇA e não por estado (boi, vaca). */
   pracas?: PrecoPracaUI[];
   cidades?: PrecoCidadeUI[]; // o que os produtores reportaram nas cidades da praça
+  /**
+   * De quem é a testemunha do que está nas cidades (ADR 0003) — 'relatado por
+   * produtores', 'apurado pela Praça' ou a conta dos dois. Vem pronto de
+   * `procedencia()`; o padrão cobre quem ainda não passa a prop.
+   */
+  procedenciaCidades?: string;
 };
 
 function brl(n: number): string {
@@ -115,7 +121,7 @@ export function CardPorteira(p: CardPorteiraProps) {
             <div className="cidades">
               <div className="ctit">
                 Nas cidades da praça
-                <span className="fonte">Termômetro · reportes de produtores</span>
+                <span className="fonte">Termômetro · {p.procedenciaCidades ?? 'relatado por produtores'}</span>
               </div>
               <ul>
                 {reportadas.map((c) => (

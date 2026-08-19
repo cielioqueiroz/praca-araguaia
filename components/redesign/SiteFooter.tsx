@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Logo } from './Logo';
 import { LocalUsuario } from './LocalUsuario';
 import { BotaoTelegram } from './BotaoTelegram';
+import { creditoFonte } from '@/lib/tipos-ui';
 
 const NAV = [
   { href: '/', rotulo: 'Notícias do mercado' },
@@ -13,9 +14,12 @@ const NAV = [
   { href: '/calculadora', rotulo: 'Calculadora' },
 ];
 
+// O crédito sai do FONTE_PORTEIRA para não haver dois lugares dizendo quem apurou o
+// preço do gado. Aqui há linha inteira de texto, então vai o crédito por extenso —
+// quem apura E onde lemos (ADR 0001).
 const FONTES = [
-  'Boi, vaca, novilha e bezerro: Scot Consultoria',
-  'Grãos: CONAB',
+  `Boi, vaca, novilha e bezerro: ${creditoFonte('boi')}`,
+  `Grãos: ${creditoFonte('soja')}`,
   'Câmbio e ouro: BCB, gold-api',
   'Chuva: INMET, CEMADEN, Open-Meteo',
   'Termômetro: reportes da praça',

@@ -6,7 +6,7 @@ import { PECUARIA, PORTEIRA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
 import { programadorDataUri } from '@/lib/autor';
-import { cidadesDoProduto, type ReporteAprovado } from '@/lib/termometro';
+import { cidadesDoProduto, origensDoProduto, procedencia, type ReporteAprovado } from '@/lib/termometro';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
 export const dynamic = 'force-dynamic';
@@ -140,7 +140,12 @@ function ItemDaPorteira({ item }: { item: ItemPorteira }) {
       {item.cidades.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginTop: 6 }}>
           <div style={{ display: 'flex', fontSize: 13, color: '#8a7d61', marginBottom: 2 }}>
-            NAS CIDADES · TERMÔMETRO
+            {/* Sem nada apurado por nós, segue o rótulo de sempre; com, a linha diz
+                de quem é cada preço — o card viaja em grupo de WhatsApp e não pode
+                sair mais confiante do que a origem do dado (ADR 0003). */}
+            {item.procedenciaCidades && item.procedenciaCidades !== 'relatado por produtores'
+              ? `NAS CIDADES · ${item.procedenciaCidades.toUpperCase()}`
+              : 'NAS CIDADES · TERMÔMETRO'}
           </div>
           {item.cidades.map((c) => (
             <div
@@ -296,7 +301,7 @@ export async function GET(req: Request) {
     supabase.from('cotacoes_praca').select('tipo, praca, uf, valor, unidade, variacao_pct, data_referencia'),
     supabase
       .from('reportes')
-      .select('produto, municipio, valor')
+      .select('produto, municipio, valor, origem')
       .eq('status', 'aprovado')
       .gte('criado_em', seteDias),
   ]);
@@ -309,9 +314,15 @@ export async function GET(req: Request) {
     produto: r.produto,
     municipio: r.municipio,
     valor: Number(r.valor),
+    origem: r.origem,
   }));
   const cidades: ReporteCidade[] = PORTEIRA.flatMap((produto) =>
     cidadesDoProduto(aprovados, produto).map((c) => ({ produto, ...c })),
+  );
+  // O card sai daqui e é reencaminhado: ele também tem de dizer quem testemunhou o
+  // preço das cidades. Só entra na imagem quando há reporte apurado por nós.
+  const procedenciaPorProduto = Object.fromEntries(
+    PORTEIRA.map((produto) => [produto, procedencia(origensDoProduto(aprovados, produto))]),
   );
 
   // O card mostra TODOS os estados, igual ao site: o dono quis Pernambuco no milho e
@@ -351,6 +362,7 @@ export async function GET(req: Request) {
     cidades,
     new Date(),
     precosPraca,
+    procedenciaPorProduto,
   );
 
   // Retrato alto: 6 categorias na porteira, 6 de mercado e as cidades do Termômetro.

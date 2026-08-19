@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validarReporte, resumirReportes, mediana, normalizarValor, cidadesDoProduto, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
+import { validarReporte, resumirReportes, mediana, normalizarValor, cidadesDoProduto, procedencia, origensDoProduto, PRODUTOS, ORDEM_PRODUTOS, MUNICIPIOS_TERMOMETRO } from '@/lib/termometro';
 import { PORTEIRA } from '@/lib/tipos-ui';
 
 const corpo = (extra: Record<string, unknown> = {}) => ({
@@ -180,5 +180,54 @@ describe('cidadesDoProduto', () => {
 
   it('quem tem reporte vem primeiro', () => {
     expect(cidadesDoProduto(reportes, 'boi')[0].municipio).toBe('Confresa');
+  });
+});
+
+describe('procedência do reporte (ADR 0003)', () => {
+  it('diz a origem quando só existe uma', () => {
+    expect(procedencia({ produtor: 4, praca: 0 })).toBe('relatado por produtores');
+    expect(procedencia({ produtor: 0, praca: 3 })).toBe('apurado pela Praça');
+  });
+
+  it('abre a conta quando as duas origens se misturam', () => {
+    // 'apurado por nós' e 'relatado por quem vendeu' não têm a mesma testemunha:
+    // quando os dois entram na mesma mediana, o card mostra quantos são de cada lado.
+    expect(procedencia({ produtor: 5, praca: 2 })).toBe('5 de produtores · 2 apurados pela Praça');
+    expect(procedencia({ produtor: 1, praca: 1 })).toBe('1 de produtores · 1 apurado pela Praça');
+  });
+
+  it('sem reporte nenhum, a frase padrão é a do produtor', () => {
+    expect(procedencia({ produtor: 0, praca: 0 })).toBe('relatado por produtores');
+  });
+
+  it('o resumo conta as origens e já traz a frase pronta', () => {
+    const resumo = resumirReportes([
+      { produto: 'boi', municipio: 'Redenção', valor: 320 },
+      { produto: 'boi', municipio: 'Redenção', valor: 330, origem: 'praca' },
+      { produto: 'boi', municipio: 'Confresa', valor: 325, origem: 'produtor' },
+    ])[0];
+    // Reporte sem origem é de produtor: é o que todos eram antes da coluna existir.
+    expect(resumo.origens).toEqual({ produtor: 2, praca: 1 });
+    expect(resumo.procedencia).toBe('2 de produtores · 1 apurado pela Praça');
+    // A mediana continua sendo de TODOS: os dois são preço real da praça.
+    expect(resumo.mediana).toBe(325);
+    expect(resumo.contagem).toBe(3);
+  });
+});
+
+describe('origensDoProduto', () => {
+  const reportes = [
+    { produto: 'boi', municipio: 'Redenção', valor: 320 },
+    { produto: 'boi', municipio: 'Confresa', valor: 330, origem: 'praca' as const },
+    { produto: 'soja', municipio: 'Redenção', valor: 120, origem: 'praca' as const },
+  ];
+
+  it('conta por produto, tratando reporte sem origem como de produtor', () => {
+    expect(origensDoProduto(reportes, 'boi')).toEqual({ produtor: 1, praca: 1 });
+    expect(origensDoProduto(reportes, 'soja')).toEqual({ produtor: 0, praca: 1 });
+  });
+
+  it('produto sem reporte devolve zero nos dois lados', () => {
+    expect(origensDoProduto(reportes, 'milho')).toEqual({ produtor: 0, praca: 0 });
   });
 });

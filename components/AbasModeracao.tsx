@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FilaModeracao } from '@/components/FilaModeracao';
 import { FilaFornecedores } from '@/components/FilaFornecedores';
+import { FormReporteApurado } from '@/components/FormReporteApurado';
 import type { ReportePendente } from '@/lib/moderacao-tipos';
 import type { FornecedorModeravel } from '@/lib/fornecedores';
 
@@ -34,7 +35,12 @@ export function AbasModeracao({
         </button>
       </div>
       {aba === 'precos' ? (
-        <FilaModeracao pendentes={reportes} agora={agora} />
+        <div className="flex flex-col gap-6">
+          {/* O lançamento vem ANTES da fila: com a fila vazia (que é o estado de hoje),
+              a aba de preços não podia ser uma tela sem nada a fazer. */}
+          <FormReporteApurado />
+          <FilaModeracao pendentes={reportes} agora={agora} />
+        </div>
       ) : (
         <FilaFornecedores pendentes={fornecedoresPendentes} aprovados={fornecedoresAprovados} />
       )}
