@@ -38,24 +38,33 @@ export default async function Termometro() {
 
   return (
     <div className="wrap">
-      <section className="pghero">
-        <div className="kicker">Preço de quem tá na lida</div>
-        <h1>
-          O preço que
-          <br />
-          <em>ninguém publica</em>.
-        </h1>
-        <p className="lede">
-          Nenhuma consultoria pesquisa a nossa cidade. O que está aqui veio de quem vendeu — e é o único lugar
-          onde o preço do Araguaia existe.
-        </p>
-        <div className="pgmeta mono">
-          {fmtHoje.format(new Date())} · valor típico dos últimos 7 dias · {ROTULO_ORIGEM.produtor} ou{' '}
-          {ROTULO_ORIGEM.praca}
+      <section className="hero herofoto">
+        <div className="text">
+          <div className="kicker">Preço de quem tá na lida</div>
+          <h1>
+            O preço que
+            <br />
+            <em>ninguém publica</em>.
+          </h1>
+          <p className="lede">
+            Nenhuma consultoria pesquisa a nossa cidade. O que está aqui veio de quem vendeu — e é o único lugar
+            onde o preço do Araguaia existe.
+          </p>
+          <div className="pgmeta mono">
+            {fmtHoje.format(new Date())} · valor típico dos últimos 7 dias · {ROTULO_ORIGEM.produtor} ou{' '}
+            {ROTULO_ORIGEM.praca}
+          </div>
+          <Link href="/termometro/reportar" className="pgcta">
+            Reportar o preço que você pegou
+          </Link>
         </div>
-        <Link href="/termometro/reportar" className="pgcta">
-          Reportar o preço que você pegou
-        </Link>
+        {/* O gado de quem está na lida — zebu no pasto, não ilustração de mercado. CC0. */}
+        <div className="photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/termometro-pasto.jpg" alt="Gado zebu no pasto, junto à cerca" />
+          <div className="overlay" />
+          <span className="tag">Na lida</span>
+        </div>
       </section>
 
       {resumos.length === 0 ? (

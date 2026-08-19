@@ -48,8 +48,11 @@ export default async function Home() {
           </div>
         </div>
         <div className="photo">
+          {/* Zebu na beira do rio, no banco de areia: é a cena do Vale — gado e rio no
+              mesmo quadro. A foto anterior era mato seco ao pôr do sol, bonita e
+              genérica, que não dizia nem pecuária nem Araguaia. CC0. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/lavoura-dourada.jpg" alt="Lavoura no fim da tarde" />
+          <img src="/assets/hero-noticias.jpg" alt="Boi zebu na beira do rio, sobre o banco de areia" />
           <div className="overlay" />
           <span className="tag">Vale do Araguaia</span>
         </div>

@@ -979,22 +979,51 @@ a.mrow:hover{background:var(--paper-warm)}
   letter-spacing:.14em;text-transform:uppercase;color:var(--olive);text-decoration:none;
   border-bottom:1px solid var(--rule-strong);padding-bottom:1px}
 .phlink:hover{color:var(--olive-deep);border-color:var(--olive)}
-.phgrade{margin-top:20px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
-/* Coluna flex para o "N lugares" descer ao pé do cartão: com o texto solto, uma
-   unidade de duas linhas empurrava o rodapé de um cartão e desalinhava a faixa toda. */
-.phgrade a{display:flex;flex-direction:column;height:100%;padding:16px 16px 14px;background:var(--paper);
-  border:1px solid var(--rule);border-radius:14px;text-decoration:none;
-  transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s}
-.phgrade a:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 16px 32px -22px rgba(38,48,26,.42)}
-.ph-rot{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--olive)}
-.ph-val{display:block;margin-top:9px;font-family:var(--sans);font-size:clamp(16px,1.35vw,20px);font-weight:700;
-  color:var(--ink);line-height:1.15}
-.ph-val .n{white-space:nowrap}
-.ph-val i{font-style:normal;color:var(--muted);margin:0 3px;font-weight:400}
-.ph-un{display:block;margin-top:3px;font-family:var(--sans);font-size:11.5px;color:var(--muted);line-height:1.35}
-/* auto: gruda no pé, alinhado com o dos vizinhos. */
-.ph-lug{display:block;margin-top:auto;padding-top:10px;font-size:9px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--muted)}
+/* A faixa é uma TABELA de duas colunas de itens: nome | valor | lugares, e de novo.
+   As colunas de valor são `max-content` — nascem do maior número da coluna —, então
+   "2.788,00–3.178,00" nunca quebra e as três linhas ficam alinhadas por construção.
+   Foi assim que as seis "caixinhas" de alturas diferentes viraram um bloco só. */
+.ptabela{margin-top:18px;display:grid;
+  grid-template-columns:minmax(0,1fr) max-content max-content minmax(0,1fr) max-content max-content;
+  /* `end`, não `baseline`: com baseline cada célula ganhava altura própria e a borda
+     de baixo de cada uma parava num Y diferente — a régua da linha saía escalonada.
+     Alinhadas pelo fim, as três bordas viram uma linha só. */
+  align-items:end;column-gap:0;border-top:1px solid var(--rule)}
+/* O respiro vem de padding, não de column-gap: com gap, a borda de baixo saía
+   picotada nos vãos entre as colunas, e a linha da tabela virava tracejado torto. */
+.ptabela > span{padding:13px 14px 13px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+.p-nome{display:flex;align-items:baseline;gap:9px;min-width:0}
+.p-nome .p-ic{width:16px;height:16px;color:var(--leather);flex:none;transform:translateY(2px)}
+/* padding vertical para o alvo de toque passar de 24px (WCAG 2.5.8) com folga. */
+.p-nome a{display:inline-block;padding:3px 0;font-family:var(--sans);font-size:15px;font-weight:600;
+  color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .18s,border-color .18s}
+.p-nome a:hover{color:var(--olive);border-color:var(--rule-strong)}
+.p-nome i{font-style:normal;font-family:var(--sans);font-size:11.5px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis}
+.p-faixa{font-family:var(--sans);font-size:19px;font-weight:700;color:var(--ink);text-align:right}
+.p-faixa i{font-style:normal;font-weight:400;color:var(--muted);margin:0 5px}
+.p-lug{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right}
+/* A segunda metade da linha respira longe da primeira, e a última coluna encosta na
+   margem para a régua terminar reta. */
+.ptabela > span:nth-child(6n+3){padding-right:38px}
+.ptabela > span:nth-child(6n+6){padding-right:0}
+
+@media (max-width:1000px){
+  /* Um item por linha: três colunas só. */
+  .ptabela{grid-template-columns:minmax(0,1fr) max-content max-content}
+  .ptabela > span:nth-child(6n+3){padding-right:0}
+  .ptabela > span:nth-child(3n){padding-right:0}
+}
+@media (max-width:620px){
+  .p-faixa{font-size:16px}
+  .p-nome a{font-size:14px}
+  /* Na tela estreita a unidade sai: o nome do produto e o preço são o essencial, e
+     a unidade completa está no cartão da praça, a um toque. */
+  .p-nome i{display:none}
+  .ptabela > span{padding-right:10px}
+  .ptabela > span:nth-child(3n){padding-right:0}
+}
 .phpracas{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .phpracas span{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 /* 24px de altura é o mínimo do WCAG 2.5.8 (AA) para alvo de toque — estes links são
@@ -1003,16 +1032,7 @@ a.mrow:hover{background:var(--paper-warm)}
 .phpracas a{display:inline-block;padding:4px 0;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);
   text-decoration:none;border-bottom:1px solid transparent;transition:color .18s,border-color .18s}
 .phpracas a:hover{color:var(--olive);border-color:var(--rule-strong)}
-@media (max-width:1000px){ .phgrade{grid-template-columns:repeat(3,minmax(0,1fr))} }
-@media (max-width:620px){
-  .phgrade{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  /* A faixa "3.110,00–3.178,00" não cabe em meia tela de celular: sem isto o
-     `nowrap` empurrava a grade a 409px numa tela de 390 e a página inteira passava
-     a rolar de lado. Aqui ela quebra em duas linhas — cresce em altura, não em
-     largura, que é o único eixo que o telefone não perdoa. */
-  .ph-val{font-size:17px}
-  .phoje{margin-top:34px}
-}
+@media (max-width:620px){ .phoje{margin-top:34px} }
 
 
 /* ——— Mobília comum das páginas internas ———
@@ -1129,3 +1149,41 @@ a.mrow:hover{background:var(--paper-warm)}
   text-transform:uppercase;color:var(--muted)}
 .plista .n{font-size:11px;color:var(--ink-2)}
 @media (max-width:620px){ .pnums{grid-template-columns:repeat(2,1fr)} }
+
+
+/* Hero de duas colunas das páginas internas: mesma moldura da home e de /cotacoes,
+   com a manchete um degrau menor — a página interna não abre o jornal, continua. */
+.herofoto h1{font-size:56px}
+.herofoto .text{padding:46px 44px 40px}
+.herofoto .pgmeta{margin-top:22px}
+@media (max-width:900px){
+  .herofoto{grid-template-columns:1fr}
+  .herofoto h1{font-size:40px}
+  .herofoto .text{padding:32px 26px 28px}
+  .herofoto .photo{min-height:220px;border-left:none;border-top:1px solid var(--rule)}
+}
+
+
+/* O retrato do produto no alto da página de cotação — o mesmo recorte PNG dos
+   cartões, sobre o tom de fundo daquela commodity. */
+.pghero.comretrato{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:30px;align-items:center;max-width:none}
+.retrato{position:relative;height:190px;border-radius:20px;overflow:hidden;border:1px solid var(--rule);
+  background:radial-gradient(120% 130% at 70% 8%, color-mix(in srgb, var(--band, #34421f) 72%, #7c8a44) 0%, var(--band, #34421f) 46%, #14180d 100%)}
+.retrato img{position:absolute;inset:0;margin:auto;max-width:82%;max-height:82%;object-fit:contain;
+  filter:drop-shadow(0 12px 20px rgba(0,0,0,.35))}
+.retrato.tipo-boi{--band:#34421f}
+.retrato.tipo-vaca{--band:#3b3d1d}
+.retrato.tipo-novilha{--band:#3a4423}
+.retrato.tipo-bezerro{--band:#404a25}
+.retrato.tipo-soja{--band:#3a441c}
+.retrato.tipo-milho{--band:#45431a}
+.retrato.tipo-dolar{--band:#25382d}
+.retrato.tipo-euro{--band:#22363a}
+.retrato.tipo-ouro{--band:#463620}
+.retrato.tipo-ibovespa{--band:#2b3340}
+.retrato.tipo-bitcoin{--band:#4a3a1c}
+.retrato.tipo-ethereum{--band:#2f3346}
+@media (max-width:760px){
+  .pghero.comretrato{grid-template-columns:1fr}
+  .retrato{height:150px;order:-1}
+}

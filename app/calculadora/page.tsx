@@ -35,13 +35,15 @@ export default async function CalculadoraPage() {
             <div className="mono">Preços de hoje · fonte: painel da praça</div>
           </div>
         </div>
-        {/* A terra que vale: os campos do Vale ao fim da tarde, no mesmo trato de
-            foto dos outros heros do site. */}
+        {/* A colheita entrando no graneleiro: é literalmente o que esta página
+            calcula — o que sai da lavoura virando saca e virando dinheiro. A foto
+            anterior eram campos coloridos de outro continente, bonitos e sem
+            relação com a conta que se faz aqui. Domínio público (USDA). */}
         <div className="photo calcfoto">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/calc-campos.jpg" alt="Campos de lavoura do Vale do Araguaia" />
+          <img src="/assets/calc-colheita.jpg" alt="Colheitadeira colhendo a lavoura" />
           <div className="overlay" />
-          <span className="tag">Vale do Araguaia</span>
+          <span className="tag">Da lavoura à saca</span>
         </div>
       </section>
 

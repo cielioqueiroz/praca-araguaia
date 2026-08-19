@@ -6,6 +6,7 @@ import { GraficoCotacao } from '@/components/GraficoCotacao';
 import { TITULOS, LEGENDAS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
 import { faixasDaPorteira } from '@/lib/faixa-porteira';
+import { FOTO_COMMODITY } from '@/components/redesign/iconesCommodity';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,19 +75,29 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
         ← A praça hoje
       </Link>
 
-      <section className="pghero">
-        <div className="kicker">Cotação de referência</div>
-        <h1>{titulo}</h1>
-        <p className="lede">
-          {daPorteira
-            ? 'O preço publicado pela fonte e o caminho que ele fez — para decidir com a tendência, não com o número solto.'
-            : 'O número que cerca a fazenda: contexto do que o mercado fez, dia após dia.'}
-        </p>
-        <div className="pgmeta mono">
-          {LEGENDAS[tipo] ?? creditoFonte(tipo) ?? 'cotação de mercado'} · fechamento de{' '}
-          {fmtData.format(new Date(atual.data_referencia))}
-          {velho && ' · desatualizado'}
+      <section className={`pghero${FOTO_COMMODITY[tipo] ? ' comretrato' : ''}`}>
+        <div>
+          <div className="kicker">Cotação de referência</div>
+          <h1>{titulo}</h1>
+          <p className="lede">
+            {daPorteira
+              ? 'O preço publicado pela fonte e o caminho que ele fez — para decidir com a tendência, não com o número solto.'
+              : 'O número que cerca a fazenda: contexto do que o mercado fez, dia após dia.'}
+          </p>
+          <div className="pgmeta mono">
+            {LEGENDAS[tipo] ?? creditoFonte(tipo) ?? 'cotação de mercado'} · fechamento de{' '}
+            {fmtData.format(new Date(atual.data_referencia))}
+            {velho && ' · desatualizado'}
+          </div>
         </div>
+        {/* O retrato do próprio produto, o mesmo recorte que os cartões da porteira já
+            usam: a página do boi mostra o boi. Não precisou de foto nova. */}
+        {FOTO_COMMODITY[tipo] && (
+          <div className={`retrato tipo-${tipo}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={FOTO_COMMODITY[tipo]} alt="" aria-hidden="true" />
+          </div>
+        )}
       </section>
 
       <section className="section">

@@ -5,6 +5,49 @@
 
 ---
 
+## 🖼️ A faixa da porteira virou tabela, e as fotos passaram a dizer algo (19/08/2026, tarde)
+
+**O dono mostrou a faixa "A praça hoje" com as informações quebradas.** Como seis
+cartões, o conteúdo mais longo (a faixa da reposição, `2.788,00–3.178,00`) quebrava em
+duas linhas só naqueles dois, e os seis saíam com alturas e rodapés diferentes. Mexer em
+fonte, em `nowrap` ou em ponto de quebra só mudava QUAL cartão quebrava — inclusive
+chegou a vazar para fora do cartão no celular quando tirei o último espaço entre os
+números.
+
+**A saída foi trocar de estrutura, não de ajuste:** virou uma **tabela** (`.ptabela`)
+com as colunas de valor em `max-content`. A coluna nasce do maior número dela, então
+nada quebra em lugar nenhum e as linhas se alinham por construção. Três detalhes que
+completam: `unidadeCurta()` tira a especificação do animal ("R$ por cabeça · fêmea
+nelore, 18 meses" não cabe num resumo), o respiro vem de `padding` e não de
+`column-gap` (com gap a régua saía picotada), e o alinhamento é `end` e não `baseline`
+(com baseline cada célula tinha altura própria e a régua saía escalonada). Verificado em
+1440, 1300, 1000 e iPhone 13: **nenhuma célula quebrada em nenhum deles**.
+
+**As fotos.** Duas estavam erradas e duas páginas não tinham nenhuma:
+
+| Página | Antes | Agora |
+|---|---|---|
+| Home | mato seco ao pôr do sol (genérico) | **zebu na beira do rio**, no banco de areia — gado e rio no mesmo quadro |
+| Calculadora | campos coloridos de outro continente | **colheitadeira colhendo** — é o que a página calcula |
+| Termômetro | (sem foto) | **zebu no pasto**, o gado de quem está na lida |
+| Fornecedores | (sem foto) | **trator no talhão** — máquinas e insumos |
+| `/cotacao/[tipo]` | (sem foto) | o **retrato do próprio produto**, reaproveitando os recortes que os cartões já usam |
+
+Todas as quatro fotos novas são **CC0 ou domínio público** (Wikimedia Commons, WordPress
+Photo Directory e USDA), baixadas pela API do Openverse/Commons e reduzidas a 1500px com
+`sharp` — nenhuma passa de 420 KB. Sem atribuição obrigatória, como o resto do site.
+Rejeitadas no caminho: tudo do rawpixel (marca d'água), os acervos históricos em P&B
+(Library of Congress) e a "loja agropecuária" australiana que não parecia uma. As duas
+imagens substituídas foram apagadas do repositório.
+
+`/praca/[cidade]` continua sem foto **de propósito**: são sete cidades e não há foto
+honesta de cada uma — pôr a mesma paisagem em todas, ou uma foto genérica legendada com
+o nome da cidade, seria repetir exatamente o erro que a foto da calculadora cometia.
+
+581 testes, lint e build limpos.
+
+---
+
 ## 🔇 SILÊNCIO TOTAL NO TELEGRAM (19/08/2026) — nada dispara
 
 > **Situação atual e vigente.** O dono: *"não quero que volte a disparar nada no Telegram

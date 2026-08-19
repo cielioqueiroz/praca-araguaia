@@ -1,7 +1,9 @@
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { faixasDaPorteira, type PrecoDeLugar } from '@/lib/faixa-porteira';
 import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
+import { IconeCommodity } from './iconesCommodity';
 
 const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -11,6 +13,13 @@ const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFr
  * Quem chega de um link do WhatsApp caía numa grade de notícias agregadas — a única
  * coisa do site que qualquer portal também tem — enquanto o preço da praça, que é a
  * promessa do projeto, ficava a um clique. Esta faixa põe o número primeiro.
+ *
+ * É uma TABELA, não seis cartões. Como cartão, cada um tinha a própria caixa e o
+ * conteúdo mais longo (a faixa da reposição, "2.788,00–3.178,00") quebrava em duas
+ * linhas só nele: os seis saíam com alturas e rodapés diferentes, e mexer em fonte ou
+ * em ponto de quebra só mudava QUAL deles quebrava. Aqui as colunas são `max-content`
+ * — nascem do maior valor de cada coluna —, então nada quebra em lugar nenhum e as
+ * linhas ficam alinhadas por construção, não por sorte.
  *
  * Sem média: o valor é a FAIXA entre os lugares, e a legenda diz em quantos. Média foi
  * removida da interface na fatia 15 e não volta pela porta dos fundos.
@@ -45,41 +54,29 @@ export async function PracaHoje() {
         </div>
       </div>
 
-      <ul className="phgrade">
+      <div className="ptabela">
         {faixas.map((f) => (
-          <li key={f.tipo}>
-            <Link href={`/cotacao/${f.tipo}`}>
-              <span className="ph-rot">{f.rotulo}</span>
-              {/* Cada número é um bloco que não quebra no meio; a faixa pode quebrar
-                  DEPOIS do travessão quando o cartão é estreito. Sem isto, "2.788,00–
-                  3.178,00" com nowrap estourava a largura do cartão. */}
-              <span className="ph-val tnum">
-                {f.min === f.max ? (
-                  <span className="n">{fmt.format(f.min)}</span>
-                ) : (
-                  <>
-                    <span className="n">{fmt.format(f.min)}</span>
-                    {/* O travessão viaja COM o segundo número (solto, ficava órfão no
-                        fim da linha: "2.788,00 –"), e o <wbr/> é o ÚNICO ponto onde a
-                        faixa pode quebrar. Sem ele não havia espaço entre os spans, o
-                        navegador não tinha onde quebrar e "3.245,00–3.640,00" vazava
-                        para fora do cartão no celular. */}
-                    <wbr />
-                    <span className="n">
-                      <i>–</i>
-                      {fmt.format(f.max)}
-                    </span>
-                  </>
-                )}
-              </span>
-              <span className="ph-un">{f.unidadeCurta}</span>
-              <span className="ph-lug mono">
-                {f.lugares === 1 ? 'um lugar' : `${f.lugares} lugares`}
-              </span>
-            </Link>
-          </li>
+          <Fragment key={f.tipo}>
+            <span className="p-nome">
+              <IconeCommodity tipo={f.tipo} className="p-ic" />
+              <Link href={`/cotacao/${f.tipo}`}>{f.rotulo}</Link>
+              <i>{f.unidadeCurta}</i>
+            </span>
+            <span className="p-faixa tnum">
+              {f.min === f.max ? (
+                fmt.format(f.min)
+              ) : (
+                <>
+                  {fmt.format(f.min)}
+                  <i>–</i>
+                  {fmt.format(f.max)}
+                </>
+              )}
+            </span>
+            <span className="p-lug mono">{f.lugares === 1 ? '1 lugar' : `${f.lugares} lugares`}</span>
+          </Fragment>
         ))}
-      </ul>
+      </div>
 
       <nav className="phpracas" aria-label="Praças">
         <span className="mono">Sua cidade:</span>
