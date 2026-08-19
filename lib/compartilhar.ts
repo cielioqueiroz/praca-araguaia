@@ -11,10 +11,11 @@ export const SITE = 'https://agroapp-bay.vercel.app';
 
 export type AlvoCompartilhamento = 'site' | 'cotacoes' | 'boletim' | 'termometro' | 'chuva' | 'fornecedores';
 
-type Convite = { titulo: string; texto: string; caminho: string };
+/** O texto de um convite: o que ele é, o que se escreve e para onde leva. */
+export type TextoConvite = { titulo: string; texto: string; caminho: string };
 
 // Texto na voz do site: direto, sem "confira", sem "clique aqui", sem emoji de foguete.
-const CONVITES: Record<AlvoCompartilhamento, Convite> = {
+const CONVITES: Record<AlvoCompartilhamento, TextoConvite> = {
   site: {
     titulo: 'Praça Araguaia',
     texto: 'Preço do boi, da vaca, da soja e do milho nas praças do Vale do Araguaia, atualizado todo dia útil. De graça:',
@@ -50,10 +51,26 @@ const CONVITES: Record<AlvoCompartilhamento, Convite> = {
 export type Compartilhamento = { titulo: string; texto: string; url: string; mensagem: string };
 
 /** O convite pronto: título e texto para a folha nativa, e a mensagem com link para o WhatsApp. */
-export function convite(alvo: AlvoCompartilhamento, site: string = SITE): Compartilhamento {
-  const { titulo, texto, caminho } = CONVITES[alvo];
+export function conviteDe({ titulo, texto, caminho }: TextoConvite, site: string = SITE): Compartilhamento {
   const url = caminho === '/' ? site : `${site}${caminho}`;
   return { titulo, texto, url, mensagem: `${texto} ${url}` };
+}
+
+export function convite(alvo: AlvoCompartilhamento, site: string = SITE): Compartilhamento {
+  return conviteDe(CONVITES[alvo], site);
+}
+
+/**
+ * O convite de UMA praça. Existe porque a página de cidade só tem valor se o link
+ * que sai dela apontar para a própria cidade — mandar `/cotacoes` no grupo de
+ * Confresa desperdiça justamente a precisão que a página foi criada para ter.
+ */
+export function convitePraca(nome: string, slug: string): TextoConvite {
+  return {
+    titulo: `Praça de ${nome}`,
+    texto: `O preço do gado e do grão em ${nome}, atualizado todo dia útil:`,
+    caminho: `/praca/${slug}`,
+  };
 }
 
 /**
@@ -62,5 +79,9 @@ export function convite(alvo: AlvoCompartilhamento, site: string = SITE): Compar
  * domínio que a vitrine já usa para falar com fornecedor.
  */
 export function linkWhatsApp(alvo: AlvoCompartilhamento, site: string = SITE): string {
-  return `https://wa.me/?text=${encodeURIComponent(convite(alvo, site).mensagem)}`;
+  return linkWhatsAppDe(CONVITES[alvo], site);
+}
+
+export function linkWhatsAppDe(texto: TextoConvite, site: string = SITE): string {
+  return `https://wa.me/?text=${encodeURIComponent(conviteDe(texto, site).mensagem)}`;
 }

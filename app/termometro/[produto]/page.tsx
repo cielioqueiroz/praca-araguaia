@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase/public';
 import { CardTermometro } from '@/components/CardTermometro';
 import { GraficoCotacao } from '@/components/GraficoCotacao';
-import { resumirReportes, PRODUTOS, ORDEM_PRODUTOS, type ProdutoTermometro } from '@/lib/termometro';
+import { resumirReportes, PRODUTOS, ORDEM_PRODUTOS, type ProdutoTermometro, type OrigemReporte } from '@/lib/termometro';
 import { historicoTermometro, type ReporteHistorico } from '@/lib/termometro-historico';
+import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,11 @@ export async function generateMetadata({ params }: { params: Promise<{ produto: 
   const { produto } = await params;
   const info = PRODUTOS[produto as ProdutoTermometro];
   // A marca entra pelo template do layout: 'Praça Araguaia — Boi no Termômetro'.
-  return { title: info ? `${info.rotulo} no Termômetro` : 'Termômetro da Praça' };
+  if (!info) return { title: 'Termômetro da Praça' };
+  return {
+    title: `${info.rotulo} no Termômetro`,
+    description: `O que produtores da região do Araguaia relataram estar recebendo por ${info.rotulo.toLowerCase()} (${info.unidade}) — valor típico, faixa e a tendência dos últimos 90 dias.`,
+  };
 }
 
 export default async function HistoricoProduto({ params }: { params: Promise<{ produto: string }> }) {
@@ -28,7 +33,7 @@ export default async function HistoricoProduto({ params }: { params: Promise<{ p
   // A RLS entrega só aprovados para o client anon.
   const { data: reportes } = await supabase
     .from('reportes')
-    .select('valor, municipio, criado_em')
+    .select('valor, municipio, criado_em, origem')
     .eq('produto', produto)
     .gte('criado_em', desde);
 
@@ -40,7 +45,12 @@ export default async function HistoricoProduto({ params }: { params: Promise<{ p
   const corte7d = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const linhas7d = (reportes ?? [])
     .filter((x) => new Date(x.criado_em as string).getTime() >= corte7d)
-    .map((x) => ({ produto, municipio: x.municipio as string, valor: Number(x.valor) }));
+    .map((x) => ({
+      produto,
+      municipio: x.municipio as string,
+      valor: Number(x.valor),
+      origem: (x.origem ?? 'produtor') as OrigemReporte,
+    }));
   const resumo = resumirReportes(linhas7d)[0]; // 1 produto -> 0 ou 1 resumo
 
   const pontos = historicoTermometro(
@@ -48,28 +58,69 @@ export default async function HistoricoProduto({ params }: { params: Promise<{ p
   );
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/termometro" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
-      <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-mata">{info.rotulo}</h1>
+    <div className="wrap">
+      <Link href="/termometro" className="pgvolta">
+        ← Termômetro da Praça
+      </Link>
 
-      {resumo && (
-        <div className="mt-6 max-w-sm">
-          <CardTermometro resumo={resumo} mediaConab={conab.get(produto)} />
+      <section className="pghero">
+        <div className="kicker">No Termômetro</div>
+        <h1>{info.rotulo}</h1>
+        <p className="lede">
+          O que produtores da região relataram receber por {info.rotulo.toLowerCase()} — e como isso se moveu.
+        </p>
+        <div className="pgmeta mono">{info.unidade} · reportes conferidos antes de entrar na conta</div>
+      </section>
+
+      {resumo ? (
+        <section className="section">
+          <div className="section-head">
+            <div className="t">Agora</div>
+            <div className="line" />
+            <div className="meta">
+              Valor típico<span className="pill">7 dias</span>
+            </div>
+          </div>
+          <div className="pggrade" style={{ gridTemplateColumns: 'minmax(280px, 420px)' }}>
+            <div>
+              <CardTermometro resumo={resumo} mediaConab={conab.get(produto)} />
+            </div>
+          </div>
+        </section>
+      ) : (
+        <div className="pgvazio">
+          <h2>Ninguém reportou {info.rotulo.toLowerCase()} nos últimos 7 dias</h2>
+          <p>
+            Se você negociou, <Link href={`/termometro/reportar?produto=${produto}`}>diga por quanto</Link> — é
+            anônimo e leva um minuto.
+          </p>
         </div>
       )}
 
-      <section className="mt-10">
-        <div className="border-b border-linha pb-2">
-          <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-tinta/70">Tendência</h2>
+      <section className="section">
+        <div className="section-head">
+          <div className="t">Tendência</div>
+          <div className="line" />
+          <div className="meta">
+            Mediana por dia<span className="pill">até 90 dias</span>
+          </div>
         </div>
-        <div className="mt-4">
+        <div className="pgcard">
           {pontos.length === 0 ? (
-            <p className="text-tinta/50">Sem histórico ainda.</p>
+            <p className="cidnota" style={{ marginTop: 0 }}>
+              Ainda não há reportes suficientes para desenhar uma linha.
+            </p>
           ) : (
             <GraficoCotacao pontos={pontos} titulo={info.rotulo} unidade={info.unidade} />
           )}
         </div>
       </section>
-    </main>
+
+      <ConviteDistribuicao
+        alvo="termometro"
+        titulo={['Você vendeu esta', 'semana? Conta aí.']}
+        linha="Um minuto seu vira o preço que o vizinho consulta antes de fechar negócio. É anônimo."
+      />
+    </div>
   );
 }

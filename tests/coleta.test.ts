@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { coletarCotacao, variacaoDoLugar } from '@/lib/coleta';
+import { coletarCotacao, variacaoDoLugar, dataDaUltimaMudanca } from '@/lib/coleta';
 import type { Cotacao, CotacaoRepo } from '@/types/cotacao';
 
 const cotacao: Cotacao = {
@@ -109,5 +109,35 @@ describe('variacaoDoLugar', () => {
   it('preço parado entre dois fechamentos dá 0, e 0 é um fato', () => {
     // Diferente de null: aqui SABEMOS que não mexeu. O card mostra traço neutro.
     expect(variacaoDoLugar(316.5, '2026-07-22', anterior(316.5, '2026-07-21'), null)).toBe(0);
+  });
+});
+
+describe('dataDaUltimaMudanca', () => {
+  const anterior = (valor: number, dataReferencia: string, variouEm?: string | null) => ({
+    valor, dataReferencia, variacaoPct: null, variouEm,
+  });
+
+  it('sem nada salvo, a data é o próprio fechamento — é a primeira vez que vemos este preço', () => {
+    expect(dataDaUltimaMudanca(338, '2026-08-17', undefined)).toBe('2026-08-17');
+  });
+
+  it('preço mudou: a data passa a ser a de hoje', () => {
+    expect(dataDaUltimaMudanca(340, '2026-08-18', anterior(338, '2026-08-17', '2026-08-10'))).toBe('2026-08-18');
+  });
+
+  it('preço repetiu: carrega a data antiga adiante (é isso que faz "estável desde" crescer)', () => {
+    expect(dataDaUltimaMudanca(338, '2026-08-18', anterior(338, '2026-08-17', '2026-08-10'))).toBe('2026-08-10');
+  });
+
+  it('linha velha sem variouEm cai no fechamento que ela já tinha — piso verdadeiro, nunca data inventada', () => {
+    // O preço JÁ era 338 em 17/08; dizer "estável desde 17/08" subestima, e subestimar
+    // é honesto. O contrário — chutar uma data mais antiga — seria afirmar o que não se sabe.
+    expect(dataDaUltimaMudanca(338, '2026-08-18', anterior(338, '2026-08-17', null))).toBe('2026-08-17');
+  });
+
+  it('recoleta do MESMO fechamento não reinicia a contagem', () => {
+    // O cron roda todo dia; a Scot publica em dia útil. Sem esta guarda, o sábado
+    // zerava o "estável desde" que a sexta tinha construído.
+    expect(dataDaUltimaMudanca(338, '2026-08-17', anterior(338, '2026-08-17', '2026-08-10'))).toBe('2026-08-10');
   });
 });

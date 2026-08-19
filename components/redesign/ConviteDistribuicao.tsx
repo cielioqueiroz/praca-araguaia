@@ -1,6 +1,6 @@
 import { BotaoCompartilhar } from './BotaoCompartilhar';
 import { BotaoTelegram } from './BotaoTelegram';
-import type { AlvoCompartilhamento } from '@/lib/compartilhar';
+import type { AlvoCompartilhamento, TextoConvite } from '@/lib/compartilhar';
 
 /**
  * A faixa do boca a boca.
@@ -15,10 +15,13 @@ import type { AlvoCompartilhamento } from '@/lib/compartilhar';
  */
 export function ConviteDistribuicao({
   alvo,
+  personalizado,
   titulo = ['Alguém aí precisa', 'desse preço.'],
   linha = 'Manda no grupo da fazenda, do sindicato, do leilão. É de graça e não pede cadastro de ninguém.',
 }: {
   alvo: AlvoCompartilhamento;
+  /** Convite montado na hora — a página de praça compartilha a própria cidade. */
+  personalizado?: TextoConvite;
   /** Uma entrada por linha da manchete — no celular elas viram uma só. */
   titulo?: string[];
   linha?: string;
@@ -28,17 +31,19 @@ export function ConviteDistribuicao({
       <div className="fc-texto">
         <div className="fc-kicker">Passe adiante</div>
         <h2 id="convite-titulo">
-          {titulo.map((l, i) => (
-            <span key={l}>
-              {i > 0 && <br />}
-              {l}
+          {/* Cada linha é um span que vira bloco no desktop e volta a ser inline no
+              celular — com o espaço final preservado. Com <br> a quebra sumia junto
+              com ele na tela pequena e as linhas grudavam: "ConfresaNo grupo certo". */}
+          {titulo.map((l) => (
+            <span key={l} className="fc-linha">
+              {l}{' '}
             </span>
           ))}
         </h2>
         <p className="fc-lede">{linha}</p>
       </div>
       <div className="fc-acoes">
-        <BotaoCompartilhar alvo={alvo} className="fc-btn fc-zap" />
+        <BotaoCompartilhar alvo={alvo} personalizado={personalizado} className="fc-btn fc-zap" />
         <BotaoTelegram className="fc-btn fc-tg" />
       </div>
     </section>

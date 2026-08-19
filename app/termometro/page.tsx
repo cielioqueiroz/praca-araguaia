@@ -3,9 +3,16 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { CardTermometro } from '@/components/CardTermometro';
 import { resumirReportes, ROTULO_ORIGEM, type OrigemReporte } from '@/lib/termometro';
 import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Termômetro da Praça' };
+export const metadata = {
+  title: 'Termômetro da Praça',
+  description:
+    'Quanto o produtor está realmente pegando na região do Araguaia: preços relatados por quem vendeu, conferidos antes de entrar na conta. Reporte o seu — é anônimo.',
+};
+
+const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Araguaina' });
 
 export default async function Termometro() {
   const supabase = createPublicClient();
@@ -30,47 +37,75 @@ export default async function Termometro() {
   );
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Preço de quem tá na lida</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Termômetro da Praça</h1>
-      <p className="mt-1 text-sm text-tinta/50">
-        Valor típico do que está sendo pago na região nos últimos 7 dias — conferido antes de entrar na conta e
-        resistente a um lance fora da curva. Cada card diz de onde veio o preço: {ROTULO_ORIGEM.produtor} ou{' '}
-        {ROTULO_ORIGEM.praca}.
-      </p>
-
-      <Link
-        href="/termometro/reportar"
-        className="mt-5 inline-block rounded-lg bg-pasto px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-mata focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
-      >
-        Reportar preço
-      </Link>
+    <div className="wrap">
+      <section className="pghero">
+        <div className="kicker">Preço de quem tá na lida</div>
+        <h1>
+          O preço que
+          <br />
+          <em>ninguém publica</em>.
+        </h1>
+        <p className="lede">
+          Nenhuma consultoria pesquisa a nossa cidade. O que está aqui veio de quem vendeu — e é o único lugar
+          onde o preço do Araguaia existe.
+        </p>
+        <div className="pgmeta mono">
+          {fmtHoje.format(new Date())} · valor típico dos últimos 7 dias · {ROTULO_ORIGEM.produtor} ou{' '}
+          {ROTULO_ORIGEM.praca}
+        </div>
+        <Link href="/termometro/reportar" className="pgcta">
+          Reportar o preço que você pegou
+        </Link>
+      </section>
 
       {resumos.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-dashed border-linha bg-papel/60 p-8 text-center">
-          <p className="font-display text-lg font-bold text-mata">Seja o primeiro a reportar o preço da sua praça</p>
-          <p className="mt-1 text-sm text-tinta/50">Leva menos de um minuto e não pede cadastro.</p>
+        <div className="pgvazio">
+          <h2>Seja o primeiro a dizer quanto está valendo</h2>
+          <p>
+            Leva menos de um minuto, não pede cadastro e ninguém fica sabendo quem foi. Enquanto ninguém conta, o
+            preço da nossa praça continua não existindo em lugar nenhum —{' '}
+            <Link href="/termometro/reportar">comece por aqui</Link>.
+          </p>
         </div>
       ) : (
-        <section className="mt-8 grid gap-4 sm:grid-cols-2">
-          {resumos.map((r) => (
-            <Link
-              key={r.produto}
-              href={`/termometro/${r.produto}`}
-              aria-label={`Ver histórico de ${r.rotulo}`}
-              className="rounded-xl transition hover:shadow-[0_2px_10px_rgba(28,38,32,0.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
-            >
-              <CardTermometro resumo={r} mediaConab={conab.get(r.produto)} />
-            </Link>
-          ))}
+        <section className="section">
+          <div className="section-head">
+            <div className="t">O que está sendo pago</div>
+            <div className="line" />
+            <div className="meta">
+              Valor típico<span className="pill">7 dias</span>Mediana, não média
+            </div>
+          </div>
+          <div className="pggrade">
+            {resumos.map((r) => (
+              <Link key={r.produto} href={`/termometro/${r.produto}`} aria-label={`Ver histórico de ${r.rotulo}`}>
+                <CardTermometro resumo={r} mediaConab={conab.get(r.produto)} />
+              </Link>
+            ))}
+          </div>
         </section>
       )}
+
+      <section className="section">
+        <div className="section-head">
+          <div className="t">Por cidade</div>
+          <div className="line" />
+        </div>
+        <nav className="cidoutras" aria-label="Praças">
+          {PAGINAS_PRACA.map((p) => (
+            <Link key={p.slug} href={`/praca/${p.slug}`}>
+              {p.nome}
+              <i>{p.uf}</i>
+            </Link>
+          ))}
+        </nav>
+      </section>
 
       <ConviteDistribuicao
         alvo="termometro"
         titulo={['O preço daqui só', 'existe se a gente contar.']}
         linha="Nenhuma consultoria pesquisa a nossa cidade. Manda para quem vendeu esta semana — o reporte é anônimo e leva um minuto."
       />
-    </main>
+    </div>
   );
 }

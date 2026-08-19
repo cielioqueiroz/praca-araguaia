@@ -6,7 +6,15 @@ import { NOME_UF } from '@/lib/praca';
 export type PrecoUfUI = { uf: string; valor: number; variacaoPct: number | null };
 export type PrecoCidadeUI = { municipio: string; uf: string; mediana: number | null; contagem: number };
 /** Preço de uma praça da Scot: 'Redenção (PA)', com o preço a prazo quando houver. */
-export type PrecoPracaUI = { praca: string; uf: string; valor: number; variacaoPct: number | null; valorPrazo?: number };
+export type PrecoPracaUI = {
+  praca: string;
+  uf: string;
+  valor: number;
+  variacaoPct: number | null;
+  valorPrazo?: number;
+  /** Desde quando este preço está parado (migração 0015). */
+  variouEm?: string | null;
+};
 
 export type CardPorteiraProps = {
   tipo: string;
@@ -31,9 +39,23 @@ function brl(n: number): string {
 
 // 0% não é alta: ganha traço e cor neutra. Enquanto `pct >= 0` mandava, preço
 // parado saía com seta verde para cima — uma subida afirmada que não aconteceu.
-function Variacao({ pct }: { pct: number | null }) {
+const fmtDiaCurto = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina',
+});
+
+function Variacao({ pct, desde }: { pct: number | null; desde?: string | null }) {
   if (pct === null) return <span className="var-vazia">—</span>;
-  if (pct === 0) return <span className="var flat"><span className="ar">–</span>0%</span>;
+  // "– 0%" oito vezes no mesmo card lê como sistema travado, ainda que esteja certo:
+  // gado tem preço grudento. Sabendo desde quando, a linha informa em vez de assustar.
+  if (pct === 0) {
+    if (!desde) return <span className="var flat"><span className="ar">–</span>0%</span>;
+    const dia = fmtDiaCurto.format(new Date(desde));
+    return (
+      <span className="var flat parado" title={`Preço estável desde ${dia}`}>
+        <span className="ar">–</span>desde {dia}
+      </span>
+    );
+  }
   const subiu = pct > 0;
   return (
     <span className={`var ${subiu ? 'up' : 'down'}`}>
@@ -91,7 +113,7 @@ export function CardPorteira(p: CardPorteiraProps) {
                     <b className="badge">você</b>
                   </span>
                   <Numero className="valor tnum" valor={u.valor} casas={2} atraso={i * 0.05} />
-                  <Variacao pct={u.variacaoPct} />
+                  <Variacao pct={u.variacaoPct} desde={u.variouEm} />
                 </li>
               ))}
               {p.pracas.length === 0 && <li className="vazio">Sem preço publicado hoje.</li>}

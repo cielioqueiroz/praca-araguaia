@@ -35,7 +35,7 @@ const TTL_MS = 10 * 60 * 1000;
 //   MA → Oeste  (Imperatriz/Balsas, no oeste, encostado no Tocantins)
 //
 // Pernambuco não está aqui porque a Scot não cobre PE — apurado em 16/07/2026.
-const PRACAS_DA_REGIAO: Record<string, { uf: string; praca: string }> = {
+export const PRACAS_DA_REGIAO: Record<string, { uf: string; praca: string }> = {
   'PA|MARABA': { uf: 'PA', praca: 'Marabá' },
   'PA|PARAGOMINAS': { uf: 'PA', praca: 'Paragominas' },
   'PA|REDENCAO': { uf: 'PA', praca: 'Redenção' },

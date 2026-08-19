@@ -20,14 +20,16 @@ export default async function Moderar() {
 
   if (!autenticado) {
     return (
-      <main className="mx-auto max-w-sm px-4 py-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Área restrita</p>
-        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Moderação</h1>
-        <p className="mt-1 text-sm text-tinta/50">Entre com a senha para ver a fila de reportes.</p>
-        <div className="mt-6">
+      <div className="wrap">
+        <section className="pghero">
+          <div className="kicker">Área restrita</div>
+          <h1>Moderação</h1>
+          <p className="lede">Entre com a senha para ver a fila de reportes e fornecedores.</p>
+        </section>
+        <div className="pgcard estreito">
           <FormLoginModeracao />
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -41,12 +43,15 @@ export default async function Moderar() {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-mata">Moderação</h1>
-        <div className="mt-6 rounded-xl border border-linha bg-papel p-6">
-          <p className="text-sm font-medium text-red-600">Não consegui carregar a fila — tente recarregar.</p>
+      <div className="wrap">
+        <section className="pghero">
+          <div className="kicker">Área restrita</div>
+          <h1>Moderação</h1>
+        </section>
+        <div className="pgcard estreito">
+          <p className="pgerro">Não consegui carregar a fila — tente recarregar.</p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -85,15 +90,17 @@ export default async function Moderar() {
   const fornecedoresAprovados = (forns ?? []).filter((r) => r.status === 'aprovado').map(paraModeravel);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Área restrita</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Moderação</h1>
-      <p className="mt-1 text-sm text-tinta/50">
+    <div className="wrap">
+      <section className="pghero">
+        <div className="kicker">Área restrita</div>
+        <h1>Moderação</h1>
+        <p className="lede">
         {pendentes.length === 0
           ? 'Nenhum reporte esperando decisão.'
           : `${pendentes.length} ${pendentes.length === 1 ? 'reporte esperando' : 'reportes esperando'} decisão.`}
-      </p>
-      <div className="mt-8">
+        </p>
+      </section>
+      <div className="section">
         <AbasModeracao
           reportes={pendentes}
           agora={Date.now()}
@@ -101,6 +108,6 @@ export default async function Moderar() {
           fornecedoresAprovados={fornecedoresAprovados}
         />
       </div>
-    </main>
+    </div>
   );
 }

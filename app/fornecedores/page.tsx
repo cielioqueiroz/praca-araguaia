@@ -2,9 +2,14 @@ import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { type Fornecedor, type CategoriaFornecedor } from '@/lib/fornecedores';
 import { VitrineFornecedores } from '@/components/VitrineFornecedores';
+import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Fornecedores' };
+export const metadata = {
+  title: 'Fornecedores',
+  description:
+    'Ração e sal mineral, defensivos e sementes, veterinário, máquinas e peças, assistência técnica — os fornecedores da região do Araguaia, com contato direto no WhatsApp.',
+};
 
 export default async function Fornecedores() {
   const { data } = await createPublicClient()
@@ -22,19 +27,30 @@ export default async function Fornecedores() {
   }));
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Quem atende a praça</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Fornecedores da praça</h1>
-      <p className="mt-1 text-sm text-tinta/50">
-        Agropecuárias, revendas e prestadores da região do Araguaia — fale direto no WhatsApp.
-      </p>
-      <Link
-        href="/fornecedores/anunciar"
-        className="mt-4 inline-block rounded-lg border border-linha bg-papel px-4 py-2 text-sm font-semibold text-pasto transition hover:border-pasto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto"
-      >
-        Você atende a praça? Anuncie aqui →
-      </Link>
+    <div className="wrap">
+      <section className="pghero">
+        <div className="kicker">Quem atende a praça</div>
+        <h1>
+          Quem vende
+          <br />
+          <em>pra você</em>.
+        </h1>
+        <p className="lede">
+          Agropecuárias, revendas, veterinários e oficinas da região do Araguaia. O contato é direto no WhatsApp
+          — sem intermediário e sem taxa para ninguém.
+        </p>
+        <Link href="/fornecedores/anunciar" className="pgcta fantasma">
+          Você atende a praça? Anuncie aqui →
+        </Link>
+      </section>
+
       <VitrineFornecedores fornecedores={fornecedores} />
-    </main>
+
+      <ConviteDistribuicao
+        alvo="fornecedores"
+        titulo={['Conhece quem', 'atende bem?']}
+        linha="Manda o link para a agropecuária, o veterinário ou o borracheiro de confiança — o cadastro é de graça."
+      />
+    </div>
   );
 }

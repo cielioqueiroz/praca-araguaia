@@ -1,6 +1,9 @@
 'use client';
 
-import { linkWhatsApp, convite, type AlvoCompartilhamento } from '@/lib/compartilhar';
+import {
+  linkWhatsApp, linkWhatsAppDe, convite, conviteDe,
+  type AlvoCompartilhamento, type TextoConvite,
+} from '@/lib/compartilhar';
 
 function IconeWhatsApp({ className }: { className?: string }) {
   return (
@@ -23,19 +26,22 @@ function IconeWhatsApp({ className }: { className?: string }) {
  */
 export function BotaoCompartilhar({
   alvo,
+  personalizado,
   className,
   rotulo = 'Mandar no WhatsApp',
 }: {
   alvo: AlvoCompartilhamento;
+  /** Convite montado na hora (a página de praça manda a própria cidade); vence o `alvo`. */
+  personalizado?: TextoConvite;
   className?: string;
   rotulo?: string;
 }) {
-  const href = linkWhatsApp(alvo);
+  const href = personalizado ? linkWhatsAppDe(personalizado) : linkWhatsApp(alvo);
 
   async function aoClicar(e: React.MouseEvent<HTMLAnchorElement>) {
     if (typeof navigator === 'undefined' || !navigator.share) return; // segue o link
     e.preventDefault();
-    const c = convite(alvo);
+    const c = personalizado ? conviteDe(personalizado) : convite(alvo);
     try {
       await navigator.share({ title: c.titulo, text: c.texto, url: c.url });
     } catch (err) {

@@ -15,9 +15,9 @@ export function FormAnuncioFornecedor() {
 
   if (enviado) {
     return (
-      <div className="rounded-xl border border-linha bg-papel p-6">
-        <p className="font-display text-xl font-bold text-mata">Recebido!</p>
-        <p className="mt-1 text-sm text-tinta/60">Seu cadastro entra na vitrine depois de uma conferência rápida. Obrigado!</p>
+      <div className="pgvazio" role="status">
+        <h2>Recebido!</h2>
+        <p></p>
       </div>
     );
   }
@@ -46,45 +46,43 @@ export function FormAnuncioFornecedor() {
     }
   }
 
-  const campo = 'mt-1 w-full rounded-lg border border-linha bg-papel px-3 py-2.5 text-base text-tinta focus-visible:outline-2 focus-visible:outline-pasto';
-
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-4">
-      <label className="block text-sm font-medium text-tinta/70">
+    <form onSubmit={enviar} className="pgform">
+      <label>
         Nome do fornecedor
-        <input type="text" required value={nome} onChange={(e) => setNome(e.target.value)} className={campo} />
+        <input type="text" required value={nome} onChange={(e) => setNome(e.target.value)} />
       </label>
 
-      <label className="block text-sm font-medium text-tinta/70">
+      <label>
         Categoria
-        <select value={categoria} onChange={(e) => setCategoria(e.target.value as CategoriaFornecedor)} className={campo}>
+        <select value={categoria} onChange={(e) => setCategoria(e.target.value as CategoriaFornecedor)}>
           {CATEGORIAS.map((c) => (
             <option key={c.id} value={c.id}>{c.rotulo}</option>
           ))}
         </select>
       </label>
 
-      <label className="block text-sm font-medium text-tinta/70">
+      <label>
         O que vende
-        <input type="text" required value={oQueVende} onChange={(e) => setOQueVende(e.target.value)} placeholder="ex.: ração, sal mineral, sementes" className={campo} />
+        <input type="text" required value={oQueVende} onChange={(e) => setOQueVende(e.target.value)} placeholder="ex.: ração, sal mineral, sementes" />
       </label>
 
-      <label className="block text-sm font-medium text-tinta/70">
+      <label>
         Município
-        <input type="text" required value={municipio} onChange={(e) => setMunicipio(e.target.value)} className={campo} />
+        <input type="text" required value={municipio} onChange={(e) => setMunicipio(e.target.value)} />
       </label>
 
-      <label className="block text-sm font-medium text-tinta/70">
+      <label>
         WhatsApp (com DDD)
-        <input type="text" inputMode="tel" required value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="ex.: (94) 99999-8888" className={campo} />
+        <input type="text" inputMode="tel" required value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="ex.: (94) 99999-8888" />
       </label>
 
       {/* honeypot: humano não vê nem preenche */}
       <input type="text" name="contato" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
-      {erro && <p className="text-sm font-medium text-red-600">{erro}</p>}
+      {erro && <p className="pgerro" role="alert">{erro}</p>}
 
-      <button type="submit" disabled={enviando} className="rounded-lg bg-pasto px-4 py-3 text-sm font-semibold text-white transition hover:bg-mata disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto">
+      <button type="submit" disabled={enviando}>
         {enviando ? 'Enviando…' : 'Enviar cadastro'}
       </button>
     </form>

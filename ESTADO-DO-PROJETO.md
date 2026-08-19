@@ -1,7 +1,104 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-08-18.
+> **Documento de retomada.** Última atualização: 2026-08-19.
 > Quando voltar, comece por aqui. Tudo está commitado e no ar.
+
+---
+
+## 🔇 SILÊNCIO TOTAL NO TELEGRAM (19/08/2026) — nada dispara
+
+> **Situação atual e vigente.** O dono: *"não quero que volte a disparar nada no Telegram
+> ainda, deixe tudo parado; só volto a mandar as notícias quando o sistema estiver 100%."*
+>
+> O boletim tinha sido religado em 18/08 (só o fechamento) e **foi desligado de novo no
+> dia seguinte**. Saiu junto o **`/api/alertas`**, que era o último cron capaz de mandar
+> mensagem — alerta de movimento forte para os inscritos e resumo de audiência para o
+> dono. Foi ele que, na primeira pausa, fez o dono seguir recebendo mensagem de tarde.
+>
+> **O único cron ativo é `/api/coletar` (17:30 BRT)**, que não envia nada: mantém o preço
+> fresco para o site não congelar e para a retomada não começar de banco velho.
+>
+> As rotas continuam de pé (prévia `?previa=1` e disparo manual funcionam). Para religar,
+> devolver ao `crons` do `vercel.json` a linha desejada — as três estão escritas em
+> [`lib/cron.ts`](lib/cron.ts). Recomendação quando voltar: **só o fechamento** (18:00).
+
+### O registro da primeira pausa (28/07/2026)
+
+A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
+`/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
+(`?previa=1`) e disparo manual funcionam; só o automático parou.
+
+**Para retomar**, devolver as duas linhas ao array de `crons` do `vercel.json`:
+
+```json
+{ "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" },
+{ "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
+```
+
+**O que continua rodando:** `/api/coletar` (17:30 BRT) e `/api/alertas` (18:15 BRT).
+A coleta segue para o site não congelar e a retomada não começar de banco velho. Os
+**alertas de preço ainda mandam mensagem aos inscritos** quando um item varia forte —
+e é por esse cron que o resumo diário de audiência chega no Telegram do dono. Se o
+silêncio tiver de ser total, tirar `/api/alertas` também.
+
+---
+
+## 🧭 Descoberta, preço na home, linguagem única e o fim do "0%" (19/08/2026)
+
+Saiu das sugestões que o dono aprovou em bloco. Cinco frentes, todas no ar.
+
+**1. O site deixou de ser invisível.** Não havia `sitemap.xml`, `robots.txt` nem
+`description` nas páginas principais — e, pior, **nenhuma URL por cidade**. Agora:
+- [`app/sitemap.ts`](app/sitemap.ts) e [`app/robots.ts`](app/robots.ts) (o `/moderar`,
+  o `/painel` e as rotas de API ficam fora do índice).
+- **`/praca/[cidade]`** — sete páginas estáticas com ISR de 15 min (Marabá,
+  Paragominas, Redenção, Confresa, Santana do Araguaia, São Félix do Araguaia, Vila
+  Rica), com título "Preço do boi hoje em Redenção (PA)". Cada uma junta o gado da
+  praça, a porteira do estado, o Termômetro da cidade, a chuva dos 7 dias e o caminho
+  para as outras praças. A lista sai da união das fontes ([`lib/pracas-paginas.ts`](lib/pracas-paginas.ts)),
+  não de uma lista à mão: cidade sem dado não vira página, e "Mato Grosso" (que é
+  rótulo de estado na tabela da Scot) não vira cidade.
+- `description` em `/cotacoes`, `/termometro`, `/fornecedores`, `/cotacao/[tipo]` e
+  `/termometro/[produto]`.
+
+**2. A home lidera com preço.** [`PracaHoje`](components/redesign/PracaHoje.tsx) abre a
+página com a porteira inteira **em faixa (menor–maior) e o número de lugares** — nunca
+média — e a linha de cidades logo abaixo. Quem chega de um link do WhatsApp vê o preço
+antes de rolar, em vez de cair na notícia agregada.
+
+**3. Uma linguagem visual só.** Oito páginas ainda estavam em utilitários do Tailwind —
+justamente as telas onde um estranho decide se confia no site: `/termometro`,
+`/termometro/[produto]`, `/termometro/reportar`, `/fornecedores`,
+`/fornecedores/anunciar`, `/cotacao/[tipo]`, `/painel` e `/moderar`. Todas passaram
+para a linguagem editorial (`.wrap` + `.pghero` + `.section-head`), com mobília nova e
+compartilhada no `globals.css` (`.pgcta`, `.pgcard`, `.pgvazio`, `.pggrade`, `.pgform`,
+`.pgvolta`). `CardTermometro` e `CardFornecedor` foram refeitos na gramática dos
+cartões da porteira.
+
+**4. Fim da parede de "0%".** Migração **0015** (`cotacoes_praca.variou_em`, aplicada)
++ `dataDaUltimaMudanca` puro em `lib/coleta.ts`: onde havia oito linhas de "– 0%", agora
+se lê **"desde 14/08"**. A data é carregada adiante quando o preço repete e nunca é
+inventada — sem registro, ela cai no fechamento que a linha já tinha, que é um piso
+verdadeiro.
+
+**5. Duas mentiras de tela corrigidas no caminho** (achadas olhando os prints):
+- `/cotacao/[tipo]` estampava **334,56 sob a legenda "preço por praça"** — a média das
+  praças, que praça nenhuma pratica. Agora mostra a **faixa** (321,00–345,50 · 8 praças)
+  e um link para o preço de cada uma; a nota sob o gráfico diz, com todas as letras, que
+  a linha é a média e serve para ver o caminho, não para fechar negócio.
+- A página de cidade sem praça própria (Confresa) puxava o boi da CONAB (323,55 de
+  14/08, já "desatualizado") enquanto a Scot tinha 329,00 de 17/08 na mesma tela do
+  site. Agora usa a praça de referência do estado, **dizendo que é de fora da cidade**.
+
+**Verificação no celular de verdade** ([`scripts/telas.mjs`](scripts/telas.mjs), novo):
+o Chrome headless no Windows não desce de ~500px, então entrou `playwright-core` (usa o
+Chromium já baixado, sem download) com emulação de iPhone 13. Ele acusa os dois defeitos
+que só existem no telefone — rolagem horizontal e alvo de toque abaixo de 24px (WCAG
+2.5.8). Achou e corrigiu: a home rolava de lado (409px numa tela de 390 — a faixa de
+preço não encolhia), a manchete da faixa de convite grudava as linhas no celular
+("Confresa**no** grupo certo"), e alvos pequenos no rodapé, na barra do topo, nos links
+de praça e no "voltar". Sobraram só links no meio de frase, que é a exceção da própria
+norma. 579 testes, lint e build limpos.
 
 ---
 
@@ -56,44 +153,6 @@ cookie, selo "apurado pela Praça" na tela) com o registro de teste apagado por 
 
 **O que só o dono pode fazer:** ligar para 3–5 produtores e 2–3 agropecuárias e lançar os
 primeiros preços em `/moderar`; divulgar o link. A ferramenta está pronta, a lista é dele.
-
----
-
-## 🔇 SILÊNCIO TOTAL NO TELEGRAM (19/08/2026) — nada dispara
-
-> **Situação atual e vigente.** O dono: *"não quero que volte a disparar nada no Telegram
-> ainda, deixe tudo parado; só volto a mandar as notícias quando o sistema estiver 100%."*
->
-> O boletim tinha sido religado em 18/08 (só o fechamento) e **foi desligado de novo no
-> dia seguinte**. Saiu junto o **`/api/alertas`**, que era o último cron capaz de mandar
-> mensagem — alerta de movimento forte para os inscritos e resumo de audiência para o
-> dono. Foi ele que, na primeira pausa, fez o dono seguir recebendo mensagem de tarde.
->
-> **O único cron ativo é `/api/coletar` (17:30 BRT)**, que não envia nada: mantém o preço
-> fresco para o site não congelar e para a retomada não começar de banco velho.
->
-> As rotas continuam de pé (prévia `?previa=1` e disparo manual funcionam). Para religar,
-> devolver ao `crons` do `vercel.json` a linha desejada — as três estão escritas em
-> [`lib/cron.ts`](lib/cron.ts). Recomendação quando voltar: **só o fechamento** (18:00).
-
-### O registro da primeira pausa (28/07/2026)
-
-A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
-`/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
-(`?previa=1`) e disparo manual funcionam; só o automático parou.
-
-**Para retomar**, devolver as duas linhas ao array de `crons` do `vercel.json`:
-
-```json
-{ "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" },
-{ "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
-```
-
-**O que continua rodando:** `/api/coletar` (17:30 BRT) e `/api/alertas` (18:15 BRT).
-A coleta segue para o site não congelar e a retomada não começar de banco velho. Os
-**alertas de preço ainda mandam mensagem aos inscritos** quando um item varia forte —
-e é por esse cron que o resumo diário de audiência chega no Telegram do dono. Se o
-silêncio tiver de ser total, tirar `/api/alertas` também.
 
 ---
 

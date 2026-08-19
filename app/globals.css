@@ -150,7 +150,7 @@ body { font-size: 14px; }
 .utility{position:relative;z-index:2;background:var(--olive-ink);color:#CFC7AF;height:34px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 26px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .utility .left{display:flex;align-items:center;gap:18px;white-space:nowrap;overflow:hidden}
 .utility .sep{color:#6c6a4e}
-.utility .loc{display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+.utility .loc{display:inline-flex;align-items:center;min-height:24px;gap:6px;background:none;border:none;padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
 .utility .loc:hover{color:#E7DFC7}
 .utility .loc svg{width:11px;height:11px;stroke:#8FA55A;fill:none}
 .dot{width:7px;height:7px;border-radius:50%;background:#8FA55A;animation:pulse 2.4s infinite}
@@ -188,7 +188,7 @@ body { font-size: 14px; }
 .tools{justify-self:end;display:flex;align-items:center;gap:12px}
 .search{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.14);border:1px solid rgba(246,239,216,.14);border-radius:10px;padding:8px 12px;min-width:210px}
 .search svg{width:14px;height:14px;stroke:#BBB18C;fill:none}
-.search input{background:none;border:none;outline:none;color:#D8D2B8;font-family:var(--mono);font-size:11px;letter-spacing:.04em;width:100%}
+.search input{background:none;border:none;outline:none;color:#D8D2B8;font-family:var(--mono);font-size:11px;letter-spacing:.04em;width:100%;min-height:24px}
 .search input::placeholder{color:#8f875f}
 .search:focus-within{border-color:rgba(180,134,59,.6);background:rgba(0,0,0,.22)}
 
@@ -520,6 +520,8 @@ a.mrow:hover{background:var(--paper-warm)}
 .var.up{color:var(--moss)}.var.down{color:var(--rust)}
 /* 0% é preço parado, não alta: traço e cor neutra, nunca a seta verde. */
 .var.flat{color:var(--muted)}
+/* "desde 14/08" é mais largo que "0%" e não pode empurrar o valor: encolhe um ponto. */
+.var.flat.parado{font-size:10.5px;letter-spacing:.01em}
 .var .ar{font-size:8.5px;transform:translateY(-1px)}
 .var-vazia{font-family:var(--mono);font-size:11.5px;color:var(--rule-strong);justify-self:end}
 
@@ -827,6 +829,7 @@ a.mrow:hover{background:var(--paper-warm)}
 .fc-kicker::before{content:"";width:22px;height:1px;background:var(--ochre)}
 .faixa-convite h2{font-family:var(--serif);font-size:38px;line-height:1.02;letter-spacing:-.015em;
   color:#F6EFD8;margin-top:16px;font-variation-settings:'opsz' 120,'wght' 460}
+.fc-linha{display:block}
 .fc-lede{font-family:var(--sans);font-size:14.5px;line-height:1.55;color:#CFC7AF;margin-top:14px;max-width:46ch}
 .fc-acoes{display:flex;flex-direction:column;gap:12px}
 .fc-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;
@@ -847,7 +850,9 @@ a.mrow:hover{background:var(--paper-warm)}
 }
 @media (max-width:620px){
   .faixa-convite h2{font-size:27px}
-  .faixa-convite h2 br{display:none}
+  /* Na tela estreita a manchete corre como uma frase só — o espaço vem do próprio
+     span, não de um <br> que precisaria ser escondido. */
+  .fc-linha{display:inline}
   .fc-btn{width:100%}
 }
 
@@ -889,3 +894,232 @@ a.mrow:hover{background:var(--paper-warm)}
   .bolhead h1{font-size:34px}
   .bolhead h1 br{display:none}
 }
+
+
+/* ——— Página de praça (/praca/[cidade]) ———
+   A página que o Google acha e que se manda no grupo da cidade. Hero sem foto de
+   propósito: são sete cidades e não há foto honesta de cada uma — inventar paisagem
+   genérica para "Confresa" seria decorar com mentira. O peso fica no número. */
+.pghero{margin-top:34px;max-width:60ch}
+.pghero h1{font-family:var(--serif);font-size:64px;line-height:.94;letter-spacing:-.02em;color:var(--ink);
+  margin-top:20px;font-variation-settings:'opsz' 144,'wght' 480}
+.pghero h1 em{font-style:italic;color:var(--leather);font-size:.5em;letter-spacing:.02em}
+.pgmeta{margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);line-height:1.7}
+
+/* O gado da praça: os cartões grandes, que são o motivo de a página existir. */
+.cidgado{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+/* Um cartão sozinho não esparrama pela linha inteira: ele tem um tamanho de cartão. */
+.cidgado.solo{grid-template-columns:minmax(260px,440px)}
+.cidcard .cv .ate{font-style:normal;color:var(--muted);margin:0 6px;font-weight:400}
+.verpracas{display:inline-flex;align-items:center;min-height:24px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--olive);text-decoration:none;
+  border-bottom:1px solid var(--rule-strong);padding-bottom:1px}
+.verpracas:hover{color:var(--olive-deep);border-color:var(--olive)}
+.cidcard{background:var(--paper);border:1px solid var(--rule);border-radius:18px;padding:24px 26px;
+  box-shadow:0 1px 2px rgba(28,38,32,.04);transition:border-color .25s,box-shadow .25s}
+.cidcard:hover{border-color:var(--rule-strong);box-shadow:0 18px 40px -28px rgba(38,48,26,.4)}
+.cidcard .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--olive)}
+.cidcard .cv{font-family:var(--sans);font-size:44px;font-weight:700;line-height:1.05;color:var(--ink);margin-top:10px}
+.cidcard .cu{font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:2px}
+.cidcard .cp{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--sans);
+  font-size:13.5px;color:var(--ink-2)}
+.cidcard .cp b{font-weight:700;color:var(--ink)}
+.cidcard .cf{margin-top:10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* Listas de linha (porteira do estado, termômetro): mesma pauta, três colunas. */
+.cidlista{margin-top:20px;border-top:1px solid var(--rule)}
+.cidlista li{display:grid;grid-template-columns:1fr auto auto;align-items:baseline;gap:16px;
+  padding:14px 4px;border-bottom:1px solid var(--rule)}
+.cidlista .l{font-family:var(--sans);font-size:16px;color:var(--ink)}
+.cidlista .l i{display:block;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);margin-top:3px}
+.cidlista .v{font-family:var(--sans);font-size:22px;font-weight:700;color:var(--ink)}
+.cidlista .d{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  min-width:9ch;text-align:right}
+
+/* A semana de chuva em sete colunas — o dia com água avança, o seco recua. */
+.cidchuva{margin-top:20px;display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cidchuva li{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:12px 8px;
+  text-align:center}
+.cidchuva li.molhado{background:color-mix(in srgb, var(--agua) 12%, var(--paper));border-color:var(--agua-claro)}
+.cidchuva .dia{display:block;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cidchuva .mm{display:block;margin-top:8px;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink)}
+.cidchuva li.molhado .mm{color:var(--agua)}
+.cidchuva .t{display:block;margin-top:6px;font-size:9.5px;letter-spacing:.06em;color:var(--muted)}
+
+.cidnota{margin-top:14px;font-family:var(--sans);font-size:12.5px;line-height:1.6;color:var(--muted);max-width:70ch}
+.cidnota a{color:var(--olive);text-decoration:underline;text-underline-offset:2px}
+.cidvazio{margin-top:20px;padding:22px 24px;border:1px dashed var(--rule);border-radius:16px;
+  background:var(--paper-warm);font-family:var(--sans);font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:72ch}
+.cidvazio a{color:var(--olive);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+
+/* Ir de uma praça a outra sem voltar à home — e dar ao buscador o caminho entre elas. */
+.cidoutras{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px}
+.cidoutras a{display:inline-flex;align-items:baseline;gap:7px;padding:9px 15px;border:1px solid var(--rule);
+  border-radius:999px;background:var(--paper);font-family:var(--sans);font-size:14px;color:var(--ink-2);
+  text-decoration:none;transition:background .2s,border-color .2s,color .2s}
+.cidoutras a:hover{background:var(--paper-warm);border-color:var(--rule-strong);color:var(--olive)}
+.cidoutras a i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted)}
+
+@media (max-width:760px){
+  .pghero h1{font-size:42px}
+  .cidchuva{grid-template-columns:repeat(4,1fr)}
+  .cidlista li{grid-template-columns:1fr auto;row-gap:4px}
+  .cidlista .d{grid-column:1/-1;text-align:left;min-width:0}
+  .cidcard{padding:20px}
+  .cidcard .cv{font-size:38px}
+}
+
+
+/* ——— A praça hoje (faixa de preço no topo da home) ———
+   Seis produtos numa linha varrível. Faixa (menor–maior), nunca média. */
+.phoje{margin-top:44px}
+.phlink{display:inline-flex;align-items:center;min-height:24px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--olive);text-decoration:none;
+  border-bottom:1px solid var(--rule-strong);padding-bottom:1px}
+.phlink:hover{color:var(--olive-deep);border-color:var(--olive)}
+.phgrade{margin-top:20px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.phgrade a{display:block;height:100%;padding:16px 16px 14px;background:var(--paper);border:1px solid var(--rule);
+  border-radius:14px;text-decoration:none;transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s,box-shadow .22s}
+.phgrade a:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 16px 32px -22px rgba(38,48,26,.42)}
+.ph-rot{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--olive)}
+.ph-val{display:block;margin-top:9px;font-family:var(--sans);font-size:20px;font-weight:700;color:var(--ink);
+  line-height:1.15;white-space:nowrap}
+.ph-val i{font-style:normal;color:var(--muted);margin:0 3px;font-weight:400}
+.ph-un{display:block;margin-top:3px;font-family:var(--sans);font-size:11.5px;color:var(--muted);line-height:1.35}
+.ph-lug{display:block;margin-top:8px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.phpracas{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.phpracas span{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+/* 24px de altura é o mínimo do WCAG 2.5.8 (AA) para alvo de toque — estes links são
+   navegação, não palavra no meio de uma frase, então a exceção de link em texto não
+   vale. O padding cresce a área do dedo sem mudar o desenho. */
+.phpracas a{display:inline-block;padding:4px 0;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);
+  text-decoration:none;border-bottom:1px solid transparent;transition:color .18s,border-color .18s}
+.phpracas a:hover{color:var(--olive);border-color:var(--rule-strong)}
+@media (max-width:1000px){ .phgrade{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:620px){
+  .phgrade{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  /* A faixa "3.110,00–3.178,00" não cabe em meia tela de celular: sem isto o
+     `nowrap` empurrava a grade a 409px numa tela de 390 e a página inteira passava
+     a rolar de lado. Aqui ela quebra em duas linhas — cresce em altura, não em
+     largura, que é o único eixo que o telefone não perdoa. */
+  .ph-val{font-size:17px;white-space:normal}
+  .phoje{margin-top:34px}
+}
+
+
+/* ——— Mobília comum das páginas internas ———
+   O site falava duas línguas: cinco páginas na linguagem editorial e oito ainda em
+   utilitários (max-w-3xl, títulos pequenos) — justamente as telas onde um estranho
+   decide se confia no site a ponto de digitar alguma coisa. Estas classes são o
+   vocabulário que faltava para as internas falarem como a home. */
+.pgvolta{display:inline-flex;align-items:center;min-height:24px;padding:4px 0;gap:7px;font-family:var(--mono);
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-top:22px}
+.pgvolta:hover{color:var(--olive)}
+.pgcta{display:inline-flex;align-items:center;gap:9px;margin-top:24px;padding:14px 24px;border-radius:13px;
+  background:var(--olive);color:#F6EFD8;font-family:var(--sans);font-size:14.5px;font-weight:600;
+  text-decoration:none;box-shadow:0 2px 6px rgba(38,48,26,.2);
+  transition:transform .2s cubic-bezier(.22,1,.36,1),background .2s,box-shadow .2s}
+.pgcta:hover{transform:translateY(-2px);background:var(--olive-deep);box-shadow:0 14px 28px -14px rgba(38,48,26,.55)}
+.pgcta.fantasma{background:transparent;color:var(--olive);border:1px solid var(--rule-strong);box-shadow:none}
+.pgcta.fantasma:hover{background:var(--paper-warm);border-color:var(--olive)}
+@media (prefers-reduced-motion: reduce){ .pgcta:hover{transform:none} }
+
+/* Cartão de conteúdo: o quadro de papel onde mora formulário, gráfico ou aviso. */
+.pgcard{margin-top:22px;background:var(--paper);border:1px solid var(--rule);border-radius:20px;
+  padding:28px 30px;box-shadow:0 1px 2px rgba(28,38,32,.04)}
+.pgcard.estreito{max-width:560px}
+.pgvazio{margin-top:22px;padding:34px 30px;border:1px dashed var(--rule);border-radius:20px;
+  background:var(--paper-warm);max-width:72ch}
+.pgvazio h2{font-family:var(--serif);font-size:24px;line-height:1.15;color:var(--ink)}
+.pgvazio p{margin-top:8px;font-family:var(--sans);font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.pgvazio a{color:var(--olive);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+
+/* Grade de cartões das internas (Termômetro, vitrine). */
+.pggrade{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.pggrade > a{text-decoration:none;border-radius:18px;display:block;
+  transition:transform .22s cubic-bezier(.22,1,.36,1)}
+.pggrade > a:hover{transform:translateY(-3px)}
+@media (prefers-reduced-motion: reduce){ .pggrade > a:hover{transform:none} }
+
+/* Formulário na linguagem do site: rótulo em mono, campo alto, foco de oliva. */
+.pgform{display:flex;flex-direction:column;gap:18px}
+.pgform label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.pgform input,.pgform select{width:100%;margin-top:8px;padding:13px 14px;border:1px solid var(--rule);
+  border-radius:12px;background:var(--bone);color:var(--ink);font-family:var(--sans);font-size:16px;
+  transition:border-color .18s,box-shadow .18s}
+.pgform input:focus,.pgform select:focus{outline:none;border-color:var(--olive);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--olive) 18%, transparent)}
+.pgform button[type=submit]{margin-top:4px;padding:15px 22px;border:none;border-radius:13px;
+  background:var(--olive);color:#F6EFD8;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;
+  transition:background .2s,transform .2s}
+.pgform button[type=submit]:hover:not(:disabled){background:var(--olive-deep);transform:translateY(-1px)}
+.pgform button[type=submit]:disabled{opacity:.6;cursor:default}
+.pgerro{font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--rust)}
+.pgok{font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--olive)}
+@media (max-width:620px){
+  .pgcard{padding:22px 20px}
+  .pgvazio{padding:26px 22px}
+}
+
+
+/* ——— Cartão do Termômetro ——— */
+.tcard{height:100%;background:var(--paper);border:1px solid var(--rule);border-radius:18px;padding:22px 24px;
+  box-shadow:0 1px 2px rgba(28,38,32,.04);transition:border-color .22s,box-shadow .22s}
+.pggrade > a:hover .tcard{border-color:var(--rule-strong);box-shadow:0 18px 40px -28px rgba(38,48,26,.42)}
+.tcard .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--olive)}
+.tcard .cv{font-family:var(--sans);font-size:40px;font-weight:700;line-height:1.05;color:var(--ink);margin-top:10px}
+.tcard .cu{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:2px}
+.tinfo{margin-top:14px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tselo{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:999px;background:var(--paper-warm);
+  border:1px solid var(--rule);font-family:var(--sans);font-size:11.5px;color:var(--ink-2)}
+.tcontexto{margin-top:12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--sans);font-size:12.5px;color:var(--muted)}
+.tcidades{margin-top:16px;border-top:1px solid var(--rule)}
+.tcidades li{display:grid;grid-template-columns:1fr auto auto;align-items:baseline;gap:10px;padding:9px 0;
+  border-bottom:1px solid color-mix(in srgb, var(--rule) 55%, transparent)}
+.tcidades li:last-child{border-bottom:none}
+.tcidades .l{font-family:var(--sans);font-size:14px;color:var(--ink-2)}
+.tcidades .v{font-family:var(--sans);font-size:15px;font-weight:600;color:var(--ink)}
+.tcidades .n{font-size:9.5px;color:var(--muted)}
+
+
+/* ——— Vitrine de fornecedores ——— */
+.vchips{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+.vchip{padding:8px 15px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);
+  font-family:var(--sans);font-size:13.5px;color:var(--ink-2);cursor:pointer;
+  transition:background .18s,border-color .18s,color .18s}
+.vchip:hover{background:var(--paper-warm);border-color:var(--rule-strong)}
+.vchip.ativo{background:var(--olive);border-color:var(--olive);color:#F6EFD8}
+.vchip:focus-visible{outline:2px solid var(--olive);outline-offset:2px}
+.vgrupos{margin-top:34px;display:flex;flex-direction:column;gap:38px}
+.fcard{display:flex;flex-direction:column;height:100%;background:var(--paper);border:1px solid var(--rule);
+  border-radius:18px;padding:22px 24px;box-shadow:0 1px 2px rgba(28,38,32,.04);
+  transition:border-color .22s,box-shadow .22s,transform .22s cubic-bezier(.22,1,.36,1)}
+.fcard:hover{transform:translateY(-3px);border-color:var(--rule-strong);box-shadow:0 18px 40px -28px rgba(38,48,26,.42)}
+.fcard h3{font-family:var(--serif);font-size:21px;line-height:1.15;color:var(--ink)}
+.fvende{margin-top:8px;font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink-2);flex:1}
+.fcidade{margin-top:12px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.fzap{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;padding:12px 18px;
+  border-radius:12px;background:var(--olive);color:#F6EFD8;font-family:var(--sans);font-size:14px;
+  font-weight:600;text-decoration:none;transition:background .2s}
+.fzap:hover{background:var(--olive-deep)}
+.fzap:focus-visible{outline:2px solid var(--olive);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ .fcard:hover{transform:none} }
+
+
+/* ——— Painel de audiência (tela do dono) ——— */
+.pnums{margin-top:26px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:640px}
+.pnum{background:var(--paper);border:1px solid var(--rule);border-radius:16px;padding:18px 20px}
+.pnum .v{font-family:var(--sans);font-size:34px;font-weight:700;line-height:1;color:var(--ink)}
+.pnum .r{margin-top:8px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.plista{margin-top:20px;background:var(--paper);border:1px solid var(--rule);border-radius:16px;overflow:hidden}
+.plista li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:14px 20px;
+  border-bottom:1px solid var(--rule)}
+.plista li:last-child{border-bottom:none}
+.plista .l{font-family:var(--sans);font-size:15px;color:var(--ink)}
+.plista .l i{margin-left:6px;font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+.plista .n{font-size:11px;color:var(--ink-2)}
+@media (max-width:620px){ .pnums{grid-template-columns:repeat(2,1fr)} }

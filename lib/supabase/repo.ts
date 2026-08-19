@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { variacaoDoLugar, type LugarSalvo } from '@/lib/coleta';
+import { variacaoDoLugar, dataDaUltimaMudanca, type LugarSalvo } from '@/lib/coleta';
 import type {
   Cotacao,
   CotacaoRepo,
@@ -12,11 +12,17 @@ import type {
 } from '@/types/cotacao';
 
 /** Linha crua de cotacoes_uf/cotacoes_praca → o que `variacaoDoLugar` espera. */
-function lugarSalvo(r: { valor: unknown; variacao_pct: unknown; data_referencia: unknown }): LugarSalvo {
+function lugarSalvo(r: {
+  valor: unknown;
+  variacao_pct: unknown;
+  data_referencia: unknown;
+  variou_em?: unknown;
+}): LugarSalvo {
   return {
     valor: Number(r.valor),
     dataReferencia: r.data_referencia as string,
     variacaoPct: r.variacao_pct === null ? null : Number(r.variacao_pct),
+    variouEm: (r.variou_em as string | null | undefined) ?? null,
   };
 }
 
@@ -109,7 +115,7 @@ export function supabaseRepo(
       // isto, o gado sai no card sem seta nenhuma e parece parado ao lado da soja.
       const { data: antes, error: erroAnterior } = await client
         .from('cotacoes_praca')
-        .select('tipo, praca, uf, valor, variacao_pct, data_referencia')
+        .select('tipo, praca, uf, valor, variacao_pct, data_referencia, variou_em')
         .in('tipo', [...new Set(precos.map((p) => p.tipo))]);
       if (erroAnterior) throw new Error(erroAnterior.message);
 
@@ -132,6 +138,11 @@ export function supabaseRepo(
           ),
           valor_prazo: p.valorPrazo ?? null,
           data_referencia: p.dataReferencia,
+          variou_em: dataDaUltimaMudanca(
+            p.valor,
+            p.dataReferencia,
+            anterior.get(`${p.tipo}|${p.praca}|${p.uf}`),
+          ),
           atualizado_em: new Date().toISOString(),
         })),
         { onConflict: 'tipo,praca,uf' },

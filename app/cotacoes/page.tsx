@@ -13,11 +13,15 @@ export const dynamic = 'force-dynamic';
 
 // Sem isto a aba caía no título padrão do layout ("cotações do agro"): a página era a
 // home e nunca precisou de título próprio. A marca vem do template do layout.
-export const metadata = { title: 'A praça hoje' };
+export const metadata = {
+  title: 'A praça hoje',
+  description:
+    'Preço do boi gordo, vaca, novilha, bezerro, soja e milho nas praças do Vale do Araguaia — Marabá, Redenção, Paragominas e estados vizinhos. Atualizado todo dia útil.',
+};
 
 type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null; data_referencia: string };
 type LinhaUf = { tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string };
-type LinhaPraca = { tipo: string; praca: string; uf: string; valor: number; variacao_pct: number | null; valor_prazo: number | null; data_referencia: string };
+type LinhaPraca = { tipo: string; praca: string; uf: string; valor: number; variacao_pct: number | null; valor_prazo: number | null; data_referencia: string; variou_em: string | null };
 
 const MERCADO: Record<string, { unLabel: string; casas: number }> = {
   dolar: { unLabel: 'comercial', casas: 4 },
@@ -87,6 +91,7 @@ export default async function Home() {
       uf: l.uf,
       valor: Number(l.valor),
       variacaoPct: l.variacao_pct === null ? null : Number(l.variacao_pct),
+      variouEm: l.variou_em ?? null,
       ...(l.valor_prazo === null ? {} : { valorPrazo: Number(l.valor_prazo) }),
     });
     pracasPorTipo.set(l.tipo, arr);

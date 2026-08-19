@@ -1,7 +1,13 @@
 import type { Cotacao, CotacaoSalva, CotacaoRepo } from '@/types/cotacao';
 
 /** O que já estava salvo para um lugar (praça ou estado) antes desta coleta. */
-export type LugarSalvo = { valor: number; dataReferencia: string; variacaoPct: number | null };
+export type LugarSalvo = {
+  valor: number;
+  dataReferencia: string;
+  variacaoPct: number | null;
+  /** Desde quando este valor está parado. Nulo em linha gravada antes da migração 0015. */
+  variouEm?: string | null;
+};
 
 /**
  * A variação de UM lugar — a praça da Scot, o estado da CONAB.
@@ -36,6 +42,31 @@ export function variacaoDoLugar(
 
   if (anterior.valor <= 0) return null;
   return Math.round(((valor - anterior.valor) / anterior.valor) * 100 * 100) / 100;
+}
+
+/**
+ * Desde quando o preço deste lugar está parado.
+ *
+ * O card do boi mostrava oito "– 0%" seguidos: correto, porque gado tem preço
+ * grudento, mas lido de relance parece sistema travado. Com esta data a linha diz
+ * "estável desde 14/08" — informa em vez de assustar.
+ *
+ * Nunca inventa: sem nada salvo, a resposta é o próprio fechamento de agora (é a
+ * primeira vez que vemos este preço). Quando o valor repete, a data anterior é
+ * carregada adiante; e a linha velha sem `variouEm` cai no fechamento que ela já
+ * tinha — um piso verdadeiro, porque o preço JÁ era esse naquele dia. Subestima a
+ * duração, jamais exagera.
+ */
+export function dataDaUltimaMudanca(
+  valor: number,
+  dataReferencia: string,
+  anterior: LugarSalvo | undefined,
+): string {
+  if (!anterior) return dataReferencia;
+  // Fechamento repetido (ou republicação de um mais antigo): nada aconteceu hoje.
+  if (anterior.dataReferencia >= dataReferencia) return anterior.variouEm ?? anterior.dataReferencia;
+  if (anterior.valor !== valor) return dataReferencia;
+  return anterior.variouEm ?? anterior.dataReferencia;
 }
 
 export async function coletarCotacao(

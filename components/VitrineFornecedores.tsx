@@ -9,22 +9,22 @@ export function VitrineFornecedores({ fornecedores }: { fornecedores: Fornecedor
 
   if (fornecedores.length === 0) {
     return (
-      <div className="mt-10 rounded-xl border border-dashed border-linha bg-papel/60 p-8 text-center">
-        <p className="font-display text-lg font-bold text-mata">Ainda não há fornecedores na vitrine.</p>
-        <p className="mt-1 text-sm text-tinta/50">É o primeiro da praça? Use o botão &quot;Anuncie aqui&quot; acima e apareça aqui.</p>
+      <div className="pgvazio">
+        <h2>Ainda não há fornecedores na vitrine</h2>
+        <p>
+          É o primeiro da praça? Use o botão &quot;Anuncie aqui&quot; acima: leva um minuto, é de graça, e o
+          produtor fala com você direto no WhatsApp.
+        </p>
       </div>
     );
   }
 
   const grupos = agruparPorCategoria(fornecedores, categoria);
-  const chip = (ativo: boolean) =>
-    `rounded-full px-3 py-1 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pasto ${
-      ativo ? 'bg-mata text-white' : 'border border-linha bg-papel text-tinta/60 hover:bg-linha/60'
-    }`;
+  const chip = (ativo: boolean) => `vchip${ativo ? ' ativo' : ''}`;
 
   return (
-    <div>
-      <div className="mb-6 mt-6 flex flex-wrap gap-2">
+    <div className="section">
+      <div className="vchips">
         <button type="button" onClick={() => setCategoria(null)} className={chip(categoria === null)}>
           Todas
         </button>
@@ -36,13 +36,18 @@ export function VitrineFornecedores({ fornecedores }: { fornecedores: Fornecedor
       </div>
 
       {grupos.length === 0 ? (
-        <p className="text-sm text-tinta/50">Nenhum fornecedor nesta categoria ainda.</p>
+        <p className="cidnota">Nenhum fornecedor nesta categoria ainda.</p>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="vgrupos">
           {grupos.map((g) => (
             <section key={g.categoria}>
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.1em] text-tinta/70">{g.rotulo}</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
+              {/* h2 de verdade, não um div com cara de título: a categoria é o
+                  cabeçalho da seção, e leitor de tela navega por ele. */}
+              <div className="section-head">
+                <h2 className="t">{g.rotulo}</h2>
+                <div className="line" />
+              </div>
+              <div className="pggrade">
                 {g.fornecedores.map((f) => (
                   <CardFornecedor key={`${f.nome}-${f.municipio}`} fornecedor={f} />
                 ))}

@@ -2,37 +2,46 @@ import type { ResumoProduto } from '@/lib/termometro';
 
 const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
+/**
+ * O cartão do Termômetro, na linguagem editorial do site.
+ *
+ * Era um cartão de utilitários — tipografia menor, hierarquia diferente do resto —
+ * numa página que é o diferencial do produto. Agora usa a mesma gramática dos
+ * cartões da porteira: kicker em mono, número grande em sans, pauta de linhas
+ * embaixo. O conteúdo e os textos são os mesmos.
+ */
 export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; mediaConab?: number }) {
   const mostrarFaixa = resumo.contagem >= 2 && resumo.faixa.min !== resumo.faixa.max;
   return (
-    <div className="rounded-xl border border-linha bg-papel p-5 shadow-[0_1px_2px_rgba(28,38,32,0.05)]">
-      <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-tinta/60">{resumo.rotulo}</h2>
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-pasto">{resumo.unidade}</p>
-      <p className="font-sans text-4xl font-bold tabular-nums tracking-tight text-tinta">{fmt.format(resumo.mediana)}</p>
-      <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-tinta/50">valor típico</p>
-      <p className="mt-1 text-xs text-tinta/40">
+    <div className="tcard">
+      <div className="ct">{resumo.rotulo}</div>
+      <div className="cv tnum">{fmt.format(resumo.mediana)}</div>
+      <div className="cu">{resumo.unidade} · valor típico</div>
+
+      <div className="tinfo mono">
         {resumo.contagem} {resumo.contagem === 1 ? 'reporte' : 'reportes'} · últimos 7 dias
-      </p>
+      </div>
       {/* De quem é a testemunha do número (ADR 0003) — obrigatória junto do valor. */}
-      <p className="mt-1 inline-flex items-center rounded-full bg-palha px-2 py-0.5 text-[11px] font-medium text-tinta/60">
-        {resumo.procedencia}
-      </p>
-      {mostrarFaixa && (
-        <p className="mt-1 text-xs text-tinta/50">
-          faixa: R$ {fmt.format(resumo.faixa.min)}–{fmt.format(resumo.faixa.max)}
-        </p>
+      <div className="tselo">{resumo.procedencia}</div>
+
+      {(mostrarFaixa || mediaConab !== undefined) && (
+        <div className="tcontexto">
+          {mostrarFaixa && (
+            <span>
+              faixa: R$ {fmt.format(resumo.faixa.min)}–{fmt.format(resumo.faixa.max)}
+            </span>
+          )}
+          {mediaConab !== undefined && <span>média CONAB: {fmt.format(mediaConab)}</span>}
+        </div>
       )}
-      {mediaConab !== undefined && (
-        <p className="mt-1 text-xs text-tinta/50">média CONAB: {fmt.format(mediaConab)}</p>
-      )}
+
       {resumo.municipios.length > 0 && (
-        <ul className="mt-4 divide-y divide-linha/70 border-t border-linha/70">
+        <ul className="tcidades">
           {resumo.municipios.map((m) => (
-            <li key={m.municipio} className="flex items-baseline justify-between gap-2 py-1.5 text-sm tabular-nums">
-              <span className="text-tinta/60">{m.municipio}</span>
-              <span className="text-tinta/80">
-                {fmt.format(m.mediana)} <span className="text-xs text-tinta/40">({m.contagem})</span>
-              </span>
+            <li key={m.municipio}>
+              <span className="l">{m.municipio}</span>
+              <span className="v tnum">{fmt.format(m.mediana)}</span>
+              <span className="n mono">({m.contagem})</span>
             </li>
           ))}
         </ul>

@@ -18,7 +18,9 @@ describe('CardTermometro', () => {
     render(<CardTermometro resumo={resumo} />);
     expect(screen.getByText('Boi gordo')).toBeInTheDocument();
     expect(screen.getByText('325,5')).toBeInTheDocument();
-    expect(screen.getByText('valor típico')).toBeInTheDocument();
+    // A etiqueta agora divide a linha com a unidade ('R$/@ · valor típico').
+    expect(screen.getByText(/valor típico/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\/@/)).toBeInTheDocument();
     expect(screen.getByText('3 reportes · últimos 7 dias')).toBeInTheDocument();
     expect(screen.getByText('Redenção')).toBeInTheDocument();
     expect(screen.getByText(/316,5/)).toBeInTheDocument();

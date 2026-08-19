@@ -105,3 +105,18 @@ _Evite_: lançar apuração própria como se fosse reporte de produtor
 
 **Dia útil**:
 Segunda a sexta, fora feriado nacional. Sábado, domingo e feriado não têm entrega nem preço novo — a fonte também não publica.
+
+## Como o site se apresenta
+
+**Praça (página)**:
+A página de uma cidade (`/praca/redencao`) — o preço do gado ali, a porteira do estado, o que a cidade reportou e a chuva da semana. É o endereço que se manda no grupo e que o buscador acha.
+
+**Faixa da porteira**:
+O menor e o maior preço entre os lugares de um produto, com quantos lugares entraram. É como o preço se resume onde não cabe a lista inteira — a home e a página de cotação.
+_Evite_: **média** (a palavra saiu da interface na fatia 15 e não volta; média de lugares com spread grande não é preço de ninguém)
+
+**Praça de referência**:
+Quando a fonte não pesquisa a cidade, a praça mais próxima que ela pesquisa naquele estado. Aparece sempre nomeada — uma cidade nunca vê um preço de fora sem que a tela diga de onde ele é.
+
+**Estável desde**:
+O que a tela mostra no lugar de "0%": desde quando aquele preço está parado. A data é carregada adiante enquanto o valor repete e nunca é anterior ao que se sabe.

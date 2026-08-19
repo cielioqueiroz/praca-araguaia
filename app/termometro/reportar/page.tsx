@@ -2,23 +2,44 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { FormReporte } from '@/components/FormReporte';
 
-export const metadata = { title: 'Reportar preço' };
+export const metadata = {
+  title: 'Reportar preço',
+  description:
+    'Diga quanto você recebeu pelo boi, bezerro, novilha, vaca, soja ou milho na sua cidade do Araguaia. Anônimo, sem cadastro, um minuto.',
+};
 
 export default function Reportar() {
   return (
-    <main className="mx-auto max-w-md px-4 py-10">
-      <Link href="/termometro" className="text-sm text-tinta/50 hover:underline">← Voltar</Link>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-pasto">Sem cadastro · anônimo</p>
-      <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-mata">Qual o preço na sua praça?</h1>
-      <p className="mt-1 text-sm text-tinta/50">Seu reporte é conferido antes de entrar na média da região.</p>
+    <div className="wrap">
+      <Link href="/termometro" className="pgvolta">
+        ← Termômetro da Praça
+      </Link>
+
+      <section className="pghero">
+        <div className="kicker">Sem cadastro · anônimo</div>
+        <h1>
+          Quanto você
+          <br />
+          <em>pegou</em>?
+        </h1>
+        <p className="lede">
+          O preço que você fez vira a referência do vizinho. É conferido antes de entrar na conta e ninguém fica
+          sabendo quem contou.
+        </p>
+      </section>
 
       {/* O formulário lê ?produto= da URL (useSearchParams) — o Next exige a fronteira
           de Suspense para não desistir da renderização estática da página inteira. */}
-      <div className="mt-6">
-        <Suspense fallback={<div className="h-64 rounded-xl border border-linha bg-papel" />}>
+      <div className="pgcard estreito">
+        <Suspense fallback={<div style={{ height: 320 }} />}>
           <FormReporte />
         </Suspense>
       </div>
-    </main>
+
+      <p className="cidnota">
+        Não pedimos nome, telefone nem e-mail — o reporte é anônimo de verdade. O que sai na tela é o valor
+        típico da cidade, nunca um preço ligado a uma pessoa.
+      </p>
+    </div>
   );
 }

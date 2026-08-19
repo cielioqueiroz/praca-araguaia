@@ -70,7 +70,8 @@ export function SiteFooter() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[15px] text-ink2 transition hover:text-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
+                  // inline-block + py-1: 24px de alvo de toque (WCAG 2.5.8), sem mudar o desenho.
+                  className="inline-block py-1 text-[15px] text-ink2 transition hover:text-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
                 >
                   {l.rotulo}
                 </Link>
@@ -95,7 +96,7 @@ export function SiteFooter() {
               href={SITE}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 font-mono text-[12px] tracking-[0.02em] text-ink2 transition hover:text-olive"
+              className="mt-4 inline-flex min-h-6 items-center gap-2 py-1 font-mono text-[12px] tracking-[0.02em] text-ink2 transition hover:text-olive"
             >
               <IconeSite className="h-4 w-4" />
               Criado por Cielio Queiroz
