@@ -69,13 +69,26 @@ for (const rota of alvos) {
     problemas.push(`${rota}: rola na horizontal (${overflow.largura}px em tela de ${overflow.tela}px) → ${overflow.culpados.join(' | ')}`);
   }
 
-  // Alvos de toque pequenos demais (WCAG: 24px; recomendado 44px).
+  // Alvos de toque pequenos demais (WCAG 2.2 SC 2.5.8: 24px; recomendado 44px).
+  //
+  // A EXCEÇÃO "INLINE" É PARTE DO CRITÉRIO, não uma flexibilização nossa: o SC isenta
+  // o alvo "numa sentença, ou cuja altura é limitada pelo line-height do texto que não
+  // é alvo". Sem isso o auditor acusava dois links de corpo de texto (o "a praça hoje"
+  // do /boletim e o "chuva na região" do /praca) em TODA rodada — e um verificador que
+  // grita lobo toda vez é um verificador que se aprende a ignorar. Engordar o alvo de
+  // um link no meio do parágrafo também não teria como: a área invadiria a linha de
+  // cima, e o remédio seria pior.
   const alvosPequenos = await page.evaluate(() => {
     const ruins = [];
     for (const el of document.querySelectorAll('a, button, input, select')) {
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
-      if (r.height < 24) ruins.push(`${el.tagName.toLowerCase()} "${(el.textContent || '').trim().slice(0, 24)}" ${Math.round(r.height)}px`);
+      if (r.height >= 24) continue;
+      // Inline e com texto irmão ao redor = link dentro de uma frase.
+      const inline = getComputedStyle(el).display.startsWith('inline');
+      const paiTemTexto = (el.parentElement?.textContent ?? '').trim().length > (el.textContent ?? '').trim().length;
+      if (inline && paiTemTexto) continue;
+      ruins.push(`${el.tagName.toLowerCase()} "${(el.textContent || '').trim().slice(0, 24)}" ${Math.round(r.height)}px`);
     }
     return ruins.slice(0, 8);
   });
