@@ -26,12 +26,15 @@ npm start                # sobe o build
 npm test                 # Vitest, uma passada (hoje: 578 testes)
 npm run test:watch       # watch
 npm run lint             # ESLint (next/core-web-vitals + next/typescript)
+npm run typecheck        # tsc --noEmit — tem que dar ZERO
 
 npx vitest run tests/termometro.test.ts          # um arquivo
 npx vitest run -t "mediana resiste a outlier"    # um teste pelo nome
 ```
 
-**`npx tsc --noEmit` acusa 13 erros pré-existentes, todos em `tests/`** (conversões de tupla em mocks de `fetch`). Não são regressão e não bloqueiam nada — o `next build` não typechecka `tests/`. Se aparecer um 14º, esse é seu.
+**`npm run typecheck` tem que dar zero.** Ele existe porque não existia: sem ninguém rodando `tsc`, treze erros se acumularam em `tests/` sem que ninguém visse — o `next build` não typechecka `tests/`, e o `lint` não pega tipo. Todos foram corrigidos; qualquer erro que aparecer agora é da mudança em curso.
+
+A raiz dos treze era a mesma: `vi.fn(async () => ...)` sem assinatura faz o TypeScript inferir a tupla de argumentos como `[]`, e `mock.calls[0][0]` não compila. **Tipe o mock com a assinatura real** (`vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => ...)`) em vez de calçar um `as` no ponto da asserção. E `init` é opcional de verdade — `typeof fetch` é sobrecarregado, e mock com `init` obrigatório não é atribuível a ele.
 
 Primeira coleta local (a tela começa vazia):
 

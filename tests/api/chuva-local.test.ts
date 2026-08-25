@@ -14,7 +14,7 @@ const RESPOSTA_OK = {
 };
 
 function mockOpenMeteo(body: unknown = RESPOSTA_OK, ok = true) {
-  const espiao = vi.fn(async () => ({ ok, status: ok ? 200 : 500, json: async () => body }));
+  const espiao = vi.fn(async (_url: RequestInfo | URL) => ({ ok, status: ok ? 200 : 500, json: async () => body }));
   vi.stubGlobal('fetch', espiao);
   return espiao;
 }

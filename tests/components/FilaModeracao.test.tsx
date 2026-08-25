@@ -49,31 +49,31 @@ describe('FilaModeracao', () => {
   });
 
   it('aprovar remove o card na hora e envia a decisão', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Aprovar' })[0]);
     expect(screen.queryByText('Boi gordo')).not.toBeInTheDocument();
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/moderar/decidir');
-    expect(JSON.parse(String(init.body))).toEqual({ id: pendentes[0].id, decisao: 'aprovado' });
+    expect(JSON.parse(String(init?.body))).toEqual({ id: pendentes[0].id, decisao: 'aprovado' });
   });
 
   it('rejeitar envia decisao rejeitado', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Rejeitar' })[1]);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    expect(JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body))).toEqual({
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toEqual({
       id: pendentes[1].id,
       decisao: 'rejeitado',
     });
   });
 
   it('falha do servidor devolve o card e mostra o erro', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ erro: 'Erro ao salvar. Tente de novo.' }), { status: 500 })));
+    vi.stubGlobal('fetch', vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ erro: 'Erro ao salvar. Tente de novo.' }), { status: 500 })));
     render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Aprovar' })[0]);
     expect(await screen.findByText('Erro ao salvar. Tente de novo.')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('FilaModeracao', () => {
     const pA = new Promise<Response>((res) => (resolveA = res));
     const pB = new Promise<Response>((res) => (resolveB = res));
     const fetchMock = vi.fn((_url: string, init: RequestInit) => {
-      const { id } = JSON.parse(String(init.body)) as { id: string };
+      const { id } = JSON.parse(String(init?.body)) as { id: string };
       return id === pendentes[0].id ? pA : pB;
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -108,7 +108,7 @@ describe('FilaModeracao', () => {
   });
 
   it('404 (já moderado) mantém o card removido, sem erro', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ erro: 'Reporte não encontrado ou já moderado.' }), { status: 404 })));
+    vi.stubGlobal('fetch', vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ erro: 'Reporte não encontrado ou já moderado.' }), { status: 404 })));
     render(<FilaModeracao pendentes={pendentes} agora={AGORA} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Aprovar' })[0]);
     await waitFor(() => expect(screen.queryByText('Boi gordo')).not.toBeInTheDocument());

@@ -9,7 +9,7 @@ import { criarToken, COOKIE_MODERACAO } from '@/lib/moderacao';
 const SENHA = 'senha-de-teste';
 
 function mockSupabase({ error = null }: { error?: unknown } = {}) {
-  const insert = vi.fn(async () => ({ error }));
+  const insert = vi.fn(async (_linha: Record<string, unknown>) => ({ error }));
   (createServerClient as ReturnType<typeof vi.fn>).mockReturnValue({ from: vi.fn(() => ({ insert })) });
   return { insert };
 }

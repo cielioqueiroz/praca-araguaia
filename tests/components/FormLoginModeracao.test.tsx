@@ -18,18 +18,18 @@ function preencherEEnviar(senha: string) {
 
 describe('FormLoginModeracao', () => {
   it('senha certa: envia para /api/moderar/login e dá refresh', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     render(<FormLoginModeracao />);
     preencherEEnviar('minha-senha');
     await waitFor(() => expect(refresh).toHaveBeenCalled());
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/moderar/login');
-    expect(JSON.parse(String(init.body))).toEqual({ senha: 'minha-senha' });
+    expect(JSON.parse(String(init?.body))).toEqual({ senha: 'minha-senha' });
   });
 
   it('senha errada: mostra o erro do servidor e não dá refresh', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ erro: 'Senha incorreta.' }), { status: 401 })));
+    vi.stubGlobal('fetch', vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ erro: 'Senha incorreta.' }), { status: 401 })));
     render(<FormLoginModeracao />);
     preencherEEnviar('errada');
     expect(await screen.findByText('Senha incorreta.')).toBeInTheDocument();

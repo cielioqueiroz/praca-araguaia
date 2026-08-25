@@ -9,7 +9,7 @@ import { createServerClient } from '@/lib/supabase/server';
 function mockSupabase({ count = 0, countError = null, insertError = null }: {
   count?: number; countError?: unknown; insertError?: unknown;
 } = {}) {
-  const insert = vi.fn(async () => ({ error: insertError }));
+  const insert = vi.fn(async (_linha: Record<string, unknown>) => ({ error: insertError }));
   const gte = vi.fn(async () => ({ count, error: countError }));
   const eq = vi.fn(() => ({ gte }));
   const select = vi.fn(() => ({ eq }));
@@ -36,7 +36,7 @@ describe('POST /api/reportar', () => {
     const res = await POST(req(valido));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ recebido: true });
-    const gravado = insert.mock.calls[0][0] as Record<string, unknown>;
+    const gravado = insert.mock.calls[0][0];
     expect(gravado).toMatchObject({ produto: 'boi', municipio: 'Redenção', valor: 320 });
     expect(String(gravado.ip_hash)).toMatch(/^[0-9a-f]{64}$/); // sha-256 hex
     expect(String(gravado.ip_hash)).not.toContain('1.2.3.4');

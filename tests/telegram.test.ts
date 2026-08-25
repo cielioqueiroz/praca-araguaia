@@ -50,25 +50,25 @@ describe('interpretarUpdate', () => {
 
 describe('enviarMensagem', () => {
   it('faz POST em sendMessage com chat_id e text', async () => {
-    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('{}', { status: 200 }));
     await enviarMensagem('TOKEN123', 42, 'olá', fetchMock);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://api.telegram.org/botTOKEN123/sendMessage');
-    expect(init.method).toBe('POST');
-    expect(JSON.parse(String(init.body))).toEqual({ chat_id: 42, text: 'olá' });
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(String(init?.body))).toEqual({ chat_id: 42, text: 'olá' });
   });
 });
 
 describe('enviarFoto', () => {
   it('faz POST em sendPhoto com chat_id, photo e caption; ok em 200', async () => {
-    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('{}', { status: 200 }));
     const r = await enviarFoto('TOKEN123', 42, 'https://x/foto.png', 'legenda', fetchMock);
     expect(r).toEqual({ ok: true });
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://api.telegram.org/botTOKEN123/sendPhoto');
-    expect(init.method).toBe('POST');
-    expect(JSON.parse(String(init.body))).toEqual({
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(String(init?.body))).toEqual({
       chat_id: 42,
       photo: 'https://x/foto.png',
       caption: 'legenda',
@@ -76,13 +76,13 @@ describe('enviarFoto', () => {
   });
 
   it('403 (bot bloqueado) vira bloqueado:true', async () => {
-    const fetchMock = vi.fn(async () => new Response('forbidden', { status: 403 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('forbidden', { status: 403 }));
     const r = await enviarFoto('TOKEN123', 42, 'https://x/foto.png', 'legenda', fetchMock);
     expect(r).toEqual({ ok: false, bloqueado: true });
   });
 
   it('outro erro vira bloqueado:false', async () => {
-    const fetchMock = vi.fn(async () => new Response('boom', { status: 500 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('boom', { status: 500 }));
     const r = await enviarFoto('TOKEN123', 42, 'https://x/foto.png', 'legenda', fetchMock);
     expect(r).toEqual({ ok: false, bloqueado: false });
   });
@@ -90,22 +90,22 @@ describe('enviarFoto', () => {
 
 describe('enviarTexto', () => {
   it('faz POST em sendMessage com chat_id e text; ok em 200', async () => {
-    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('{}', { status: 200 }));
     const r = await enviarTexto('TOKEN123', 42, 'alô', fetchMock);
     expect(r).toEqual({ ok: true });
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://api.telegram.org/botTOKEN123/sendMessage');
-    expect(init.method).toBe('POST');
-    expect(JSON.parse(String(init.body))).toEqual({ chat_id: 42, text: 'alô' });
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(String(init?.body))).toEqual({ chat_id: 42, text: 'alô' });
   });
 
   it('403 (bot bloqueado) vira bloqueado:true', async () => {
-    const fetchMock = vi.fn(async () => new Response('forbidden', { status: 403 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('forbidden', { status: 403 }));
     expect(await enviarTexto('T', 42, 'x', fetchMock)).toEqual({ ok: false, bloqueado: true });
   });
 
   it('outro erro vira bloqueado:false', async () => {
-    const fetchMock = vi.fn(async () => new Response('boom', { status: 500 }));
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response('boom', { status: 500 }));
     expect(await enviarTexto('T', 42, 'x', fetchMock)).toEqual({ ok: false, bloqueado: false });
   });
 });
