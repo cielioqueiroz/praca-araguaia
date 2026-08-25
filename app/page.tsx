@@ -4,6 +4,7 @@ import { FEEDS } from '@/lib/noticias/feeds';
 import { GradeNoticias } from './_home/GradeNoticias';
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { PracaHoje } from './_home/PracaHoje';
+import { dataExtensa, horaLocal } from '@/lib/formato';
 
 // Sem banco e sem cron: a página se refaz a cada 15 min, no primeiro acesso depois
 // do prazo. O plano grátis da Vercel dispara cron 1x/dia, então ISR é o único jeito
@@ -20,8 +21,6 @@ export const metadata = {
     'As notícias do agro, da pecuária e do mercado que mexem com o preço na porteira, reunidas dos principais veículos do país.',
 };
 
-const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
-const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
 
 export default async function Home() {
   const noticias = await buscarNoticias();
@@ -43,8 +42,8 @@ export default async function Home() {
             Agro, pecuária, grãos e mercado — dos principais veículos do país, num lugar só.
           </p>
           <div className="meta">
-            <div className="big">{fmtHoje.format(agora)}</div>
-            <div className="mono">Atualizado {fmtHora.format(agora)} · a cada 15 min · {FEEDS.length} veículos</div>
+            <div className="big">{dataExtensa(agora)}</div>
+            <div className="mono">Atualizado {horaLocal(agora)} · a cada 15 min · {FEEDS.length} veículos</div>
           </div>
         </div>
         <div className="photo">

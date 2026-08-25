@@ -9,6 +9,7 @@ import {
 } from '@/lib/tipos-ui';
 import { NOME_UF, ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
+import { numero, dataExtensa } from '@/lib/formato';
 
 // Linha crua vinda de `cotacoes` (tipos já convertidos pelo chamador).
 export type LinhaCotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null };
@@ -73,15 +74,7 @@ const CASAS: Record<string, number> = { dolar: 4, euro: 4, ibovespa: 0 };
 
 // Araguaia fica no fuso -03:00 sem horário de verão; fixar o fuso torna a data
 // determinística no serverless (relógio UTC) e nos testes.
-const fmtDataExtenso = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
 const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina' });
-
-function numero(valor: number, casas: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: casas,
-    maximumFractionDigits: casas,
-  }).format(valor);
-}
 
 function variacaoDe(pct: number | null): Variacao | undefined {
   if (pct === null) return undefined;
@@ -192,5 +185,5 @@ export function montarBoletim(
 
   const semReportes = reportes.every((r) => r.mediana === null);
 
-  return { dataExtenso: fmtDataExtenso.format(agora), porteira, mercado, semReportes };
+  return { dataExtenso: dataExtensa(agora), porteira, mercado, semReportes };
 }

@@ -8,6 +8,7 @@ import { TITULOS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesatualizadoMs
 import { resumirReportes, type OrigemReporte } from '@/lib/termometro';
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { convitePraca } from '@/lib/compartilhar';
+import { numero, dataLonga } from '@/lib/formato';
 
 // Estática com revalidação: é página feita para ser ACHADA (Google, link no grupo), e
 // buscador não espera render dinâmico. 15 min é o mesmo ritmo da home.
@@ -17,13 +18,8 @@ export function generateStaticParams() {
   return PAGINAS_PRACA.map((p) => ({ cidade: p.slug }));
 }
 
-const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Araguaina' });
 const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina' });
 const fmtDiaSemana = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', timeZone: 'America/Araguaina' });
-
-function brl(n: number, casas = 2): string {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }).format(n);
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ cidade: string }> }) {
   const { cidade } = await params;
@@ -129,7 +125,7 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
             : `O preço que vale para quem negocia em ${pagina.nome}, o que os vizinhos relataram e a chuva da semana.`}
         </p>
         <div className="pgmeta mono">
-          {fmtHoje.format(new Date())} · gado: {creditoFonte('boi')} · grão: {creditoFonte('soja')}
+          {dataLonga(new Date())} · gado: {creditoFonte('boi')} · grão: {creditoFonte('soja')}
         </div>
       </section>
 
@@ -147,11 +143,11 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
             {daPraca.map((p) => (
               <div key={p.tipo} className="cidcard">
                 <div className="ct">{TITULOS[p.tipo] ?? p.tipo}</div>
-                <div className="cv tnum">{brl(p.valor)}</div>
+                <div className="cv tnum">{numero(p.valor, 2)}</div>
                 <div className="cu">{UNIDADE_PORTEIRA[p.tipo] ?? p.unidade}</div>
                 {p.valorPrazo !== null && (
                   <div className="cp">
-                    a prazo (30 dias) <b className="tnum">{brl(p.valorPrazo)}</b>
+                    a prazo (30 dias) <b className="tnum">{numero(p.valorPrazo, 2)}</b>
                   </div>
                 )}
                 <div className="cf mono">
@@ -182,7 +178,7 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
                   {TITULOS[r.tipo] ?? r.tipo}
                   <i>{UNIDADE_PORTEIRA[r.tipo] ?? r.unidade}</i>
                 </span>
-                <span className="v tnum">{brl(r.valor)}</span>
+                <span className="v tnum">{numero(r.valor, 2)}</span>
                 <span className="d mono">
                   {fmtDia.format(new Date(r.dataReferencia))}
                   {desatualizado(r.tipo, r.dataReferencia) && ' · desatualizado'}
@@ -215,7 +211,7 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
                   {r.rotulo}
                   <i>{r.unidade}</i>
                 </span>
-                <span className="v tnum">{brl(r.mediana)}</span>
+                <span className="v tnum">{numero(r.mediana, 2)}</span>
                 <span className="d mono">{r.procedencia}</span>
               </li>
             ))}
@@ -235,14 +231,14 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
             <div className="t">A chuva da semana</div>
             <div className="line" />
             <div className="meta">
-              7 dias<span className="pill">{brl(chuvaSemana ?? 0, 1)} mm</span>
+              7 dias<span className="pill">{numero(chuvaSemana ?? 0, 1)} mm</span>
             </div>
           </div>
           <ul className="cidchuva">
             {chuva.dias.map((d) => (
               <li key={d.data} className={d.chuvaMm >= 1 ? 'molhado' : ''}>
                 <span className="dia mono">{fmtDiaSemana.format(new Date(`${d.data}T12:00:00`))}</span>
-                <span className="mm tnum">{d.chuvaMm >= 0.1 ? `${brl(d.chuvaMm, 1)} mm` : '—'}</span>
+                <span className="mm tnum">{d.chuvaMm >= 0.1 ? `${numero(d.chuvaMm, 1)} mm` : '—'}</span>
                 <span className="t mono">
                   {Math.round(d.tempMin)}° / {Math.round(d.tempMax)}°
                 </span>

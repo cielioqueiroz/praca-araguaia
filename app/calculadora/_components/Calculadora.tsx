@@ -5,10 +5,10 @@ import { arrobasDeBoi, valorEmReais, sacasParaKg } from '@/lib/calculadora';
 import { normalizarValor } from '@/lib/termometro';
 import { TITULOS } from '@/lib/tipos-ui';
 import { ValorContado } from './ValorContado';
+import { numeroEnxuto } from '@/lib/formato';
 
 // Quantidades (arrobas, kg) mostram até 2 casas sem forçar o ",00"; o dinheiro é o
 // ValorContado, que sempre traz as duas casas.
-const fmtQtd = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const num = (s: string) => normalizarValor(s);
 const precoInicial = (v?: number) =>
   v !== undefined && Number.isFinite(v) ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '';
@@ -115,7 +115,7 @@ export function Calculadora({ precos }: { precos: Precos }) {
         </div>
         <div className="cresultado">
           <span className="cqtd">
-            <b data-testid="boi-arrobas">{fmtQtd.format(arrobas)}</b> arrobas
+            <b data-testid="boi-arrobas">{numeroEnxuto(arrobas)}</b> arrobas
           </span>
           <span className="cvalor">
             Valor do lote <ValorContado valor={valorGado} testId="boi-valor" />
@@ -185,7 +185,7 @@ export function Calculadora({ precos }: { precos: Precos }) {
         </div>
         <div className="cresultado">
           <span className="cqtd">
-            <b data-testid="graos-kg">{fmtQtd.format(kg)}</b> kg
+            <b data-testid="graos-kg">{numeroEnxuto(kg)}</b> kg
           </span>
           <span className="cvalor">
             Valor da colheita <ValorContado valor={valorGrao} testId="graos-valor" />

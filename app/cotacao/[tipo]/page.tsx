@@ -7,16 +7,12 @@ import { TITULOS, LEGENDAS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesat
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { faixasDaPorteira } from '@/lib/faixa-porteira';
 import { FOTO_COMMODITY } from '@/components/iconesCommodity';
+import { numero, dataLonga } from '@/lib/formato';
 
 export const dynamic = 'force-dynamic';
 
 const JANELA_DIAS = 90;
 
-const fmtData = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Araguaina' });
-
-function brl(n: number, casas = 2): string {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }).format(n);
-}
 
 // Sem isto a aba de /cotacao/boi dizia só "cotações do agro" — o título padrão do
 // layout. Quem abre o gráfico do boi e o do dólar lado a lado não distinguia as abas.
@@ -86,7 +82,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
           </p>
           <div className="pgmeta mono">
             {LEGENDAS[tipo] ?? creditoFonte(tipo) ?? 'cotação de mercado'} · fechamento de{' '}
-            {fmtData.format(new Date(atual.data_referencia))}
+            {dataLonga(new Date(atual.data_referencia))}
             {velho && ' · desatualizado'}
           </div>
         </div>
@@ -118,9 +114,9 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
             {faixa && faixa.min !== faixa.max ? (
               <>
                 <div className="cv tnum">
-                  {brl(faixa.min)}
+                  {numero(faixa.min, 2)}
                   <i className="ate">–</i>
-                  {brl(faixa.max)}
+                  {numero(faixa.max, 2)}
                 </div>
                 <div className="cu">
                   {UNIDADE_PORTEIRA[tipo] ?? atual.unidade} · {faixa.lugares}{' '}
@@ -130,7 +126,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
             ) : (
               <>
                 <div className="cv tnum">
-                  {brl(faixa ? faixa.min : valor, tipo === 'dolar' || tipo === 'euro' ? 4 : 2)}
+                  {numero(faixa ? faixa.min : valor, tipo === 'dolar' || tipo === 'euro' ? 4 : 2)}
                 </div>
                 <div className="cu">{UNIDADE_PORTEIRA[tipo] ?? atual.unidade}</div>
               </>
@@ -154,7 +150,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
               )}
             </div>
             <div className="cf mono">
-              {fmtData.format(new Date(atual.data_referencia))}
+              {dataLonga(new Date(atual.data_referencia))}
               {velho && ' · desatualizado'}
             </div>
           </div>

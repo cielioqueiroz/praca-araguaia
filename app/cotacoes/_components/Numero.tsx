@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { numero } from '@/lib/formato';
 
 // O número que ASSENTA no quadro.
 //
@@ -35,10 +36,7 @@ type NumeroProps = {
 };
 
 export function Numero({ valor, casas, atraso = 0, className }: NumeroProps) {
-  const texto = new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: casas,
-    maximumFractionDigits: casas,
-  }).format(valor);
+  const texto = numero(valor, casas);
 
   // A classe de quem chama traz o tabular-nums: sem largura fixa de dígito a linha
   // treme quando o valor troca.

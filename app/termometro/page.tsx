@@ -4,6 +4,7 @@ import { CardTermometro } from './_components/CardTermometro';
 import { resumirReportes, ROTULO_ORIGEM, type OrigemReporte } from '@/lib/termometro';
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
+import { dataLonga } from '@/lib/formato';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -12,7 +13,6 @@ export const metadata = {
     'Quanto o produtor está realmente pegando na região do Araguaia: preços relatados por quem vendeu, conferidos antes de entrar na conta. Reporte o seu — é anônimo.',
 };
 
-const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Araguaina' });
 
 export default async function Termometro() {
   const supabase = createPublicClient();
@@ -51,7 +51,7 @@ export default async function Termometro() {
             onde o preço do Araguaia existe.
           </p>
           <div className="pgmeta mono">
-            {fmtHoje.format(new Date())} · valor típico dos últimos 7 dias · {ROTULO_ORIGEM.produtor} ou{' '}
+            {dataLonga(new Date())} · valor típico dos últimos 7 dias · {ROTULO_ORIGEM.produtor} ou{' '}
             {ROTULO_ORIGEM.praca}
           </div>
           <Link href="/termometro/reportar" className="pgcta">

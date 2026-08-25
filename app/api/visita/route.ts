@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { dataLocal } from '@/lib/dia-util';
 
 // Conta um acesso, por cidade, sem saber quem acessou.
 //
@@ -7,8 +8,6 @@ import { createServerClient } from '@/lib/supabase/server';
 // cidade antes de a requisição chegar aqui.
 
 export const dynamic = 'force-dynamic';
-
-const fmtDia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Araguaina' }); // YYYY-MM-DD
 
 export async function POST(req: Request): Promise<Response> {
   const h = req.headers;
@@ -34,7 +33,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     const supabase = createServerClient();
     const { error } = await supabase.rpc('registrar_visita', {
-      p_dia: fmtDia.format(new Date()),
+      p_dia: dataLocal(new Date()),
       p_cidade: cidade,
       p_uf: uf.trim().toUpperCase().slice(0, 2),
     });

@@ -8,6 +8,7 @@ import { TabelaMercado, type ItemMercado } from './_components/TabelaMercado';
 import { SuaPraca } from './_components/SuaPraca';
 import { Revelar } from './_components/Revelar';
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
+import { dataExtensa, horaLocal } from '@/lib/formato';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,8 +38,6 @@ const posicao = (tipo: string) => {
   return i === -1 ? ORDEM_PAINEL.length : i;
 };
 
-const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
-const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
 
 export default async function Home() {
   const supabase = createPublicClient();
@@ -151,9 +150,9 @@ export default async function Home() {
           </h1>
           <p className="lede">Preços de referência da porteira ao mercado, nas praças do Vale do Araguaia.</p>
           <div className="meta">
-            <div className="big">{fmtHoje.format(agora)}</div>
+            <div className="big">{dataExtensa(agora)}</div>
             <div className="mono">
-              Atualizado {fmtHora.format(agora)} · gado: Scot Consultoria, via Notícias Agrícolas · grão:
+              Atualizado {horaLocal(agora)} · gado: Scot Consultoria, via Notícias Agrícolas · grão:
               CONAB · mercado: BCB, B3, CoinGecko
             </div>
           </div>

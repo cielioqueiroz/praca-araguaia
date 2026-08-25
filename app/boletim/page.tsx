@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { BotaoCompartilhar } from '@/components/BotaoCompartilhar';
 import { BotaoTelegram } from '@/components/BotaoTelegram';
+import { dataExtensa } from '@/lib/formato';
 
 export const metadata = {
   title: 'Boletim do dia',
   description: 'O card com o preço do dia na porteira e no mercado, pronto para mandar no grupo.',
 };
 
-const fmtHoje = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
 
 function IconeBaixar({ className }: { className?: string }) {
   return (
@@ -36,7 +36,7 @@ export default function Boletim() {
           Porteira e mercado, com a data e a fonte de cada preço. Feito para caber na tela do celular de quem
           está na lida.
         </p>
-        <div className="bolmeta mono">{fmtHoje.format(new Date())}</div>
+        <div className="bolmeta mono">{dataExtensa(new Date())}</div>
       </section>
 
       <section className="bolgrade">

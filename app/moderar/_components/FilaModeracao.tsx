@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { tempoRelativo, type ReportePendente, type Decisao } from '@/lib/moderacao-tipos';
+import { numeroEnxuto } from '@/lib/formato';
 
-const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 export function FilaModeracao({ pendentes, agora }: { pendentes: ReportePendente[]; agora: number }) {
   const [fila, setFila] = useState(pendentes);
@@ -63,11 +63,11 @@ export function FilaModeracao({ pendentes, agora }: { pendentes: ReportePendente
             <span className="text-xs text-tinta/40">{tempoRelativo(r.criadoEm, agora)}</span>
           </div>
           <p className="mt-2 font-sans text-3xl font-bold tabular-nums tracking-tight text-tinta">
-            {fmt.format(r.valor)} <span className="text-sm font-semibold text-pasto">{r.unidade}</span>
+            {numeroEnxuto(r.valor)} <span className="text-sm font-semibold text-pasto">{r.unidade}</span>
           </p>
           <p className="mt-1 text-sm text-tinta/60">{r.municipio}</p>
           {r.mediaConab !== undefined && (
-            <p className="mt-1 text-xs text-tinta/50">CONAB: {fmt.format(r.mediaConab)}</p>
+            <p className="mt-1 text-xs text-tinta/50">CONAB: {numeroEnxuto(r.mediaConab)}</p>
           )}
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button

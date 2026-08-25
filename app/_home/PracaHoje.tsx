@@ -4,8 +4,8 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { faixasDaPorteira, type PrecoDeLugar } from '@/lib/faixa-porteira';
 import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
 import { IconeCommodity } from '@/components/iconesCommodity';
+import { numero } from '@/lib/formato';
 
-const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**
  * O preço abrindo a home.
@@ -64,12 +64,12 @@ export async function PracaHoje() {
             </span>
             <span className="p-faixa tnum">
               {f.min === f.max ? (
-                fmt.format(f.min)
+                numero(f.min, 2)
               ) : (
                 <>
-                  {fmt.format(f.min)}
+                  {numero(f.min, 2)}
                   <i>–</i>
-                  {fmt.format(f.max)}
+                  {numero(f.max, 2)}
                 </>
               )}
             </span>

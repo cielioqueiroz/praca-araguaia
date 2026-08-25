@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { numero } from '@/lib/formato';
 
 // O RESULTADO que conta até o total.
 //
@@ -18,10 +19,9 @@ import { useEffect, useRef, useState } from 'react';
 //     virar o resultado;
 //   - prefers-reduced-motion entra direto no valor, sem contagem.
 
-const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function ValorContado({ valor, testId }: { valor: number; testId?: string }) {
-  const [texto, setTexto] = useState(() => fmt.format(valor));
+  const [texto, setTexto] = useState(() => numero(valor, 2));
   const atual = useRef(valor);
   const anim = useRef<{ pause: () => void } | null>(null);
 
@@ -32,7 +32,7 @@ export function ValorContado({ valor, testId }: { valor: number; testId?: string
       typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (querParado) {
       atual.current = valor;
-      setTexto(fmt.format(valor));
+      setTexto(numero(valor, 2));
       return;
     }
 
@@ -48,11 +48,11 @@ export function ValorContado({ valor, testId }: { valor: number; testId?: string
         ease: 'outExpo',
         onUpdate: () => {
           atual.current = de.n;
-          setTexto(fmt.format(de.n));
+          setTexto(numero(de.n, 2));
         },
         onComplete: () => {
           atual.current = valor;
-          setTexto(fmt.format(valor)); // o resultado exato, não o último frame
+          setTexto(numero(valor, 2)); // o resultado exato, não o último frame
         },
       });
     });

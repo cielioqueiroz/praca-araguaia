@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { enviarTexto } from './telegram';
+import { dataLocal } from '@/lib/dia-util';
+import { dataLonga } from '@/lib/formato';
 import {
   resumirAudiencia,
   textoResumoAudiencia,
@@ -15,8 +17,6 @@ import {
 // da audiência no broadcast vazaria justamente o que esta fatia existe para
 // proteger. Há um teste que trava isso.
 
-const fmtDia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Araguaina' });
-const fmtExtenso = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'America/Araguaina' });
 
 export type ResultadoResumo = { enviado: boolean; motivo?: string };
 
@@ -33,12 +33,12 @@ export async function enviarResumoAudiencia(
   const dono = Number(donoRaw);
   if (!Number.isFinite(dono)) return { enviado: false, motivo: 'TELEGRAM_DONO_CHAT_ID inválido' };
 
-  const hoje = fmtDia.format(agora);
+  const hoje = dataLocal(agora);
   const seteDias = new Date(agora.getTime() - 6 * 24 * 60 * 60 * 1000);
 
   const [inscritos, visitas] = await Promise.all([
     supabase.from('assinantes_telegram').select('cidade, uf'),
-    supabase.from('visitas').select('dia, cidade, uf, acessos').gte('dia', fmtDia.format(seteDias)),
+    supabase.from('visitas').select('dia, cidade, uf, acessos').gte('dia', dataLocal(seteDias)),
   ]);
 
   if (inscritos.error || visitas.error) {
@@ -52,6 +52,6 @@ export async function enviarResumoAudiencia(
     hoje,
   );
 
-  const r = await enviarTexto(token, dono, textoResumoAudiencia(resumo, fmtExtenso.format(agora)), fetchImpl);
+  const r = await enviarTexto(token, dono, textoResumoAudiencia(resumo, dataLonga(agora)), fetchImpl);
   return { enviado: r.ok };
 }

@@ -1,4 +1,5 @@
 import { ORDEM_PAINEL } from '@/lib/tipos-ui';
+import { numero } from '@/lib/formato';
 
 export type TickerItem = { rotulo: string; valor: string; dir: 'up' | 'down'; pct: string };
 
@@ -25,10 +26,7 @@ const posicao = (tipo: string) => {
 // Cripto passa de mil reais: sem centavos a faixa fica ilegível.
 function formatar(tipo: string, valor: number): string {
   const casas = CASAS[tipo] ?? (valor >= 10000 ? 0 : 2);
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: casas,
-    maximumFractionDigits: casas,
-  }).format(valor);
+  return numero(valor, casas);
 }
 
 export function montarTicker(linhas: LinhaTicker[]): TickerItem[] {

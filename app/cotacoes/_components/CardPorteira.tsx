@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { IconeCommodity, FOTO_COMMODITY } from '@/components/iconesCommodity';
 import { Numero } from './Numero';
 import { NOME_UF } from '@/lib/praca';
+import { numero } from '@/lib/formato';
 
 export type PrecoUfUI = { uf: string; valor: number; variacaoPct: number | null };
 export type PrecoCidadeUI = { municipio: string; uf: string; mediana: number | null; contagem: number };
@@ -32,10 +33,6 @@ export type CardPorteiraProps = {
    */
   procedenciaCidades?: string;
 };
-
-function brl(n: number): string {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
 
 // 0% não é alta: ganha traço e cor neutra. Enquanto `pct >= 0` mandava, preço
 // parado saía com seta verde para cima — uma subida afirmada que não aconteceu.
@@ -153,7 +150,7 @@ export function CardPorteira(p: CardPorteiraProps) {
                       <i>{c.uf}</i>
                       <b className="badge">você</b>
                     </span>
-                    <span className="valor tnum">{brl(c.mediana as number)}</span>
+                    <span className="valor tnum">{numero(c.mediana as number, 2)}</span>
                     <span className="n">
                       {c.contagem} {c.contagem === 1 ? 'reporte' : 'reportes'}
                     </span>

@@ -1,6 +1,6 @@
 import type { ResumoProduto } from '@/lib/termometro';
+import { numeroEnxuto } from '@/lib/formato';
 
-const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 /**
  * O cartão do Termômetro, na linguagem editorial do site.
@@ -15,7 +15,7 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
   return (
     <div className="tcard">
       <div className="ct">{resumo.rotulo}</div>
-      <div className="cv tnum">{fmt.format(resumo.mediana)}</div>
+      <div className="cv tnum">{numeroEnxuto(resumo.mediana)}</div>
       <div className="cu">{resumo.unidade} · valor típico</div>
 
       <div className="tinfo mono">
@@ -28,10 +28,10 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
         <div className="tcontexto">
           {mostrarFaixa && (
             <span>
-              faixa: R$ {fmt.format(resumo.faixa.min)}–{fmt.format(resumo.faixa.max)}
+              faixa: R$ {numeroEnxuto(resumo.faixa.min)}–{numeroEnxuto(resumo.faixa.max)}
             </span>
           )}
-          {mediaConab !== undefined && <span>média CONAB: {fmt.format(mediaConab)}</span>}
+          {mediaConab !== undefined && <span>média CONAB: {numeroEnxuto(mediaConab)}</span>}
         </div>
       )}
 
@@ -40,7 +40,7 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
           {resumo.municipios.map((m) => (
             <li key={m.municipio}>
               <span className="l">{m.municipio}</span>
-              <span className="v tnum">{fmt.format(m.mediana)}</span>
+              <span className="v tnum">{numeroEnxuto(m.mediana)}</span>
               <span className="n mono">({m.contagem})</span>
             </li>
           ))}

@@ -5,6 +5,7 @@ import { CardChuva } from './_components/CardChuva';
 import { SuaRegiaoChuva } from './_components/SuaRegiaoChuva';
 import { FaixaSemana } from './_components/FaixaSemana';
 import { AnimarBarrasChuva } from './_components/AnimarBarrasChuva';
+import { horaLocal } from '@/lib/formato';
 
 export const metadata = {
   title: 'Chuva na região',
@@ -19,7 +20,6 @@ export const dynamic = 'force-dynamic';
 
 const fmtDiaLongo = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: 'UTC' });
 const fmtDiaMes = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
-const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Araguaina' });
 const emUtc = (iso: string) => new Date(`${iso}T12:00:00Z`);
 
 export default async function Chuva() {
@@ -96,7 +96,7 @@ export default async function Chuva() {
             <div className="mono">
               {semDados
                 ? 'Fonte: Open-Meteo · sem resposta agora'
-                : `Atualizado ${fmtHora.format(new Date())} · Open-Meteo · ${MUNICIPIOS.length} municípios`}
+                : `Atualizado ${horaLocal(new Date())} · Open-Meteo · ${MUNICIPIOS.length} municípios`}
             </div>
           </div>
         </div>

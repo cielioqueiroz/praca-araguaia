@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server';
 import { verificarToken, COOKIE_MODERACAO } from '@/lib/moderacao';
 import { resumirAudiencia, type InscritoBruto, type VisitaBruta } from '@/lib/audiencia';
 import { FormLoginModeracao } from '@/components/FormLoginModeracao';
+import { dataLocal } from '@/lib/dia-util';
+import { dataExtensa } from '@/lib/formato';
 
 // Quem está acompanhando a praça, por cidade. Fora do menu e fora do Google:
 // é a página do dono, não do produtor.
@@ -12,8 +14,6 @@ export const metadata = {
   robots: { index: false },
 };
 
-const fmtDia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Araguaina' });
-const fmtExtenso = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'America/Araguaina' });
 
 function Numero({ n, rotulo }: { n: number; rotulo: string }) {
   return (
@@ -44,14 +44,14 @@ export default async function Painel() {
     );
   }
 
-  const hoje = fmtDia.format(new Date());
+  const hoje = dataLocal(new Date());
   const seteDias = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
 
   // As duas tabelas têm RLS fechada: só o service role enxerga.
   const supabase = createServerClient();
   const [{ data: inscritos, error: e1 }, { data: visitas, error: e2 }] = await Promise.all([
     supabase.from('assinantes_telegram').select('cidade, uf'),
-    supabase.from('visitas').select('dia, cidade, uf, acessos').gte('dia', fmtDia.format(seteDias)),
+    supabase.from('visitas').select('dia, cidade, uf, acessos').gte('dia', dataLocal(seteDias)),
   ]);
 
   if (e1 || e2) {
@@ -82,7 +82,7 @@ export default async function Painel() {
       <section className="pghero">
         <div className="kicker">Área restrita</div>
         <h1>Audiência</h1>
-        <div className="pgmeta mono">{fmtExtenso.format(new Date())}</div>
+        <div className="pgmeta mono">{dataExtensa(new Date())}</div>
       </section>
 
       <div className="pnums">
