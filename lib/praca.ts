@@ -29,7 +29,6 @@ export const ORDEM_UF = ['PA', 'MT', 'TO', 'GO', 'BA', 'MA', 'PE'];
  * o card já teve de virar 1080x1350 quando eram 12. Aqui ele recorta o que é casa.
  */
 export const UFS_ARAGUAIA = ['PA', 'MT', 'TO', 'GO'];
-export const ehDoAraguaia = (uf: string) => UFS_ARAGUAIA.includes(uf);
 
 const posUf = (uf: string) => {
   const i = ORDEM_UF.indexOf(uf);

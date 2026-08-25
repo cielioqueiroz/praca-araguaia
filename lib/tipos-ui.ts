@@ -100,11 +100,6 @@ export function creditosDaPorteira(): { produtos: string; credito: string }[] {
   return [...porCredito].map(([credito, titulos]) => ({ produtos: titulos.join(', '), credito }));
 }
 
-// Os tipos cujo preço vem praça a praça (e não por estado).
-export const PORTEIRA_POR_PRACA = new Set(
-  Object.entries(FONTE_PORTEIRA).filter(([, f]) => f.porPraca).map(([tipo]) => tipo),
-);
-
 // O preço é o de cada praça/estado pesquisado na fonte — nunca uma média nossa.
 export const LEGENDAS: Record<string, string> = Object.fromEntries(
   Object.entries(FONTE_PORTEIRA).map(([tipo, f]) => [
