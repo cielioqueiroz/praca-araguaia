@@ -45,18 +45,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={cn(display.variable, sans.variable, mono.variable)}>
       <body className="grain flex min-h-screen flex-col bg-bone font-sans text-ink antialiased">
-        <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
-          <defs>
-            <linearGradient id="gU" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#6b8339" stopOpacity=".18" />
-              <stop offset="1" stopColor="#6b8339" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#a63a26" stopOpacity=".16" />
-              <stop offset="1" stopColor="#a63a26" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-        </svg>
         <Beacon />
         <UtilityBar />
         <Masthead />
