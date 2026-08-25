@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
 import { LocalUsuario } from './LocalUsuario';
-import { BotaoTelegram } from './BotaoTelegram';
+import { BotaoTelegram } from '@/components/redesign/BotaoTelegram';
 import { creditoFonte } from '@/lib/tipos-ui';
 
 const NAV = [

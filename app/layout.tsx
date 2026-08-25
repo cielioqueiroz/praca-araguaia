@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Playfair_Display, Archivo, JetBrains_Mono } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { UtilityBar } from '@/components/redesign/UtilityBar';
-import { Masthead } from '@/components/redesign/Masthead';
-import { SiteFooter } from '@/components/redesign/SiteFooter';
-import { Beacon } from '@/components/redesign/Beacon';
+import { UtilityBar } from './_chrome/UtilityBar';
+import { Masthead } from './_chrome/Masthead';
+import { SiteFooter } from './_chrome/SiteFooter';
+import { Beacon } from './_chrome/Beacon';
 
 // Nomes de var mantidos (--font-fraunces/hanken/plex-mono) para não churnar o CSS.
 const display = Playfair_Display({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-fraunces' });
