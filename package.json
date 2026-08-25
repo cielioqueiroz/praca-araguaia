@@ -11,6 +11,11 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "overrides": {
+    "sharp": "^0.35.3",
+    "postcss": "$postcss",
+    "esbuild": "^0.28.2"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",
     "animejs": "^4.5.0",
@@ -37,7 +42,7 @@
     "eslint-config-next": "15.5.23",
     "jsdom": "^26.1.0",
     "playwright-core": "^1.62.1",
-    "postcss": "^8.5.4",
+    "postcss": "^8.5.26",
     "tailwindcss": "^4.3.1",
     "typescript": "^5",
     "vitest": "^3.2.3"

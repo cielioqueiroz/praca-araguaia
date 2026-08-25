@@ -104,6 +104,8 @@ Migrations em `supabase/migrations/`, numeradas e aplicadas em ordem. Alterar sc
 
 Feriado nacional é barrado dentro da rota, em [`lib/dia-util.ts`](lib/dia-util.ts) — o cron da Vercel sabe o dia da semana, não sabe que hoje é Natal.
 
+**`npm audit` tem que dar zero, e o `overrides` do package.json é o motivo.** As vulnerabilidades restantes viviam em dependências TRANSITIVAS (`sharp` e `postcss`, que o Next embute; `esbuild`, do vitest), e o `npm audit fix --force` "resolvia" subindo o Next para a major 16. O `overrides` fixa a versão corrigida de cada uma sem trocar de framework. **Não rode `npm audit fix --force`** — ele desfaz isso e arrasta um major num site que está no ar. Se um override deixar de ser necessário porque o Next passou a trazer a versão boa, aí sim ele sai.
+
 Envs (todas em [`.env.local.example`](.env.local.example)): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`. As cinco últimas são server-only — nunca sob `NEXT_PUBLIC_*`.
 
 ---
