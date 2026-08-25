@@ -8,7 +8,7 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-466_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-568_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **12 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -132,7 +132,7 @@ Direção **"fazenda moderna premium"** — editorial, paleta terra, sem cara de
 | **Navegação** | Menu inline no desktop; abaixo de 900px, **hambúrguer + gaveta lateral** (fecha no Esc, no fundo e ao navegar; trava o scroll enquanto aberta) |
 | **Assinatura** | Cards que abrem com a **foto do produto** (escurece e revela os dados), grão de papel sutil, filetes finos, ticker de pregão rolante e o hero com um **touro nelore no pasto** |
 
-Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); os componentes do sistema estão em `components/redesign/`.
+Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); cada componente mora à distância de quem o usa (ver `AGENTS.md`).
 
 ---
 
@@ -203,7 +203,7 @@ timeline
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
 | Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
 | Bot | Telegram Bot API (inscrição, boletim, alertas) |
-| Testes | Vitest + Testing Library (466 testes) |
+| Testes | Vitest + Testing Library (568 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -212,13 +212,16 @@ timeline
 
 ```
 agro_app/
-├─ app/
-│  ├─ page.tsx                     # Painel (Na porteira / Mercado)
+├─ app/                            # Pasta com _ não vira rota (private folder do Next)
+│  ├─ layout.tsx                   # Casca, metadata padrão e cromo — nada mais
+│  ├─ _chrome/                     # Masthead, ticker, rodapé, busca: só o layout usa
+│  ├─ page.tsx · _home/            # Home (notícias) e o que só ela usa
 │  ├─ cotacao/[tipo]/page.tsx      # Detalhe + gráfico de tendência
 │  ├─ boletim/page.tsx             # Card do dia + download
-│  ├─ chuva/page.tsx               # Previsão de 7 dias
+│  ├─ chuva/                       # Previsão de 7 dias + _components/
 │  ├─ termometro/
 │  │  ├─ page.tsx                  # Valor típico (mediana) por produto
+│  │  ├─ _components/              # Usado pela subárvore do termômetro
 │  │  ├─ reportar/page.tsx         # Reporte anônimo
 │  │  └─ [produto]/page.tsx        # Histórico (gráfico) do produto
 │  ├─ moderar/page.tsx             # Moderação protegida por senha
@@ -240,10 +243,9 @@ agro_app/
 │  ├─ moderacao.ts                 # Token HMAC, sessão, validação
 │  ├─ boletim.ts · grafico.ts      # View-models puros
 │  └─ supabase/{server,public,repo}.ts
-├─ components/                     # Apresentação (cards, gráficos, formulários)
+├─ components/                     # Só o compartilhado por 2+ rotas (+ ui/ do shadcn)
 ├─ supabase/migrations/            # DDL + RLS versionado
-├─ components/redesign/            # Sistema visual novo (masthead, cards, ticker…)
-├─ tests/                          # 466 testes unitários e de componente
+├─ tests/                          # 568 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
