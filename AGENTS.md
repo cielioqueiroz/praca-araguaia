@@ -23,7 +23,7 @@ Este arquivo é **só o que não está escrito em outro lugar**. Onde a verdade 
 npm run dev              # http://localhost:3000
 npm run build            # build de produção
 npm start                # sobe o build
-npm test                 # Vitest, uma passada (hoje: 568 testes)
+npm test                 # Vitest, uma passada (hoje: 578 testes)
 npm run test:watch       # watch
 npm run lint             # ESLint (next/core-web-vitals + next/typescript)
 
@@ -76,7 +76,9 @@ Não existe `middleware.ts`. Os headers de segurança são aplicados via `header
 
 Se o comentário some e ninguém sente falta, ele não devia existir. Se alguém reintroduziria o bug sem ele, ele é obrigatório.
 
-TypeScript `strict`. Alias `@/*` → raiz. Dentro da mesma rota use caminho relativo (`./_components/X`); atravessando rotas, use `@/`.
+TypeScript `strict` — e o projeto tem **zero `any`**. Mantenha assim. Alias `@/*` → raiz. Dentro da mesma rota use caminho relativo (`./_components/X`); atravessando rotas, use `@/`.
+
+**Nunca escreva `new Intl.*` numa página ou componente.** Número e data vêm de [`lib/formato.ts`](lib/formato.ts): `numero(valor, casas)`, `numeroEnxuto(valor)`, `dataExtensa`, `dataLonga`, `horaLocal`. A chave de dia do Araguaia (`'2026-08-25'`) é `dataLocal()` de [`lib/dia-util.ts`](lib/dia-util.ts). Havia 48 `Intl` espalhados e o fuso digitado à mão em quinze lugares — uma regra repetida é uma regra que diverge, e data errada aqui é da mesma família de dano que preço errado. Formato genuinamente de um lugar só (o eixo do gráfico, os dias da chuva em UTC) continua local: não infle o módulo compartilhado com reuso que não existe.
 
 ---
 

@@ -8,7 +8,7 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-568_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-578_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **12 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -203,7 +203,7 @@ timeline
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
 | Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
 | Bot | Telegram Bot API (inscrição, boletim, alertas) |
-| Testes | Vitest + Testing Library (568 testes) |
+| Testes | Vitest + Testing Library (578 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -242,10 +242,11 @@ agro_app/
 │  ├─ termometro-historico.ts      # Mediana diária para o gráfico
 │  ├─ moderacao.ts                 # Token HMAC, sessão, validação
 │  ├─ boletim.ts · grafico.ts      # View-models puros
+│  ├─ formato.ts                   # Número e data em pt-BR (nunca `new Intl` na página)
 │  └─ supabase/{server,public,repo}.ts
 ├─ components/                     # Só o compartilhado por 2+ rotas (+ ui/ do shadcn)
 ├─ supabase/migrations/            # DDL + RLS versionado
-├─ tests/                          # 568 testes unitários e de componente
+├─ tests/                          # 578 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
