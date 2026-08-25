@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { FormReporte } from '@/components/FormReporte';
+import { FormReporte } from './_components/FormReporte';
 
 export const metadata = {
   title: 'Reportar preço',

@@ -5,7 +5,7 @@ import { verificarToken, COOKIE_MODERACAO, type ReportePendente } from '@/lib/mo
 import { PRODUTOS, type ProdutoTermometro } from '@/lib/termometro';
 import { CATEGORIAS, type FornecedorModeravel } from '@/lib/fornecedores';
 import { FormLoginModeracao } from '@/components/FormLoginModeracao';
-import { AbasModeracao } from '@/components/AbasModeracao';
+import { AbasModeracao } from './_components/AbasModeracao';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {

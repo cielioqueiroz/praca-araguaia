@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CardChuva } from '@/components/CardChuva';
+import { CardChuva } from './CardChuva';
 import { recadoDaSemana } from '@/lib/chuva-recado';
 
 type Dia = { data: string; chuvaMm: number; probMax: number | null; tempMin: number; tempMax: number };

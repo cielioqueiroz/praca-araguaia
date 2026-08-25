@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { caminhoSparkline } from '@/lib/sparkline';
-import { IconeCommodity } from './iconesCommodity';
+import { IconeCommodity } from '@/components/iconesCommodity';
 import { Numero } from './Numero';
 
 export type ItemMercado = {

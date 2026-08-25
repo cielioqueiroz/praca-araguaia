@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { FormReporte } from '@/components/FormReporte';
+import { FormReporte } from '@/app/termometro/reportar/_components/FormReporte';
 
 beforeEach(() => vi.restoreAllMocks());
 

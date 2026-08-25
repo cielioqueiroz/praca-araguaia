@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
-import { Calculadora } from '@/components/Calculadora';
+import { Calculadora } from '@/app/calculadora/_components/Calculadora';
 
 // O ValorContado importa o anime.js por import dinâmico. No teste, o mock assenta
 // direto no valor final e chama onUpdate/onComplete — o que interessa aqui é a

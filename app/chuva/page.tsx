@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { buscarPrevisao, MUNICIPIOS, type PrevisaoMunicipio } from '@/lib/fontes/chuva';
 import { resumirChuva } from '@/lib/chuva-resumo';
-import { CardChuva } from '@/components/CardChuva';
-import { SuaRegiaoChuva } from '@/components/redesign/SuaRegiaoChuva';
-import { FaixaSemana } from '@/components/redesign/FaixaSemana';
-import { AnimarBarrasChuva } from '@/components/redesign/AnimarBarrasChuva';
+import { CardChuva } from './_components/CardChuva';
+import { SuaRegiaoChuva } from './_components/SuaRegiaoChuva';
+import { FaixaSemana } from './_components/FaixaSemana';
+import { AnimarBarrasChuva } from './_components/AnimarBarrasChuva';
 
 export const metadata = {
   title: 'Chuva na região',

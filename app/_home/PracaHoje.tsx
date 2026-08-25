@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { faixasDaPorteira, type PrecoDeLugar } from '@/lib/faixa-porteira';
 import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
-import { IconeCommodity } from './iconesCommodity';
+import { IconeCommodity } from '@/components/iconesCommodity';
 
 const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

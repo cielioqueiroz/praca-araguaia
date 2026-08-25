@@ -1,5 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { Calculadora, type Precos } from '@/components/Calculadora';
+import { Calculadora, type Precos } from './_components/Calculadora';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {

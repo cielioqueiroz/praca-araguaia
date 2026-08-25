@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { FormAnuncioFornecedor } from '@/components/FormAnuncioFornecedor';
+import { FormAnuncioFornecedor } from '@/app/fornecedores/anunciar/_components/FormAnuncioFornecedor';
 
 beforeEach(() => vi.restoreAllMocks());
 

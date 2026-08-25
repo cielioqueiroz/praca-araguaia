@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { IconeCommodity, FOTO_COMMODITY } from './iconesCommodity';
+import { IconeCommodity, FOTO_COMMODITY } from '@/components/iconesCommodity';
 import { Numero } from './Numero';
 import { NOME_UF } from '@/lib/praca';
 

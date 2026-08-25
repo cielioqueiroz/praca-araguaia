@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
-import { CardTermometro } from '@/components/CardTermometro';
+import { CardTermometro } from './_components/CardTermometro';
 import { resumirReportes, ROTULO_ORIGEM, type OrigemReporte } from '@/lib/termometro';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { PAGINAS_PRACA } from '@/lib/pracas-paginas';
 
 export const dynamic = 'force-dynamic';

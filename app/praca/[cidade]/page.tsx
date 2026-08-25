@@ -6,7 +6,7 @@ import { PAGINAS_PRACA, paginaPorSlug, cidadeComUf } from '@/lib/pracas-paginas'
 import { NOME_UF } from '@/lib/praca';
 import { TITULOS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 import { resumirReportes, type OrigemReporte } from '@/lib/termometro';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { convitePraca } from '@/lib/compartilhar';
 
 // Estática com revalidação: é página feita para ser ACHADA (Google, link no grupo), e

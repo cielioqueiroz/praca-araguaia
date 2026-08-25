@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { createPublicClient } from '@/lib/supabase/public';
 import { type Fornecedor, type CategoriaFornecedor } from '@/lib/fornecedores';
-import { VitrineFornecedores } from '@/components/VitrineFornecedores';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { VitrineFornecedores } from './_components/VitrineFornecedores';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {

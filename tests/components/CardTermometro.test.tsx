@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { CardTermometro } from '@/components/CardTermometro';
+import { CardTermometro } from '@/app/termometro/_components/CardTermometro';
 import type { ResumoProduto } from '@/lib/termometro';
 
 const resumo: ResumoProduto = {

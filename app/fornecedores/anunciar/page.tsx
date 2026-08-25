@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FormAnuncioFornecedor } from '@/components/FormAnuncioFornecedor';
+import { FormAnuncioFornecedor } from './_components/FormAnuncioFornecedor';
 
 export const metadata = {
   title: 'Anunciar nos fornecedores',

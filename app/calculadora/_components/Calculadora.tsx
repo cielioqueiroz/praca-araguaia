@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { arrobasDeBoi, valorEmReais, sacasParaKg } from '@/lib/calculadora';
 import { normalizarValor } from '@/lib/termometro';
 import { TITULOS } from '@/lib/tipos-ui';
-import { ValorContado } from '@/components/redesign/ValorContado';
+import { ValorContado } from './ValorContado';
 
 // Quantidades (arrobas, kg) mostram até 2 casas sem forçar o ",00"; o dinheiro é o
 // ValorContado, que sempre traz as duas casas.

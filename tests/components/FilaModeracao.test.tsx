@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { FilaModeracao } from '@/components/FilaModeracao';
+import { FilaModeracao } from '@/app/moderar/_components/FilaModeracao';
 import type { ReportePendente } from '@/lib/moderacao';
 
 const AGORA = 1_751_600_000_000;

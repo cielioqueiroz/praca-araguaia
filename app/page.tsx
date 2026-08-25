@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { buscarNoticias } from '@/lib/noticias/buscar';
 import { FEEDS } from '@/lib/noticias/feeds';
-import { GradeNoticias } from '@/components/redesign/GradeNoticias';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
-import { PracaHoje } from '@/components/redesign/PracaHoje';
+import { GradeNoticias } from './_home/GradeNoticias';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
+import { PracaHoje } from './_home/PracaHoje';
 
 // Sem banco e sem cron: a página se refaz a cada 15 min, no primeiro acesso depois
 // do prazo. O plano grátis da Vercel dispara cron 1x/dia, então ISR é o único jeito

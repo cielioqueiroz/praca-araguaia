@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { FilaFornecedores } from '@/components/FilaFornecedores';
+import { FilaFornecedores } from '@/app/moderar/_components/FilaFornecedores';
 import type { FornecedorModeravel } from '@/lib/fornecedores';
 
 beforeEach(() => vi.restoreAllMocks());

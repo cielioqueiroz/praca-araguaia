@@ -4,9 +4,9 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { supabaseRepo } from '@/lib/supabase/repo';
 import { GraficoCotacao } from '@/components/GraficoCotacao';
 import { TITULOS, LEGENDAS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesatualizadoMs } from '@/lib/tipos-ui';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { faixasDaPorteira } from '@/lib/faixa-porteira';
-import { FOTO_COMMODITY } from '@/components/redesign/iconesCommodity';
+import { FOTO_COMMODITY } from '@/components/iconesCommodity';
 
 export const dynamic = 'force-dynamic';
 

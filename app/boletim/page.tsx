@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { BotaoCompartilhar } from '@/components/redesign/BotaoCompartilhar';
-import { BotaoTelegram } from '@/components/redesign/BotaoTelegram';
+import { BotaoCompartilhar } from '@/components/BotaoCompartilhar';
+import { BotaoTelegram } from '@/components/BotaoTelegram';
 
 export const metadata = {
   title: 'Boletim do dia',

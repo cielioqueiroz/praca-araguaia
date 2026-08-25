@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { CardFornecedor } from '@/components/CardFornecedor';
+import { CardFornecedor } from '@/app/fornecedores/_components/CardFornecedor';
 import { MENSAGEM_PADRAO, type Fornecedor } from '@/lib/fornecedores';
 
 const forn: Fornecedor = {

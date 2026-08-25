@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CATEGORIAS, agruparPorCategoria, type Fornecedor, type CategoriaFornecedor } from '@/lib/fornecedores';
-import { CardFornecedor } from '@/components/CardFornecedor';
+import { CardFornecedor } from './CardFornecedor';
 
 export function VitrineFornecedores({ fornecedores }: { fornecedores: Fornecedor[] }) {
   const [categoria, setCategoria] = useState<CategoriaFornecedor | null>(null);

@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase/public';
-import { CardTermometro } from '@/components/CardTermometro';
+import { CardTermometro } from '../_components/CardTermometro';
 import { GraficoCotacao } from '@/components/GraficoCotacao';
 import { resumirReportes, PRODUTOS, ORDEM_PRODUTOS, type ProdutoTermometro, type OrigemReporte } from '@/lib/termometro';
 import { historicoTermometro, type ReporteHistorico } from '@/lib/termometro-historico';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 

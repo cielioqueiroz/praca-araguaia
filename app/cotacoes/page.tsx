@@ -3,11 +3,11 @@ import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA } from '
 import { rodapeDaFonte } from '@/lib/boletim';
 import { cidadesDoProduto, origensDoProduto, procedencia, type ReporteAprovado } from '@/lib/termometro';
 import { ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
-import { CardPorteira, type PrecoCidadeUI, type PrecoPracaUI, type PrecoUfUI } from '@/components/redesign/CardPorteira';
-import { TabelaMercado, type ItemMercado } from '@/components/redesign/TabelaMercado';
-import { SuaPraca } from '@/components/redesign/SuaPraca';
-import { Revelar } from '@/components/redesign/Revelar';
-import { ConviteDistribuicao } from '@/components/redesign/ConviteDistribuicao';
+import { CardPorteira, type PrecoCidadeUI, type PrecoPracaUI, type PrecoUfUI } from './_components/CardPorteira';
+import { TabelaMercado, type ItemMercado } from './_components/TabelaMercado';
+import { SuaPraca } from './_components/SuaPraca';
+import { Revelar } from './_components/Revelar';
+import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 
 export const dynamic = 'force-dynamic';
 

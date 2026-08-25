@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { FilaModeracao } from '@/components/FilaModeracao';
-import { FilaFornecedores } from '@/components/FilaFornecedores';
-import { FormReporteApurado } from '@/components/FormReporteApurado';
+import { FilaModeracao } from './FilaModeracao';
+import { FilaFornecedores } from './FilaFornecedores';
+import { FormReporteApurado } from './FormReporteApurado';
 import type { ReportePendente } from '@/lib/moderacao-tipos';
 import type { FornecedorModeravel } from '@/lib/fornecedores';
 

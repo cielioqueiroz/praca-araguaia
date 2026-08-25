@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { CardChuva } from '@/components/CardChuva';
+import { CardChuva } from '@/app/chuva/_components/CardChuva';
 import type { PrevisaoMunicipio } from '@/lib/fontes/chuva';
 
 const dia = (data: string, chuvaMm: number, probMax: number | null) => ({
