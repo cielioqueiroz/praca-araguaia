@@ -22,7 +22,7 @@ export type LinhaCotacao = { tipo: string; valor: number; unidade: string; varia
  */
 export type Variacao = { texto: string; direcao: 'alta' | 'baixa' | 'estavel' };
 
-export type LinhaUfBoletim = { nome: string; valorFmt: string; variacao?: Variacao };
+export type LinhaUfBoletim = { nome: string; uf?: string; valorFmt: string; variacao?: Variacao };
 
 /** Uma commodity: o preço de cada estado, nunca uma média. */
 export type ItemPorteira = {
@@ -31,6 +31,7 @@ export type ItemPorteira = {
   unidade: string; // 'R$ por arroba'
   rodape: string; // 'CONAB · semana de 29/06 a 03/07' ou 'Datagro · 10/07'
   ufs: LinhaUfBoletim[];
+  totalLugares?: number;
   /** O que os produtores reportaram nas cidades — só as que TÊM reporte.
    *  No card, repetir as 5 cidades vazias em 6 produtos viraria 30 linhas de nada;
    *  o convite a reportar vive no site, que tem espaço para ele. */
@@ -60,6 +61,23 @@ export type Boletim = {
   semReportes: boolean;
 };
 
+// O Telegram mostra uma amostra nomeada de lugares. Repetir duas praças do Pará
+// esconderia Mato Grosso; uma por UF preserva a comparação sem fingir cobertura total.
+export function compactarBoletim(boletim: Boletim): Boletim {
+  return {
+    ...boletim,
+    porteira: boletim.porteira.map((item) => {
+      const ufs = item.ufs.filter((linha, indice, linhas) =>
+        linhas.findIndex((outra) => (outra.uf ?? outra.nome) === (linha.uf ?? linha.nome)) === indice,
+      ).slice(0, 2);
+      const rodape = item.rodape.replace(/^Scot Consultoria · /, 'Scot · ');
+      return { ...item, rodape, ufs, totalLugares: item.ufs.length, cidades: [] };
+    }),
+    mercado: boletim.mercado.filter((item) => ['dolar', 'euro', 'ouro', 'ibovespa'].includes(item.tipo)),
+    semReportes: false,
+  };
+}
+
 export type ReporteCidade = {
   produto: string;
   municipio: string;
@@ -79,7 +97,7 @@ const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digi
 function variacaoDe(pct: number | null): Variacao | undefined {
   if (pct === null) return undefined;
   return {
-    texto: `${Math.abs(pct).toLocaleString('pt-BR')}%`,
+    texto: pct === 0 ? 'estável' : `${Math.abs(pct).toLocaleString('pt-BR')}%`,
     direcao: pct === 0 ? 'estavel' : pct > 0 ? 'alta' : 'baixa',
   };
 }
@@ -128,17 +146,18 @@ export function montarBoletim(
     const pracas = ordenarPorPraca(precosPraca.filter((p) => p.tipo === tipo));
     const ufs = ordenarPorUf(precosUf.filter((p) => p.tipo === tipo));
 
-    const lugares: Array<{ nome: string; valor: number; variacaoPct: number | null; dataReferencia: string }> =
+    const lugares: Array<{ nome: string; uf: string; valor: number; variacaoPct: number | null; dataReferencia: string }> =
       pracas.length > 0
         ? // Cidade do Pará leva a sigla ("Marabá · PA"); a linha que já é o estado,
           // não ("Mato Grosso", nunca "Mato Grosso · MT").
           pracas.map((p) => ({
             nome: p.praca === (NOME_UF[p.uf] ?? '') ? p.praca : `${p.praca} · ${p.uf}`,
+            uf: p.uf,
             valor: p.valor,
             variacaoPct: p.variacaoPct,
             dataReferencia: p.dataReferencia,
           }))
-        : ufs.map((p) => ({ nome: NOME_UF[p.uf] ?? p.uf, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }));
+        : ufs.map((p) => ({ nome: NOME_UF[p.uf] ?? p.uf, uf: p.uf, valor: p.valor, variacaoPct: p.variacaoPct, dataReferencia: p.dataReferencia }));
 
     if (lugares.length === 0) return [];
     const maisRecente = lugares.reduce((a, b) => (a.dataReferencia >= b.dataReferencia ? a : b));
@@ -150,6 +169,7 @@ export function montarBoletim(
         rodape: rodapeDaFonte(tipo, maisRecente.dataReferencia, agora),
         ufs: lugares.map((p) => ({
           nome: p.nome,
+          uf: p.uf,
           valorFmt: numero(p.valor, 2),
           variacao: variacaoDe(p.variacaoPct),
         })),

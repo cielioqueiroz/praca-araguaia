@@ -2,32 +2,26 @@ import { describe, it, expect } from 'vitest';
 import { montarTicker } from '@/lib/ticker';
 
 describe('montarTicker', () => {
-  it('usa os valores reais das cotações, na ordem do painel', () => {
+  it('mostra só preços úteis com local nomeado e sem confundir estável com alta', () => {
     const itens = montarTicker([
-      { tipo: 'ouro', valor: 678.23, variacao_pct: -1.08 },
-      { tipo: 'boi', valor: 321.26, variacao_pct: -1.74 },
-      { tipo: 'bitcoin', valor: 326732, variacao_pct: 0 },
+      { tipo: 'dolar', valor: 5.1072, variacao_pct: 0.11 },
+      { tipo: 'boi', local: 'Redenção/PA', valor: 321.26, variacao_pct: 0 },
+      { tipo: 'soja', local: 'PA', valor: 140.9, variacao_pct: -0.42 },
+      { tipo: 'bitcoin', valor: 326732, variacao_pct: 2 },
     ]);
 
-    expect(itens.map((i) => i.rotulo)).toEqual(['BOI @', 'OURO/g', 'BTC']);
-    expect(itens[0]).toEqual({ rotulo: 'BOI @', valor: '321,26', dir: 'down', pct: '1,74' });
-    expect(itens[1].valor).toBe('678,23');
-    // Cripto na casa das centenas de milhar: sem centavos, senão a faixa não cabe.
-    expect(itens[2]).toEqual({ rotulo: 'BTC', valor: '326.732', dir: 'up', pct: '0' });
+    expect(itens.map((item) => item.rotulo)).toEqual(['BOI @ Redenção/PA', 'SOJA/sc PA', 'USD']);
+    expect(itens[0]).toEqual({ rotulo: 'BOI @ Redenção/PA', valor: '321,26', dir: 'estavel', pct: 'estável' });
+    expect(itens[1]).toMatchObject({ dir: 'down', pct: '0,42%' });
+    expect(itens[2]).toMatchObject({ valor: '5,1072', dir: 'up', pct: '0,11%' });
   });
 
-  it('mantém 4 casas no câmbio', () => {
-    const [usd] = montarTicker([{ tipo: 'dolar', valor: 5.1072, variacao_pct: 0.11 }]);
-    expect(usd.valor).toBe('5,1072');
-    expect(usd.dir).toBe('up');
-  });
-
-  it('ignora tipo desconhecido e trata variação nula como estável', () => {
+  it('não apresenta dado velho ou variação desconhecida como alta', () => {
+    const agora = new Date('2026-10-06T20:00:00Z');
     const itens = montarTicker([
-      { tipo: 'cafe', valor: 10, variacao_pct: 1 },
-      { tipo: 'euro', valor: 5.8505, variacao_pct: null },
-    ]);
-    expect(itens).toHaveLength(1);
-    expect(itens[0]).toMatchObject({ rotulo: 'EUR', dir: 'up', pct: '0' });
+      { tipo: 'boi', local: 'Redenção/PA', valor: 320, variacao_pct: 1, data_referencia: '2026-09-28T00:00:00Z' },
+      { tipo: 'milho', local: 'PA', valor: 60, variacao_pct: null, data_referencia: '2026-10-02T00:00:00Z' },
+    ], agora);
+    expect(itens).toEqual([{ rotulo: 'MILHO/sc PA', valor: '60,00', dir: 'sem_dado', pct: '—' }]);
   });
 });

@@ -10,6 +10,21 @@ export const LIMITE_NOTICIAS = 40;
 // G1 Agronegócios entrou com UMA — numa página feita para quem cria boi. Ordem por
 // data continua valendo; o teto só impede o afogamento.
 export const LIMITE_POR_VEICULO = 6;
+const IDADE_MAXIMA_MS = 7 * 24 * 60 * 60 * 1000;
+
+// POR QUE ISTO EXISTE: uma fonte ainda pode responder 200 com notícias antigas.
+// Ordenar por data as empurra para baixo, mas, se os outros feeds caírem, a home
+// volta a apresentar material velho sob o carimbo "atualizado há 15 min".
+export function noticiasDaSemana(colhidos: Colhido[], agora: Date = new Date()): Colhido[] {
+  const limite = agora.getTime() - IDADE_MAXIMA_MS;
+  return colhidos.map(({ feed, itens }) => ({
+    feed,
+    itens: itens.filter((item) => {
+      const publicada = item.publicadoEm ? Date.parse(item.publicadoEm) : NaN;
+      return Number.isFinite(publicada) && publicada >= limite && publicada <= agora.getTime();
+    }),
+  }));
+}
 
 // Parâmetros de rastreamento mudam por origem: a MESMA matéria vem com utm_source
 // diferente em dois feeds. Sem limpar, ela aparece duas vezes na grade.

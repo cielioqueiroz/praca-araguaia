@@ -2,6 +2,8 @@ node_modules
 .next
 .env*.local
 .vercel
+.npm-cache/
+.telas-audit/
 next-env.d.ts
 
 # build cache

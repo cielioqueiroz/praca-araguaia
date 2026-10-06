@@ -1,4 +1,5 @@
 import type { PrecoPraca } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // Boi gordo e vaca gorda pela SCOT CONSULTORIA, praça por praça.
 //
@@ -136,7 +137,7 @@ export function resetCacheScot(): void {
 async function carregar(fetchImpl: typeof fetch): Promise<LeituraScot> {
   if (cache && Date.now() - cache.quando < TTL_MS) return cache.leitura;
 
-  const res = await fetchImpl(URL_SCOT, {
+  const res = await requisicaoFonte(fetchImpl, URL_SCOT, {
     headers: { 'user-agent': 'PracaAraguaia/1.0 (+https://agroapp-bay.vercel.app)' },
   });
   if (!res.ok) throw new Error(`Scot respondeu ${res.status}`);

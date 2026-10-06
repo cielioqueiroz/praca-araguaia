@@ -13,6 +13,8 @@ import { createHmac } from 'node:crypto';
 
 export function ipHash(req: Request): string {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconhecido';
-  const sal = process.env.CRON_SECRET || 'sem-sal';
+  const sal = process.env.CRON_SECRET;
+  // Sem segredo, um dump permitiria enumerar os IPv4 e reidentificar as pessoas.
+  if (!sal) throw new Error('CRON_SECRET ausente para hash de IP');
   return createHmac('sha256', sal).update(ip).digest('hex');
 }

@@ -171,6 +171,7 @@ body { font-size: 14px; }
 .ticker-strip:hover .ticker-track{animation-play-state:paused}
 .ticker-track b{color:#E7DFC7;font-weight:500}
 .ticker-track .up{color:#8FA55A}.ticker-track .down{color:#D8724F}
+.ticker-track .estavel,.ticker-track .sem_dado{color:#CFC7AF}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion: reduce){.ticker-track,.dot{animation:none}}
 
@@ -589,8 +590,12 @@ a.mrow:hover{background:var(--paper-warm)}
   .brand .sub{font-size:9px;letter-spacing:.18em}
   .masthead .goldrule{margin-top:12px}
   .wrap{padding:0 16px}
+  .home-abertura{display:flex;flex-direction:column}
+  .home-abertura .phoje{order:-1;margin-top:24px}
   .hero .text{padding:32px 20px 28px}
-  .hero h1{font-size:58px}
+  .hero h1{font-size:46px}
+  .hero .meta{margin-top:22px}
+  .hero .photo{min-height:170px}
   .lede{font-size:16px}
   .nhero h1{font-size:42px}
   .ngrade{grid-template-columns:1fr}
@@ -892,7 +897,8 @@ a.mrow:hover{background:var(--paper-warm)}
 }
 @media (max-width:620px){
   .bolhead h1{font-size:34px}
-  .bolhead h1 br{display:none}
+  .bolhead{margin-top:24px}
+  .bolgrade{margin-top:22px}
 }
 
 

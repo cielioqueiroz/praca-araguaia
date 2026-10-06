@@ -91,22 +91,22 @@ TypeScript `strict` — e o projeto tem **zero `any`**. Mantenha assim. Alias `@
 
 **A lógica de negócio é pura e testada.** Mediana, faixa, agregação, validação, sessão de moderação, view-models do boletim e do gráfico — tudo em `lib/`, sem React e sem I/O. É aí que os testes vivem de verdade; componente se testa por comportamento visível.
 
-**Dois clientes Supabase, e escolher errado é falha de segurança:**
+**Dois clientes de banco, e escolher errado é falha de segurança:**
 
-- [`lib/supabase/public.ts`](lib/supabase/public.ts) — chave `anon`, sob RLS. É o de leitura em página.
-- [`lib/supabase/server.ts`](lib/supabase/server.ts) — service role. **Só** em route handler ou server component que escreve.
+- [`lib/supabase/public.ts`](lib/supabase/public.ts) — em Neon, usa `praca_leitura` com RLS; no retorno temporário ao Supabase, usa a chave `anon`. É o de leitura em página.
+- [`lib/supabase/server.ts`](lib/supabase/server.ts) — em Neon, usa a conexão de escrita; no Supabase, service role. **Só** em route handler ou server component que escreve.
 
-RLS desde a primeira migration: `SELECT` público (em `reportes`, só linhas `aprovado`); todo `INSERT/UPDATE/DELETE` foi revogado de `anon`. Nenhuma escrita passa pelo cliente.
+RLS desde a primeira migration: o papel de leitura vê cotações e, em `reportes`/`fornecedores`, só linhas `aprovado`. Nenhuma escrita passa pelo cliente de leitura. [`lib/neon/cliente.ts`](lib/neon/cliente.ts) é uma ponte temporária para as consultas PostgREST existentes; substitua por repositórios SQL por domínio em fatias separadas.
 
-Migrations em `supabase/migrations/`, numeradas e aplicadas em ordem. Alterar schema é criar arquivo novo, nunca editar um aplicado.
+Migrations novas em `neon/migrations/`; `supabase/migrations/` é o histórico do banco anterior. Alterar schema é criar arquivo novo, nunca editar um aplicado. `scripts/copiar-dados-neon.mjs` sincroniza a origem antiga com o Neon **somente antes do corte de produção** e confere linhas e conteúdo.
 
 **Toda rota de cron passa por `autorizadoPorCron()`** de [`lib/cron.ts`](lib/cron.ts) — falha fechada, comparação em tempo constante. Nunca compare o Bearer na mão: sem a env, a comparação ingênua vira `"Bearer undefined"` e a rota abre para todo mundo. Duas dessas rotas fazem broadcast irreversível.
 
 Feriado nacional é barrado dentro da rota, em [`lib/dia-util.ts`](lib/dia-util.ts) — o cron da Vercel sabe o dia da semana, não sabe que hoje é Natal.
 
-**`npm audit` tem que dar zero, e o `overrides` do package.json é o motivo.** As vulnerabilidades restantes viviam em dependências TRANSITIVAS (`sharp` e `postcss`, que o Next embute; `esbuild`, do vitest), e o `npm audit fix --force` "resolvia" subindo o Next para a major 16. O `overrides` fixa a versão corrigida de cada uma sem trocar de framework. **Não rode `npm audit fix --force`** — ele desfaz isso e arrasta um major num site que está no ar. Se um override deixar de ser necessário porque o Next passou a trazer a versão boa, aí sim ele sai.
+**`npm audit --omit=dev` tem que dar zero.** O audit completo em 06/10/2026 ainda aponta cinco alertas altos só na cadeia de desenvolvimento do ESLint (`braces` → `micromatch` → `fast-glob`), sem versão corrigida para esta linha. Os `overrides` mantêm corrigidas as dependências transitivas de produção sem trocar de major do Next. **Não rode `npm audit fix --force`** — ele arrasta um major num site que está no ar. Reavalie os cinco alertas quando houver correção compatível.
 
-Envs (todas em [`.env.local.example`](.env.local.example)): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_DONO_CHAT_ID`. As seis últimas são server-only — nunca sob `NEXT_PUBLIC_*`.
+Envs (todas em [`.env.local.example`](.env.local.example)): `DATABASE_PROVIDER=neon`, `DATABASE_URL`, `DATABASE_URL_READONLY`, `DATABASE_URL_UNPOOLED` (só scripts locais), `CRON_SECRET`, `MODERACAO_SENHA`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_DONO_CHAT_ID`. As três envs `SUPABASE_*`/`NEXT_PUBLIC_SUPABASE_*` permanecem apenas para migração ou retorno temporário. URLs de banco e todos os segredos são server-only — nunca sob `NEXT_PUBLIC_*`.
 
 ---
 

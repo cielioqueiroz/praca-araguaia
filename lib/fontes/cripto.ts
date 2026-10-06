@@ -1,4 +1,5 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 export type MoedaCripto = 'bitcoin' | 'ethereum';
 
@@ -21,7 +22,7 @@ export function resetCacheCripto(): void {
 async function carregar(fetchImpl: typeof fetch): Promise<Precos> {
   if (cache && Date.now() - cache.quando < TTL_MS) return cache.precos;
 
-  const res = await fetchImpl(URL_PRECO);
+  const res = await requisicaoFonte(fetchImpl, URL_PRECO);
   if (!res.ok) throw new Error(`CoinGecko respondeu ${res.status}`);
   const body = (await res.json()) as Partial<Record<MoedaCripto, { brl?: number }>>;
 
@@ -57,7 +58,7 @@ export async function buscarHistoricoCripto(
   moeda: MoedaCripto,
   fetchImpl: typeof fetch = fetch,
 ): Promise<PontoHistorico[]> {
-  const res = await fetchImpl(urlHistorico(moeda));
+  const res = await requisicaoFonte(fetchImpl, urlHistorico(moeda));
   if (!res.ok) throw new Error(`CoinGecko (histórico de ${moeda}) respondeu ${res.status}`);
 
   const body = (await res.json()) as { prices?: [number, number][] };

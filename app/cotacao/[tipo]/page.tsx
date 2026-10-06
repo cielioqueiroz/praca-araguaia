@@ -176,8 +176,8 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
         </div>
         {daPorteira && (
           <p className="cidnota">
-            A linha é a média das praças da região: ela serve para enxergar o CAMINHO do preço, não para fechar
-            negócio. O número de cada praça está em <Link href="/cotacoes">a praça hoje</Link>.
+            A linha acompanha uma referência regional agregada, sem representar o preço de uma praça específica.
+            Para negociar, confira o valor de cada lugar em <Link href="/cotacoes">a praça hoje</Link>.
           </p>
         )}
       </section>

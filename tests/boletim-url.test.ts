@@ -10,6 +10,12 @@ describe('boletimLiberado', () => {
     expect(boletimLiberado(url('?'), SEGREDO)).toBe(true);
   });
 
+  it('libera só a URL pública fixa do card compacto', () => {
+    expect(boletimLiberado(url('?f=telegram'), undefined)).toBe(true);
+    expect(boletimLiberado(url('?f=telegram&f=telegram'), SEGREDO)).toBe(false);
+    expect(boletimLiberado(url('?f=telegram&t=1'), SEGREDO)).toBe(false);
+  });
+
   // O ataque medido em produção: cada `t` novo é um cache miss e ~8s de função.
   it('barra o cache-buster sem assinatura', () => {
     expect(boletimLiberado(url('?t=999999'), SEGREDO)).toBe(false);
@@ -38,6 +44,18 @@ describe('boletimLiberado', () => {
   it('barra parâmetro extra pendurado numa URL assinada', () => {
     const s = assinarBoletim('2026-07-17', '1', SEGREDO);
     expect(boletimLiberado(url(`?d=2026-07-17&t=1&s=${s}&x=7`), SEGREDO)).toBe(false);
+  });
+
+  it('barra chave repetida mesmo com assinatura válida, pois ela furaria o cache', () => {
+    const s = assinarBoletim('2026-07-17', '1', SEGREDO);
+    expect(boletimLiberado(url(`?d=2026-07-17&t=1&s=${s}&t=2`), SEGREDO)).toBe(false);
+  });
+
+  it('o formato Telegram exige assinatura própria', () => {
+    const s = assinarBoletim('2026-07-17', '1', SEGREDO, 'telegram');
+    expect(boletimLiberado(url(`?d=2026-07-17&t=1&f=telegram&s=${s}`), SEGREDO)).toBe(true);
+    expect(boletimLiberado(url(`?d=2026-07-17&t=1&s=${s}`), SEGREDO)).toBe(false);
+    expect(boletimLiberado(url(`?d=2026-07-17&t=1&f=outro&s=${s}`), SEGREDO)).toBe(false);
   });
 
   it('sem CRON_SECRET, nenhuma query passa (mas o card do dia continua de pé)', () => {

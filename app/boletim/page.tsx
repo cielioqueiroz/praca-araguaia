@@ -33,8 +33,7 @@ export default function Boletim() {
           <em>num card</em>.
         </h1>
         <p className="lede">
-          Porteira e mercado, com a data e a fonte de cada preço. Feito para caber na tela do celular de quem
-          está na lida.
+          Uma amostra das praças e estados, com preço, unidade, data e fonte. Os demais locais estão no painel.
         </p>
         <div className="bolmeta mono">{dataExtensa(new Date())}</div>
       </section>
@@ -43,7 +42,7 @@ export default function Boletim() {
         <div className="bolcard">
           {/* Imagem dinâmica gerada pela rota; next/image não otimiza rota própria. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/api/boletim" alt="Boletim do dia com as cotações da Praça Araguaia" />
+          <img src="/api/boletim?f=telegram" alt="Boletim compacto do dia com preços nomeados da Praça Araguaia" />
         </div>
 
         <div className="bolacoes">
@@ -51,7 +50,7 @@ export default function Boletim() {
 
           <BotaoCompartilhar alvo="boletim" className="fc-btn bol-primario" rotulo="Mandar no WhatsApp" />
 
-          <a href="/api/boletim" download="boletim-praca-araguaia.png" className="fc-btn bol-secundario">
+          <a href="/api/boletim?f=telegram" download="boletim-praca-araguaia.png" className="fc-btn bol-secundario">
             <IconeBaixar className="h-[18px] w-[18px]" />
             Baixar a imagem
           </a>
@@ -65,9 +64,8 @@ export default function Boletim() {
           <BotaoTelegram className="fc-btn bol-secundario" />
 
           <p className="bolrodape">
-            O card sai do mesmo dado do site — <Link href="/cotacoes">a praça hoje</Link> — e traz a data de
-            apuração de cada preço. Preço parado vem marcado como desatualizado; aqui número velho não passa
-            por novidade.
+            O card mostra dois locais por produto. <Link href="/cotacoes">Veja todos os preços da praça</Link>, com
+            os demais estados, datas de apuração e alertas de dado desatualizado.
           </p>
         </div>
       </section>

@@ -254,6 +254,6 @@ describe('GET /api/enviar-boletim', () => {
 
     enviar.mockClear();
     await GET(req(`Bearer ${SECRET}`, '?sessao=fechamento'));
-    expect(enviar.mock.calls[0][3]).toContain('fechamento do dia');
+    expect(enviar.mock.calls[0][3]).toContain('boletim de fechamento');
   });
 });

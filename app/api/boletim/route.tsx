@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { createPublicClient } from '@/lib/supabase/public';
 import { boletimLiberado } from '@/lib/boletim-url';
-import { montarBoletim, type Boletim, type ItemPorteira, type Variacao, type ReporteCidade } from '@/lib/boletim';
+import { compactarBoletim, montarBoletim, type Boletim, type ItemPorteira, type Variacao, type ReporteCidade } from '@/lib/boletim';
 import { PECUARIA, PORTEIRA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
@@ -134,6 +134,11 @@ function ItemDaPorteira({ item }: { item: ItemPorteira }) {
       ))}
 
       <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 4 }}>{item.rodape}</div>
+      {item.totalLugares !== undefined && item.totalLugares > item.ufs.length && (
+        <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 2 }}>
+          + {item.totalLugares - item.ufs.length} locais no site
+        </div>
+      )}
 
       {/* O que os produtores reportaram nas cidades — o dado que só existe porque
           alguém na lida digitou. Só aparece o que tem reporte. */}
@@ -179,7 +184,7 @@ function ItemDaPorteira({ item }: { item: ItemPorteira }) {
 // Card no subconjunto flexbox do Satori: duas colunas — o gado (boi, vaca, novilha,
 // bezerro) de um lado; a lavoura, o mercado e as cidades do outro. Cada categoria
 // mostra o preço de CADA estado, nunca uma média.
-function CardBoletim({ boletim }: { boletim: Boletim }) {
+function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto?: boolean }) {
   const vazio = boletim.porteira.length === 0 && boletim.mercado.length === 0;
   const gado = boletim.porteira.filter((p) => PECUARIA.includes(p.tipo));
   const lavoura = boletim.porteira.filter((p) => !PECUARIA.includes(p.tipo));
@@ -192,14 +197,14 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#f1ebde',
-        padding: '56px 60px',
+        padding: compacto ? '38px 46px' : '56px 60px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={marcaDataUri()} width={82} height={82} alt="" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 50, fontWeight: 700, color: TINTA }}>Praça Araguaia</div>
+          <div style={{ fontSize: compacto ? 46 : 50, fontWeight: 700, color: TINTA }}>Praça Araguaia</div>
           <div style={{ fontSize: 24, color: '#6e3e1e' }}>{boletim.dataExtenso}</div>
         </div>
       </div>
@@ -211,7 +216,7 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
           Ainda sem cotações hoje
         </div>
       ) : (
-        <div style={{ display: 'flex', flex: 1, gap: 34 }}>
+        <div style={{ display: 'flex', flex: 1, gap: compacto ? 22 : 34 }}>
           {/* ---------- Gado: boi, vaca, novilha e bezerro, preço de cada estado ---------- */}
           <Coluna titulo="NA PORTEIRA · GADO">
             {gado.map((item) => (
@@ -266,10 +271,10 @@ function CardBoletim({ boletim }: { boletim: Boletim }) {
       )}
 
       <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 19, letterSpacing: 2, color: MUTED }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: compacto ? 16 : 19, letterSpacing: compacto ? 1 : 2, color: MUTED }}>
         {/* Datagro saiu na fatia 17: não é mais fonte de nada. Creditar quem não
             apurou o preço é atribuição falsa, ainda que em letra miúda. */}
-        <div style={{ display: 'flex' }}>SCOT · CONAB · BCB · B3 · GOLD-API · COINGECKO</div>
+        <div style={{ display: 'flex' }}>{compacto ? 'SCOT · CONAB · BCB · B3 · GOLD-API' : 'SCOT · CONAB · BCB · B3 · GOLD-API · COINGECKO'}</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
@@ -373,9 +378,10 @@ export async function GET(req: Request) {
   // BA/MA/PE para soja/milho (igual ao site), a coluna do gado cresceu e o Bezerro
   // colidia com o rodapé — daí 2300. Se a porteira crescer de novo, refaça a medida:
   // renderize e olhe o pé da coluna da esquerda.
-  return new ImageResponse(<CardBoletim boletim={boletim} />, {
+  const compacto = new URL(req.url).searchParams.get('f') === 'telegram';
+  return new ImageResponse(<CardBoletim boletim={compacto ? compactarBoletim(boletim) : boletim} compacto={compacto} />, {
     width: 1080,
-    height: 2300,
+    height: compacto ? 1200 : 2300,
     headers: { 'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
   });
 }

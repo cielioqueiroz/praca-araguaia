@@ -56,8 +56,8 @@ describe('CardTermometro', () => {
     expect(screen.getByText('2 de produtores · 1 apurado pela Praça')).toBeInTheDocument();
   });
 
-  it('mostra o contraste com a média CONAB quando informada', () => {
+  it('mostra o contraste com a referência CONAB quando informada', () => {
     render(<CardTermometro resumo={resumo} mediaConab={326.96} />);
-    expect(screen.getByText(/média CONAB: 326,96/)).toBeInTheDocument();
+    expect(screen.getByText(/referência CONAB: 326,96/)).toBeInTheDocument();
   });
 });

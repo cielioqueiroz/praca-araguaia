@@ -6,6 +6,18 @@
 
 ---
 
+## Migração Neon, mobile e revisão de segurança (06/10/2026, em andamento)
+
+Projeto Neon `praca-araguaia` (`long-wave-06178084`, região `aws-us-east-1`) criado. O esquema em [`neon/migrations/0001_schema_inicial.sql`](neon/migrations/0001_schema_inicial.sql) contém as 11 tabelas públicas, papel de leitura e RLS. O adaptador em `lib/neon/cliente.ts` permite manter as rotas enquanto o banco muda. A cópia do Supabase confere **contagem e conteúdo** e remove somente linhas de teste do destino antes do corte. Última conferência completa: 12 cotações, 1.285 pontos de histórico, 16 praças, 30 preços por UF, 3 assinantes e as demais tabelas íntegros. Os endereços de conexão estão só em `.env.local` e nas envs sensíveis de produção da Vercel.
+
+**Ainda não cortado:** o deploy atual no domínio principal continua no commit `29edc68`, lendo Supabase. A nova env `DATABASE_PROVIDER=neon` será lida apenas pelo próximo deploy. A janela do cron de fechamento de hoje é 18:00–18:59 BRT; esperar ela terminar, conferir `envios_boletim`, sincronizar novamente e então publicar evita dividir uma reserva de envio entre dois bancos. Não repetir broadcast em caso de falha parcial.
+
+O card para Telegram agora mede 1080×1200, com dois lugares de UFs diferentes por produto, variação parada como “estável” e crédito curto “Scot · data”. A home põe preços primeiro no iPhone; ticker nomeia a praça/UF e omite preço vencido. Notícias antigas saem da home, a busca da imagem OG recusa endereços fora dos veículos cadastrados. Login recusa acesso se a tentativa não puder ser registrada. [Auditoria e pendências](docs/auditoria-2026-10-06.md), [spec](docs/superpowers/specs/2026-10-06-neon-mobile-fontes-seguranca-design.md) e [plano](docs/superpowers/plans/2026-10-06-neon-mobile-fontes-seguranca.md).
+
+**Verificação local:** 596 testes, typecheck, lint, build, leitura e coleta no Neon. iPhone 13 nas rotas principais sem rolagem horizontal nem alvo de toque pequeno; card PNG conferido visualmente. `npm audit --omit=dev` zero; cinco alertas remanescentes só na cadeia de lint, sem correção compatível disponível. Strix não rodou neste ambiente (Docker/credenciais ausentes).
+
+---
+
 ## 📬 Retomada organizada do Telegram (06/10/2026)
 
 O dono autorizou retomar os disparos. O plano atual agenda **somente o boletim de

@@ -121,7 +121,7 @@ export default async function Praca({ params }: { params: Promise<{ cidade: stri
         </h1>
         <p className="lede">
           {pagina.temScot
-            ? `O preço que o gado faz aqui — praça pesquisada, não média de estado — mais o grão do ${NOME_UF[pagina.uf] ?? pagina.uf} e a chuva da semana.`
+            ? `O preço pesquisado nesta praça, mais o grão do ${NOME_UF[pagina.uf] ?? pagina.uf} e a chuva da semana.`
             : `O preço que vale para quem negocia em ${pagina.nome}, o que os vizinhos relataram e a chuva da semana.`}
         </p>
         <div className="pgmeta mono">

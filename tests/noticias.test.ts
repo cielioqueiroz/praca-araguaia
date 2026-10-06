@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { parseFeed, decodificar, dataDeFeed, limparResumo } from '@/lib/noticias/rss';
 import { categoria, relevante, internacional } from '@/lib/noticias/classificar';
 import { extrairOgImage, completarImagens } from '@/lib/noticias/og';
-import { agregar, normalizarLink, normalizarTitulo, LIMITE_POR_VEICULO } from '@/lib/noticias/agregar';
+import { agregar, noticiasDaSemana, normalizarLink, normalizarTitulo, LIMITE_POR_VEICULO } from '@/lib/noticias/agregar';
 import { FEEDS } from '@/lib/noticias/feeds';
 import type { Feed, ItemBruto, Noticia } from '@/types/noticia';
 
@@ -288,7 +288,7 @@ describe('extrairOgImage', () => {
 
 describe('completarImagens', () => {
   const noticia = (id: string, imagem: string | null): Noticia => ({
-    id, titulo: 'Boi gordo sobe', link: `https://v.com/${id}`, publicadoEm: null,
+    id, titulo: 'Boi gordo sobe', link: `https://www.beefpoint.com.br/${id}`, publicadoEm: null,
     resumo: null, imagem, veiculo: 'BeefPoint', categoria: 'pecuaria', internacional: false,
   });
 
@@ -321,6 +321,15 @@ describe('completarImagens', () => {
     await completarImagens([noticia('a', 'https://v.com/x.jpg')], fetchImpl);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it('não busca imagem em destino arbitrário enviado pelo RSS', async () => {
+    const fetchImpl = vi.fn(respondeHtml('<meta property="og:image" content="https://v.com/og.jpg">')) as unknown as typeof fetch;
+    const r = await completarImagens([
+      { ...noticia('interno', null), link: 'http://169.254.169.254/latest/meta-data/' },
+    ], fetchImpl);
+    expect(r[0].imagem).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
 });
 
 describe('normalizarLink', () => {
@@ -342,6 +351,21 @@ describe('normalizarTitulo', () => {
   it('ignora acento, caixa e pontuação', () => {
     expect(normalizarTitulo('Preço do BOI, gordo!')).toBe('preco do boi gordo');
   });
+});
+
+describe('noticiasDaSemana', () => {
+  it('não apresenta notícia antiga ou sem data como conteúdo atualizado', () => {
+    const agora = new Date('2026-10-06T20:00:00Z');
+    const itens = [
+      item({ titulo: 'Hoje', publicadoEm: '2026-10-06T19:00:00Z' }),
+      item({ titulo: 'Há seis dias', publicadoEm: '2026-09-30T20:00:00Z' }),
+      item({ titulo: 'Há oito dias', publicadoEm: '2026-09-28T19:00:00Z' }),
+      item({ titulo: 'Sem data', publicadoEm: null }),
+    ];
+    expect(noticiasDaSemana([{ feed: feed(), itens }], agora)[0].itens.map((n) => n.titulo))
+      .toEqual(['Hoje', 'Há seis dias']);
+  });
+
 });
 
 describe('agregar', () => {

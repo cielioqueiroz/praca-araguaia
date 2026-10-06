@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }));
 
@@ -28,7 +28,11 @@ const req = (body: unknown, ip = '1.2.3.4') =>
 
 const valido = { produto: 'boi', municipio: 'Redenção', valor: 320, contato: '' };
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.stubEnv('CRON_SECRET', 'segredo-de-teste');
+});
+afterEach(() => vi.unstubAllEnvs());
 
 describe('POST /api/reportar', () => {
   it('200 grava reporte pendente com ip_hash (sem IP puro)', async () => {

@@ -13,6 +13,23 @@ const UA = 'PracaAraguaia/1.0 (+https://agroapp-bay.vercel.app)';
 // Só o <head> interessa e ele vem nos primeiros KB. Ler a matéria inteira (às vezes
 // centenas de KB) para pegar uma <meta> seria desperdício em toda revalidação.
 const LIMITE_BYTES = 60_000;
+const DOMINIOS_ARTIGO = [
+  'g1.globo.com', 'canalrural.com.br', 'cnnbrasil.com.br', 'infomoney.com.br',
+  'moneytimes.com.br', 'comprerural.com', 'beefpoint.com.br',
+];
+
+function artigoDeFonteConhecida(link: string): boolean {
+  try {
+    const url = new URL(link);
+    const dominio = url.hostname.toLowerCase();
+    return ['https:', 'http:'].includes(url.protocol)
+      && !url.username && !url.password
+      && (!url.port || url.port === '80' || url.port === '443')
+      && DOMINIOS_ARTIGO.some((permitido) => dominio === permitido || dominio.endsWith(`.${permitido}`));
+  } catch {
+    return false;
+  }
+}
 
 /** <meta property="og:image" content="..."> — nas duas ordens de atributo. */
 export function extrairOgImage(html: string): string | null {
@@ -32,9 +49,13 @@ export function extrairOgImage(html: string): string | null {
 }
 
 async function buscarOg(link: string, fetchImpl: typeof fetch): Promise<string | null> {
+  // POR QUE ISTO EXISTE: o endereço veio de RSS externo. Sem esta trava, um item
+  // poderia mandar o servidor buscar IP interno ou metadata em nome da imagem.
+  if (!artigoDeFonteConhecida(link)) return null;
   const res = await fetchImpl(link, {
     headers: { 'user-agent': UA, accept: 'text/html' },
     signal: AbortSignal.timeout(TIMEOUT_MS),
+    redirect: 'manual',
   });
   if (!res.ok || !res.body) return null;
 

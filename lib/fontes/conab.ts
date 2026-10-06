@@ -1,4 +1,5 @@
 import type { Cotacao, PontoHistorico, PrecoUf } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // Brasil sem horário de verão desde 2019: offset fixo -03:00.
 const OFFSET_BRT = '-03:00';
@@ -67,7 +68,7 @@ function parse(texto: string): SemanaUf[] {
 // Baixa e parseia o arquivo 1x por coleta (3 tipos compartilham o download).
 async function carregar(fetchImpl: typeof fetch): Promise<SemanaUf[]> {
   if (cache && Date.now() - cache.quando < TTL_MS) return cache.linhas;
-  const res = await fetchImpl(URL_CONAB);
+  const res = await requisicaoFonte(fetchImpl, URL_CONAB);
   if (!res.ok) throw new Error(`CONAB respondeu ${res.status}`);
   const texto = new TextDecoder('iso-8859-1').decode(await res.arrayBuffer());
   const linhas = parse(texto);

@@ -3,16 +3,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 // A rota conta tentativas recentes no banco. O mock controla a contagem: por padrão
 // zero (caminho feliz), e um teste sobe para o limite. Sem env de Supabase, o
 // createServerClient real lançaria — o mock também isola disso.
-const contagem = { valor: 0 };
+const contagem: { valor: number; erro: { message: string } | null; erroEscrita: { message: string } | null } = { valor: 0, erro: null, erroEscrita: null };
 vi.mock('@/lib/supabase/server', () => ({
   createServerClient: () => ({
     from: () => ({
       select: () => ({
         eq: () => ({
-          gte: () => Promise.resolve({ count: contagem.valor, error: null }),
+          gte: () => Promise.resolve({ count: contagem.valor, error: contagem.erro }),
         }),
       }),
-      insert: () => Promise.resolve({ error: null }),
+      insert: () => Promise.resolve({ error: contagem.erroEscrita }),
     }),
   }),
 }));
@@ -29,7 +29,10 @@ const req = (body: unknown) =>
 
 beforeEach(() => {
   contagem.valor = 0;
+  contagem.erro = null;
+  contagem.erroEscrita = null;
   vi.stubEnv('MODERACAO_SENHA', 'senha-de-teste');
+  vi.stubEnv('CRON_SECRET', 'segredo-de-teste');
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -72,6 +75,20 @@ describe('POST /api/moderar/login', () => {
     contagem.valor = 10;
     const res = await POST(req({ senha: 'senha-de-teste' }));
     expect(res.status).toBe(429);
+    expect(res.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('503 se a contagem falhar, antes de comparar a senha', async () => {
+    contagem.erro = { message: 'indisponível' };
+    const res = await POST(req({ senha: 'senha-de-teste' }));
+    expect(res.status).toBe(503);
+    expect(res.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('503 se a gravação da tentativa falhar, mesmo com a senha certa', async () => {
+    contagem.erroEscrita = { message: 'indisponível' };
+    const res = await POST(req({ senha: 'senha-de-teste' }));
+    expect(res.status).toBe(503);
     expect(res.headers.get('set-cookie')).toBeNull();
   });
 });

@@ -13,10 +13,18 @@
 // Além do print, ele acusa os dois defeitos que só aparecem no telefone: página que
 // rola na horizontal e alvo de toque baixo demais para o dedo.
 
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { chromium, devices } from 'playwright-core';
 
-const EXE = 'C:/Users/Cliente/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe';
+// O cache do Playwright muda de versão e pode sumir após limpeza do Windows.
+// Usar Chrome instalado mantém a emulação de iPhone disponível nesse caso.
+const EXE = [
+  process.env.CHROMIUM_PATH,
+  'C:/Users/Cliente/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe',
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+].find((caminho) => caminho && existsSync(caminho));
+if (!EXE) throw new Error('Nenhum navegador Chromium encontrado para testar as telas');
 const BASE = 'http://localhost:3100';
 const OUT = process.env.TELAS_OUT ?? '.telas';
 
@@ -94,6 +102,7 @@ for (const rota of alvos) {
   });
   if (alvosPequenos.length) problemas.push(`${rota}: alvo de toque baixo → ${alvosPequenos.join(' | ')}`);
 
+  if (perfil === 'mobile') await page.screenshot({ path: `${OUT}/${nome}-primeira-dobra.png` });
   await page.screenshot({ path: `${OUT}/${nome}.png`, fullPage: perfil === 'mobile' });
   console.log(`ok ${rota} → ${nome}.png`);
 }

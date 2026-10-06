@@ -15,20 +15,19 @@ describe('legendaBoletim', () => {
     expect(legendaBoletim(AGORA)).toContain('Cielio Queiroz');
   });
 
-  // Duas entregas por dia (23/07/2026). Sem distinguir as duas, o segundo card
-  // chegaria como uma repetição do primeiro — e card repetido foi justamente o
-  // que fez o dono achar que o sistema tinha congelado.
-  it('a abertura diz que o preço é o fechamento de ontem', () => {
+  // A abertura ainda pode ser usada manualmente; nenhuma sessão promete que a
+  // Scot ou a CONAB publicaram dados com a data de hoje.
+  it('a abertura informa que cada fonte tem sua própria data', () => {
     const l = legendaBoletim(AGORA, 'abertura');
     expect(l).toContain('Bom dia');
     expect(l).toContain('abre');
-    expect(l).toContain('fechamento de ontem');
+    expect(l).toContain('data de cada fonte');
   });
 
-  it('o fechamento diz que o pregão encerrou e o preço é de hoje', () => {
+  it('o fechamento informa que a data da apuração está no card', () => {
     const l = legendaBoletim(AGORA, 'fechamento');
-    expect(l).toContain('fechamento do dia');
-    expect(l).toContain('apurados hoje');
+    expect(l).toContain('boletim de fechamento');
+    expect(l).toContain('data de cada apuração');
     expect(l).not.toContain('Bom dia');
   });
 
@@ -60,6 +59,6 @@ describe('urlFotoBoletim', () => {
   // A URL vai assinada: é ela que fura o cache (~8s de função por render), então
   // esse poder é de quem tem o segredo. A rota /api/boletim rejeita query sem `s`.
   it('carrega a assinatura que libera o cache-buster', () => {
-    expect(urlFotoBoletim(AGORA, SEGREDO)).toMatch(/&t=\d+&s=[0-9a-f]{32}$/);
+    expect(urlFotoBoletim(AGORA, SEGREDO)).toMatch(/&t=\d+&f=telegram&s=[0-9a-f]{32}$/);
   });
 });

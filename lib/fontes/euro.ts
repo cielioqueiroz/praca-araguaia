@@ -1,4 +1,5 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // Brasil sem horário de verão desde 2019: offset fixo -03:00.
 const OFFSET_BRT = '-03:00';
@@ -8,7 +9,7 @@ const isoDia = (yyyymmdd: string) => new Date(`${yyyymmdd}T00:00:00${OFFSET_BRT}
 
 // Euro atual via Frankfurter (BCE). Resposta: { date, rates: { BRL } }.
 export async function buscarEuro(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
-  const res = await fetchImpl(`${BASE}/latest?base=EUR&symbols=BRL`);
+  const res = await requisicaoFonte(fetchImpl, `${BASE}/latest?base=EUR&symbols=BRL`);
   if (!res.ok) throw new Error(`Frankfurter respondeu ${res.status}`);
 
   const body = (await res.json()) as { date?: string; rates?: { BRL?: number } };
@@ -31,7 +32,7 @@ export async function buscarHistoricoEuroFrankfurter(
   const fim = new Date();
   const inicio = new Date(fim.getTime() - dias * 24 * 60 * 60 * 1000);
   const dia = (d: Date) => d.toISOString().slice(0, 10);
-  const res = await fetchImpl(`${BASE}/${dia(inicio)}..${dia(fim)}?base=EUR&symbols=BRL`);
+  const res = await requisicaoFonte(fetchImpl, `${BASE}/${dia(inicio)}..${dia(fim)}?base=EUR&symbols=BRL`);
   if (!res.ok) throw new Error(`Frankfurter respondeu ${res.status}`);
 
   const body = (await res.json()) as { rates?: Record<string, { BRL?: number }> };

@@ -32,7 +32,7 @@ export function Ticker() {
           <span key={i}>
             <b>{it.rotulo}</b> {it.valor}{' '}
             <span className={it.dir}>
-              {it.dir === 'up' ? '▲' : '▼'}
+              {it.dir === 'up' ? '▲' : it.dir === 'down' ? '▼' : ''}
               {it.pct}
             </span>
           </span>

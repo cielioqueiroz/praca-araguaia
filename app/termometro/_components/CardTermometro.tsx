@@ -31,7 +31,7 @@ export function CardTermometro({ resumo, mediaConab }: { resumo: ResumoProduto; 
               faixa: R$ {numeroEnxuto(resumo.faixa.min)}–{numeroEnxuto(resumo.faixa.max)}
             </span>
           )}
-          {mediaConab !== undefined && <span>média CONAB: {numeroEnxuto(mediaConab)}</span>}
+          {mediaConab !== undefined && <span>referência CONAB: {numeroEnxuto(mediaConab)}</span>}
         </div>
       )}
 

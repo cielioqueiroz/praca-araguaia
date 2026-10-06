@@ -82,7 +82,7 @@ export default async function Termometro() {
             <div className="t">O que está sendo pago</div>
             <div className="line" />
             <div className="meta">
-              Valor típico<span className="pill">7 dias</span>Mediana, não média
+              Valor típico<span className="pill">7 dias</span>O valor central dos reportes
             </div>
           </div>
           <div className="pggrade">

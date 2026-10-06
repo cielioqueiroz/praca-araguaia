@@ -6,9 +6,9 @@
   <img alt="Next.js" src="https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
-  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
+  <img alt="Neon" src="https://img.shields.io/badge/Neon-PostgreSQL_+_RLS-00E599?logo=postgresql&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-589_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-Vitest-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **12 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -92,7 +92,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 | **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 9 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
 | **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 6 cotações com mini-tendência de 30 dias: **dólar, euro, ouro (R$/g), Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
-| **`/boletim`** | Card-resumo do dia em **PNG 1080×1960** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. O boletim de fechamento é enviado pelo Telegram após coleta completa em dia útil. |
+| **`/boletim`** | Card-resumo em **PNG 1080×1200** para Telegram/WhatsApp e versão completa 1080×2300 (via `next/og`/Satori). O fechamento é enviado após coleta completa em dia útil. |
 | **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
 | **`/termometro`** | **Termômetro da Praça**: o "valor típico" (mediana) dos preços reportados por produtores nos últimos 7 dias, **nas 6 categorias da porteira**, por município, contrastado com a referência oficial. |
 | **`/termometro/reportar`** | Reporte de preço **anônimo** (sem cadastro), com faixa de plausibilidade, honeypot e limite por IP. O convite no card já abre no produto certo (`?produto=`). |
@@ -138,7 +138,7 @@ Os tokens vivem no `@theme` do Tailwind v4 (`app/globals.css`); cada componente 
 
 ## Arquitetura
 
-Duas trilhas de dados: a **coleta agendada** das cotações (cron diário) e o **fluxo de reportes** do Termômetro (anônimo, moderado). Ambas convergem no Supabase, e as páginas leem com a chave `anon` sob RLS.
+Duas trilhas de dados: a **coleta agendada** das cotações (cron diário) e o **fluxo de reportes** do Termômetro (anônimo, moderado). Ambas convergem no Neon PostgreSQL. As páginas usam uma conexão SQL só de leitura, sob RLS; as rotas de escrita usam a conexão de servidor.
 
 ```mermaid
 flowchart TD
@@ -161,11 +161,11 @@ flowchart TD
         MOD["Moderador"] -->|senha + cookie HMAC| DECIDIR["POST /api/moderar/decidir"]
     end
 
-    COLETAR -->|service role| DB[("Supabase / PostgreSQL<br/>RLS: leitura pública<br/>escrita só service role")]
-    REPORTAR -->|service role| DB
-    DECIDIR -->|service role| DB
+    COLETAR -->|conexão de escrita| DB[("Neon / PostgreSQL<br/>RLS: leitura aprovada<br/>escrita só no servidor")]
+    REPORTAR -->|conexão de escrita| DB
+    DECIDIR -->|conexão de escrita| DB
 
-    DB -->|anon key| PAGES["Páginas Next.js<br/>painel · gráficos · boletim · termômetro"]
+    DB -->|papel só de leitura| PAGES["Páginas Next.js<br/>painel · gráficos · boletim · termômetro"]
     METEO -->|ISR/dynamic| PAGES
 ```
 
@@ -197,13 +197,13 @@ timeline
 |---|---|
 | Front + back | Next.js 15 (App Router), TypeScript (strict), Tailwind CSS v4 |
 | Tipografia | Playfair Display · Archivo · JetBrains Mono (via `next/font`) |
-| Banco / Auth | Supabase (PostgreSQL + Row Level Security) |
+| Banco / Auth | Neon PostgreSQL + papel de leitura sob RLS; moderação por cookie assinado |
 | Gráficos | Sparklines em SVG puro · Recharts (detalhe) |
 | Imagem do boletim / OG | `next/og` (Satori) — PNG gerado no servidor |
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
-| Coleta agendada | Route Handlers + Vercel Cron (somente `/api/coletar` ativo) |
+| Coleta agendada | Route Handlers + Vercel Cron (coleta e boletim de fechamento) |
 | Bot | Telegram Bot API (inscrição e boletim de fechamento ativos; alertas sem cron) |
-| Testes | Vitest + Testing Library (589 testes) |
+| Testes | Vitest + Testing Library |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -227,7 +227,7 @@ agro_app/
 │  ├─ moderar/page.tsx             # Moderação protegida por senha
 │  └─ api/
 │     ├─ coletar · backfill        # Coleta/backfill (Cron/segredo)
-│     ├─ boletim                   # PNG 1080×1080
+│     ├─ boletim                   # PNG compacto 1080×1200 e completo 1080×2300
 │     ├─ reportar                  # Recebe reporte anônimo
 │     └─ moderar/{login,decidir}   # Sessão + decisão da moderação
 ├─ lib/
@@ -246,7 +246,7 @@ agro_app/
 │  └─ supabase/{server,public,repo}.ts
 ├─ components/                     # Só o compartilhado por 2+ rotas (+ ui/ do shadcn)
 ├─ supabase/migrations/            # DDL + RLS versionado
-├─ tests/                          # 589 testes unitários e de componente
+├─ tests/                          # testes unitários, de rota e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
@@ -258,7 +258,7 @@ agro_app/
 ### 1. Pré-requisitos
 
 - Node.js 18.18+ (recomendado 20+)
-- Uma conta [Supabase](https://supabase.com)
+- Uma conta [Neon](https://neon.com)
 
 ### 2. Instalar
 
@@ -266,13 +266,11 @@ agro_app/
 npm install
 ```
 
-### 3. Banco de dados (Supabase)
+### 3. Banco de dados (Neon)
 
-Crie um projeto e aplique as migrations de [`supabase/migrations/`](supabase/migrations/) em ordem (SQL Editor do Supabase Studio, ou `supabase db push` com o projeto vinculado):
+Crie um projeto PostgreSQL no Neon e configure `DATABASE_URL_UNPOOLED` para a preparação inicial. Execute `node scripts/preparar-neon.mjs`: ele aplica [`neon/migrations/0001_schema_inicial.sql`](neon/migrations/0001_schema_inicial.sql), cria um papel de leitura com senha aleatória e grava `DATABASE_URL_READONLY` em `.env.local`. Depois use `DATABASE_URL` com o pooler do Neon e `DATABASE_PROVIDER=neon`.
 
-- `0001_cotacoes.sql` — tabelas `cotacoes` e `cotacoes_historico` + RLS
-- `0002_*` — constraint única `(tipo, data_referencia)`
-- `0003_reportes.sql` — tabela `reportes` do Termômetro + RLS
+As migrations em [`supabase/migrations/`](supabase/migrations/) documentam o banco anterior. Para migrar dados existentes, `node scripts/copiar-dados-neon.mjs` lê o Supabase e confere contagem e conteúdo das 11 tabelas no Neon. Esse script só deve rodar **antes** da virada de produção: a origem substitui dados de teste do destino.
 
 ### 4. Variáveis de ambiente
 
@@ -281,9 +279,10 @@ cp .env.local.example .env.local
 ```
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...        # anon / publishable key
-SUPABASE_SERVICE_ROLE_KEY=...            # service role — NUNCA expor no client
+DATABASE_PROVIDER=neon
+DATABASE_URL=...                        # conexão com pooler, escrita no servidor
+DATABASE_URL_READONLY=...               # papel SQL sem escrita; gerado pelo preparo
+DATABASE_URL_UNPOOLED=...               # conexão direta, usada só nos scripts de migração
 CRON_SECRET=...                          # segredo forte para a coleta agendada
 MODERACAO_SENHA=...                      # senha da moderação em /moderar
 TELEGRAM_BOT_TOKEN=...                   # necessário para webhook e envios manuais
@@ -291,7 +290,7 @@ TELEGRAM_WEBHOOK_SECRET=...              # autentica updates recebidos do Telegr
 TELEGRAM_DONO_CHAT_ID=...                # destino do resumo de audiência, quando ativado
 ```
 
-> ⚠️ `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA` e as variáveis do Telegram são usadas **apenas no servidor**. Nunca as coloque numa variável `NEXT_PUBLIC_*`.
+> As URLs do banco, `CRON_SECRET`, `MODERACAO_SENHA` e as variáveis do Telegram são usadas **apenas no servidor**. Nunca as coloque numa variável `NEXT_PUBLIC_*`. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` só são necessários para a migração ou retorno temporário ao banco anterior.
 
 ### 5. Rodar
 
@@ -317,14 +316,15 @@ curl -H "authorization: Bearer SEU_CRON_SECRET" http://localhost:3000/api/coleta
 | `npm test` | Roda os testes (Vitest) |
 | `npm run test:watch` | Testes em watch mode |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | Tipos de toda a aplicação e dos testes |
 
 ---
 
 ## Deploy (Vercel)
 
 1. Conecte o repositório à Vercel — cada `git push` na `master` dispara o deploy.
-2. Defina as variáveis de ambiente necessárias (as mesmas do `.env.local`) no projeto, marcadas para **Production**.
-3. O agendamento em [`vercel.json`](vercel.json) chama `/api/coletar` 1×/dia; a Vercel injeta `Authorization: Bearer ${CRON_SECRET}` automaticamente.
+2. Configure `DATABASE_PROVIDER`, `DATABASE_URL` e `DATABASE_URL_READONLY` em **Production**, além dos segredos de cron, moderação e Telegram. A conexão direta fica só nos scripts locais.
+3. [`vercel.json`](vercel.json) chama a coleta e o fechamento em dias úteis; a Vercel injeta `Authorization: Bearer ${CRON_SECRET}` automaticamente. A rota também barra feriados nacionais.
 
 ---
 

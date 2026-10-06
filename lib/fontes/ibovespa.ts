@@ -1,4 +1,5 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // Ibovespa (^BVSP) — o índice da B3, em pontos.
 //
@@ -36,7 +37,7 @@ export function resetCacheIbovespa(): void {
 async function carregar(dias: number, fetchImpl: typeof fetch): Promise<Leitura> {
   if (cache && Date.now() - cache.quando < TTL_MS) return cache.leitura;
 
-  const res = await fetchImpl(URL(dias), {
+  const res = await requisicaoFonte(fetchImpl, URL(dias), {
     headers: { 'user-agent': 'Mozilla/5.0 (compatible; PracaAraguaia/1.0)' },
   });
   if (!res.ok) throw new Error(`Yahoo Finance respondeu ${res.status}`);

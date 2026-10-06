@@ -11,10 +11,9 @@ const fmtDataIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Araguai
 /**
  * As duas sessões do dia.
  *
- * 'abertura' sai antes de o mercado abrir e leva o preço com que o dia COMEÇA —
- * que é o fechamento do pregão anterior, o dado mais novo que existe àquela hora
- * (a B3 abre 10h, a Scot publica à tarde). 'fechamento' sai depois que tudo
- * fechou, com o número do dia já apurado.
+ * 'abertura' é uma prévia manual com as referências disponíveis no começo do dia.
+ * 'fechamento' é o único envio automático, após a coleta. Cada fonte tem sua data:
+ * a Scot fecha o dia útil anterior e a CONAB publica por semana.
  *
  * A legenda diz qual é qual, e por quê: dois cards por dia sem essa distinção
  * pareceriam a mesma mensagem repetida — e um card que parece repetido é
@@ -26,9 +25,9 @@ export function legendaBoletim(agora: Date, sessao: Sessao = 'abertura'): string
   const cabeca =
     sessao === 'abertura'
       ? `☀️ Bom dia! Praça Araguaia — como o mercado abre, ${fmtDataExtenso.format(agora)}.\n` +
-        `Estes são os preços de fechamento de ontem, com que o dia começa.`
-      : `🌇 Praça Araguaia — fechamento do dia, ${fmtDataExtenso.format(agora)}.\n` +
-        `Pregão encerrado: estes são os preços apurados hoje.`;
+        `Referências disponíveis ao começar o dia, com a data de cada fonte no card.`
+      : `🌇 Praça Araguaia — boletim de fechamento, ${fmtDataExtenso.format(agora)}.\n` +
+        `Preços de referência das fontes, com a data de cada apuração no card.`;
 
   return (
     `${cabeca}\n\n` +
@@ -48,5 +47,5 @@ export function urlFotoBoletim(agora: Date, segredo: string): string {
   // primeiro que descobrir o formato da URL.
   const minuto = String(Math.floor(agora.getTime() / 60_000));
   const d = fmtDataIso.format(agora);
-  return `${SITE}/api/boletim?d=${d}&t=${minuto}&s=${assinarBoletim(d, minuto, segredo)}`;
+  return `${SITE}/api/boletim?d=${d}&t=${minuto}&f=telegram&s=${assinarBoletim(d, minuto, segredo, 'telegram')}`;
 }

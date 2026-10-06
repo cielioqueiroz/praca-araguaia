@@ -1,4 +1,5 @@
 import type { Cotacao, PontoHistorico } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // O Brasil não usa horário de verão desde 2019, então o offset é fixo em -03:00.
 // Sem isso, datas sem offset seriam interpretadas como hora local do runtime
@@ -12,7 +13,7 @@ const URL_BCB =
 
 // Fonte primária: AwesomeAPI (tempo real). A create_date vem em BRT, sem offset.
 export async function buscarDolarAwesome(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
-  const res = await fetchImpl(URL_AWESOME);
+  const res = await requisicaoFonte(fetchImpl, URL_AWESOME);
   if (!res.ok) throw new Error(`AwesomeAPI respondeu ${res.status}`);
 
   const body = (await res.json()) as { USDBRL?: { bid?: string; create_date?: string } };
@@ -41,7 +42,7 @@ export async function buscarDolarAwesome(fetchImpl: typeof fetch = fetch): Promi
 // Fonte de fallback: BCB (PTAX diária). Resposta: [{ data: 'dd/MM/yyyy', valor: '5.1382' }].
 // Sem hora — usamos o início do dia em BRT como referência.
 export async function buscarDolarBcb(fetchImpl: typeof fetch = fetch): Promise<Cotacao> {
-  const res = await fetchImpl(URL_BCB);
+  const res = await requisicaoFonte(fetchImpl, URL_BCB);
   if (!res.ok) throw new Error(`BCB respondeu ${res.status}`);
 
   const body = (await res.json()) as Array<{ data?: string; valor?: string }>;
@@ -80,7 +81,7 @@ export async function buscarHistoricoDolarBcb(
   dias = 90,
   fetchImpl: typeof fetch = fetch,
 ): Promise<PontoHistorico[]> {
-  const res = await fetchImpl(urlBcbSerie(dias));
+  const res = await requisicaoFonte(fetchImpl, urlBcbSerie(dias));
   if (!res.ok) throw new Error(`BCB respondeu ${res.status}`);
 
   const body = (await res.json()) as Array<{ data?: string; valor?: string }>;

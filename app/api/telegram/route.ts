@@ -48,11 +48,17 @@ export async function POST(req: Request): Promise<Response> {
         : await supabase
             .from('assinantes_telegram')
             .upsert({ chat_id: intencao.chatId }, { onConflict: 'chat_id', ignoreDuplicates: true });
-      if (error) console.error('telegram upsert falhou', error);
+      if (error) {
+        console.error('telegram upsert falhou', error);
+        return new Response('banco indisponivel', { status: 503 });
+      }
       await enviarMensagem(token, intencao.chatId, TEXTO_BOAS_VINDAS);
     } else if (intencao.tipo === 'parar') {
       const { error } = await supabase.from('assinantes_telegram').delete().eq('chat_id', intencao.chatId);
-      if (error) console.error('telegram delete falhou', error);
+      if (error) {
+        console.error('telegram delete falhou', error);
+        return new Response('banco indisponivel', { status: 503 });
+      }
       await enviarMensagem(token, intencao.chatId, TEXTO_DESPEDIDA);
     } else {
       await enviarMensagem(token, intencao.chatId, TEXTO_AJUDA);

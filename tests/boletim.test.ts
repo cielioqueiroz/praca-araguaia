@@ -38,8 +38,8 @@ describe('montarBoletim', () => {
 
     expect(b.porteira.map((p) => p.titulo)).toEqual(['Boi gordo']);
     expect(b.porteira[0].ufs).toEqual([
-      { nome: 'Pará', valorFmt: '329,55', variacao: { texto: '3%', direcao: 'baixa' } },
-      { nome: 'Mato Grosso', valorFmt: '319,20', variacao: { texto: '0,75%', direcao: 'baixa' } },
+      { nome: 'Pará', uf: 'PA', valorFmt: '329,55', variacao: { texto: '3%', direcao: 'baixa' } },
+      { nome: 'Mato Grosso', uf: 'MT', valorFmt: '319,20', variacao: { texto: '0,75%', direcao: 'baixa' } },
     ]);
     expect(b.mercado.map((m) => m.titulo)).toEqual(['Dólar', 'Bitcoin']);
   });
@@ -69,7 +69,7 @@ describe('montarBoletim', () => {
     expect(b.mercado[0].variacao).toEqual({ texto: '0,4%', direcao: 'alta' });
     expect(b.mercado[1].variacao).toEqual({ texto: '1,54%', direcao: 'baixa' });
     expect(b.mercado[2].variacao).toBeUndefined();
-    expect(b.mercado[3].variacao).toEqual({ texto: '0%', direcao: 'estavel' });
+    expect(b.mercado[3].variacao).toEqual({ texto: 'estável', direcao: 'estavel' });
   });
 
   it('a commodity sem preço por estado não entra na porteira (nada de média disfarçada)', () => {

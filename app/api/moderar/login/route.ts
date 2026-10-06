@@ -13,8 +13,8 @@ const espera = () => new Promise((r) => setTimeout(r, ESPERA_MS));
 const LIMITE = 10;
 const JANELA_MS = 15 * 60 * 1000;
 
-/** Passou do limite? Falha de banco não tranca o dono do lado de fora. */
-async function excedeuLimite(hash: string): Promise<boolean> {
+/** Sem contador, a senha não pode ser testada sem limite. */
+async function excedeuLimite(hash: string): Promise<boolean | null> {
   try {
     const supabase = createServerClient();
     const desde = new Date(Date.now() - JANELA_MS).toISOString();
@@ -25,22 +25,27 @@ async function excedeuLimite(hash: string): Promise<boolean> {
       .gte('criado_em', desde);
     if (error) {
       console.error('login: contagem de tentativas falhou', error);
-      return false;
+      return null;
     }
     return (count ?? 0) >= LIMITE;
   } catch (e) {
     console.error('login: contagem de tentativas falhou', e);
-    return false;
+    return null;
   }
 }
 
-async function registrarTentativa(hash: string): Promise<void> {
+async function registrarTentativa(hash: string): Promise<boolean> {
   try {
     const supabase = createServerClient();
     const { error } = await supabase.from('tentativas_login').insert({ ip_hash: hash });
-    if (error) console.error('login: registro de tentativa falhou', error);
+    if (error) {
+      console.error('login: registro de tentativa falhou', error);
+      return false;
+    }
+    return true;
   } catch (e) {
     console.error('login: registro de tentativa falhou', e);
+    return false;
   }
 }
 
@@ -62,14 +67,25 @@ export async function POST(req: Request) {
     return Response.json({ erro: 'Moderação não configurada.' }, { status: 500 });
   }
 
+  if (!process.env.CRON_SECRET) {
+    return Response.json({ erro: 'Moderação não configurada.' }, { status: 500 });
+  }
   const hash = ipHash(req);
-  if (await excedeuLimite(hash)) {
+  const excedeu = await excedeuLimite(hash);
+  if (excedeu === null) {
+    return Response.json({ erro: 'Login temporariamente indisponível.' }, { status: 503 });
+  }
+  if (excedeu) {
     return Response.json({ erro: 'Muitas tentativas — espere 15 minutos.' }, { status: 429 });
   }
 
+  // POR QUE ISTO EXISTE: se a leitura funciona mas a escrita de tentativas falha,
+  // conferir a senha abriria tentativas ilimitadas. Conta inclusive o acerto.
+  if (!(await registrarTentativa(hash))) {
+    return Response.json({ erro: 'Login temporariamente indisponível.' }, { status: 503 });
+  }
+
   if (!verificarSenha(tentativa, senha)) {
-    // Só a falha conta: quem acerta de primeira todo dia nunca se aproxima do limite.
-    await registrarTentativa(hash);
     return Response.json({ erro: 'Senha incorreta.' }, { status: 401 });
   }
 

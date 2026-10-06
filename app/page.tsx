@@ -15,10 +15,10 @@ export const revalidate = 900;
 export const metadata = {
   // Escrito por extenso, e não 'Notícias do Mercado' + template: o title.template do
   // layout só vale para segmentos FILHOS, e a home divide o segmento raiz com ele.
-  // Confiar no template aqui deixava a aba como "Notícias do Mercado", sem a marca.
-  title: 'Praça Araguaia — Notícias do Mercado',
+  // Confiar no template aqui deixava a aba sem a marca nem o assunto principal.
+  title: 'Praça Araguaia — Preços da porteira no Vale do Araguaia',
   description:
-    'As notícias do agro, da pecuária e do mercado que mexem com o preço na porteira, reunidas dos principais veículos do país.',
+    'Preço do gado por praça, grãos por estado, reportes do produtor e notícias que mexem com a porteira no Vale do Araguaia.',
 };
 
 
@@ -30,6 +30,7 @@ export default async function Home() {
     <div className="wrap">
       {/* Mesmo hero de duas colunas de /cotacoes — o site já fala assim. Lá o touro,
           aqui a lavoura no fim da tarde: a mesma praça, outro assunto. */}
+      <div className="home-abertura">
       <section className="hero nhero">
         <div className="text">
           <div className="kicker">Notícias do mercado</div>
@@ -60,6 +61,7 @@ export default async function Home() {
       {/* O preço ANTES da notícia: é a promessa do site, e quem chega de um link do
           WhatsApp precisa vê-la sem rolar. */}
       <PracaHoje />
+      </div>
 
       {noticias.length === 0 ? (
         // Todos os feeds fora do ar. Estado honesto, com saída para o que funciona.

@@ -1,4 +1,5 @@
 import type { Cotacao, PrecoUf } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 // Novilha e bezerro — a REPOSIÇÃO da porteira, por estado.
 //
@@ -123,7 +124,7 @@ async function carregar(tipo: TipoPecuaria, fetchImpl: typeof fetch): Promise<Le
   if (guardado && Date.now() - guardado.quando < TTL_MS) return guardado.leitura;
 
   const pagina = PAGINAS[tipo];
-  const res = await fetchImpl(pagina.url, {
+  const res = await requisicaoFonte(fetchImpl, pagina.url, {
     headers: { 'user-agent': 'PracaAraguaia/1.0 (+https://agroapp-bay.vercel.app)' },
   });
   if (!res.ok) throw new Error(`Notícias Agrícolas respondeu ${res.status} para ${tipo}`);

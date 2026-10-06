@@ -1,4 +1,5 @@
 import type { Cotacao } from '@/types/cotacao';
+import { requisicaoFonte } from './requisicao';
 
 const URL_OURO = 'https://api.gold-api.com/price/XAU';
 const URL_USD = 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=BRL';
@@ -15,7 +16,9 @@ const GRAMAS_POR_ONCA_TROY = 31.1034768;
 async function gramaDeOuro24k(
   fetchImpl: typeof fetch,
 ): Promise<{ valor: number; dataReferencia: string }> {
-  const [resOuro, resUsd] = await Promise.all([fetchImpl(URL_OURO), fetchImpl(URL_USD)]);
+  const [resOuro, resUsd] = await Promise.all([
+    requisicaoFonte(fetchImpl, URL_OURO), requisicaoFonte(fetchImpl, URL_USD),
+  ]);
   if (!resOuro.ok) throw new Error(`gold-api respondeu ${resOuro.status}`);
   if (!resUsd.ok) throw new Error(`Frankfurter respondeu ${resUsd.status}`);
 

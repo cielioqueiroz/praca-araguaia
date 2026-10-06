@@ -15,9 +15,11 @@ export async function enviarEmMassa(args: {
       if (r.ok) resumo.enviados++;
       else if (r.bloqueado) resumo.bloqueados.push(chatId);
       else resumo.falhas++;
-    } catch (erro) {
+    } catch {
       // Uma queda de rede neste chat não deve impedir os próximos inscritos.
-      console.error('telegram-broadcast: envio falhou', { chatId, erro });
+      // O chat_id identifica uma pessoa; nem ele nem o erro de fetch (que pode
+      // carregar o token do bot na URL) devem parar nos logs da plataforma.
+      console.error('telegram-broadcast: envio falhou');
       resumo.falhas++;
     }
   }
