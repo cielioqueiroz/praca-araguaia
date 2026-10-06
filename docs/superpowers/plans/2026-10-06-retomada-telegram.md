@@ -9,6 +9,7 @@
 - [x] Rodar testes, typecheck, lint, build e conferir o cron e o audit. O audit de
   produção está zerado; o audit completo aponta cinco ocorrências de `braces`
   somente na cadeia de lint, sem correção disponível nesta major.
-- [ ] Aplicar migration, publicar e verificar o commit em produção antes de chamar
-  qualquer rota de prévia ou disparo.
+- [x] Aplicar migration, publicar e verificar o commit em produção antes de chamar
+  qualquer rota de prévia ou disparo. A prévia enviou 1/1 ao dono e a coleta manual
+  atualizou 12 cotações, 16 praças e 30 estados sem erros.
 - [ ] Observar a primeira entrega pelo registro de envio e pelos logs.

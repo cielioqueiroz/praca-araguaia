@@ -22,6 +22,12 @@ revisão manual antes de qualquer intervenção. A prévia segue restrita ao don
 reserva a entrega. Ver [spec](docs/superpowers/specs/2026-10-06-retomada-telegram-design.md)
 e [plano](docs/superpowers/plans/2026-10-06-retomada-telegram.md).
 
+**Em produção:** a migration 0016 foi aplicada; o commit funcional `95d1a9b` ficou
+`READY` no domínio principal. A prévia retornou 1 envio ao dono. Uma coleta manual
+na versão publicada concluiu sem erros: 12 cotações, 16 praças e 30 linhas de estado
+atualizadas em 06/10. A primeira entrega automática aos inscritos ainda aguarda a
+janela das 18:00–18:59 BRT e deve ser conferida em `envios_boletim`.
+
 ## 🌧️ Correções locais da mesma rodada (06/10/2026)
 
 - A leitura da Open-Meteo passa a ter timeout de 8 segundos.
