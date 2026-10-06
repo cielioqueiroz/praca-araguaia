@@ -22,6 +22,8 @@ import type { Feed } from '@/types/noticia';
 // AGROLINK FOI REMOVIDO: o feed responde 200 com 49 itens, mas a notícia mais nova
 // é de 02/07/2020 — está abandonado há seis anos. Como a página ordena por data, os
 // itens nunca apareceriam; seria só uma requisição jogada fora a cada revalidação.
+// Compre Rural saiu em 06/10/2026: o runtime da Vercel registrou 403 no feed.
+// Mantê-lo atrasaria a home e faria o cadastro prometer uma fonte indisponível.
 
 export const FEEDS: Feed[] = [
   { id: 'g1-agro', veiculo: 'G1 Agronegócios', url: 'https://g1.globo.com/rss/g1/economia/agronegocios/' }, // 100
@@ -31,6 +33,5 @@ export const FEEDS: Feed[] = [
   { id: 'cnn', veiculo: 'CNN Brasil', url: 'https://www.cnnbrasil.com.br/feed/' }, // 60
   { id: 'infomoney', veiculo: 'InfoMoney', url: 'https://www.infomoney.com.br/feed/' }, // 10
   { id: 'money-times', veiculo: 'Money Times', url: 'https://www.moneytimes.com.br/feed/' }, // 10
-  { id: 'compre-rural', veiculo: 'Compre Rural', url: 'https://www.comprerural.com/feed/' }, // 10
   { id: 'beefpoint', veiculo: 'BeefPoint', url: 'https://www.beefpoint.com.br/feed/' }, // 10 — só pecuária
 ];

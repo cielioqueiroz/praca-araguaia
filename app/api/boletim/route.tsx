@@ -300,7 +300,7 @@ export async function GET(req: Request) {
   const supabase = createPublicClient();
   const seteDias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data, error }, { data: ufs }, { data: pracas }, { data: reportes }] = await Promise.all([
+  const [cotacoes, porUf, porPraca, porCidade] = await Promise.all([
     supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct'),
     supabase.from('cotacoes_uf').select('tipo, uf, valor, unidade, variacao_pct, data_referencia'),
     supabase.from('cotacoes_praca').select('tipo, praca, uf, valor, unidade, variacao_pct, data_referencia'),
@@ -310,9 +310,13 @@ export async function GET(req: Request) {
       .eq('status', 'aprovado')
       .gte('criado_em', seteDias),
   ]);
-  if (error) {
+  if (cotacoes.error || porUf.error || porPraca.error || porCidade.error) {
     return new Response('Erro ao carregar cotações', { status: 500 });
   }
+  const data = cotacoes.data;
+  const ufs = porUf.data;
+  const pracas = porPraca.data;
+  const reportes = porCidade.data;
 
   // As cidades de CADA produto da porteira (antes: só do boi).
   const aprovados = ((reportes ?? []) as ReporteAprovado[]).map((r) => ({

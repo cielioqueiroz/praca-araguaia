@@ -4,7 +4,7 @@
 
 O eixo do site é a porteira: gado por praça da Scot (via Notícias Agrícolas), grãos por UF da CONAB e reportes moderados. Dólar, euro, ouro e bolsa ajudam a entender o contexto; cripto deve permanecer secundária. Oito praças de gado e os estados vizinhos continuam nomeados, sem converter referência regional em preço de uma cidade. O ticker agora seleciona o boi de Redenção/PA (ou nomeia a praça do PA usada), soja e milho do PA e dólar, com validade do dado.
 
-As nove fontes RSS têm filtro de relevância, deduplicação e limite por veículo. A home passa a rejeitar notícia sem data ou com mais de sete dias. A presença de uma fonte no cadastro não garante que ela responda hoje; os erros são registrados e a página mostra um estado vazio se todas falharem. A melhoria seguinte é medir, por veículo, quantas matérias recentes e relevantes chegam de fato antes de acrescentar novos feeds.
+As oito fontes RSS ativas têm filtro de relevância, deduplicação e limite por veículo. O feed do Compre Rural saiu após erro 403 registrado no runtime da Vercel em 06/10. A home passa a rejeitar notícia sem data ou com mais de sete dias. A presença de uma fonte no cadastro não garante que ela responda hoje; os erros são registrados e a página mostra um estado vazio se todas falharem. A melhoria seguinte é medir, por veículo, quantas matérias recentes e relevantes chegam de fato antes de acrescentar novos feeds.
 
 ## Interface e design system
 
@@ -16,10 +16,11 @@ Fonte por arquivo no registry, regras puras em `lib/`, UI perto de seus consumid
 
 ## Segurança verificada
 
-- Clientes de leitura usam papel PostgreSQL sem escrita; RLS só expõe reportes e fornecedores aprovados. Segredos ficam em variáveis de servidor e `.env.local` ignorado pelo Git.
+- Clientes de leitura usam papel PostgreSQL sem escrita pela conexão pooled; RLS só expõe reportes e fornecedores aprovados. A conexão foi testada com acesso às cotações e recusa à tabela de inscritos. Segredos ficam em variáveis de servidor e `.env.local` ignorado pelo Git.
 - Cron usa comparação em tempo constante e nega acesso sem segredo. O card público aceita só duas URLs fixas; parâmetros dinâmicos exigem assinatura para impedir cache misses ilimitados.
 - Login agora recusa acesso se não conseguir consultar **ou gravar** a tentativa. O webhook recusa confirmar a inscrição quando a gravação falha. Logs de broadcast não incluem chat ID nem erro de rede que possa trazer o token.
 - A busca de `og:image` só visita domínios dos veículos cadastrados e não acompanha redirecionamento. O link de uma matéria vem do RSS externo e antes poderia induzir uma busca do servidor a um endereço interno.
+- A imagem do boletim agora retorna erro se qualquer leitura de preço ou reporte falhar; um card incompleto não pode ser transmitido como boletim válido.
 - `npm audit --omit=dev` retornou zero. O audit completo ainda mostra cinco alertas altos na cadeia de desenvolvimento do ESLint (`braces` → `micromatch` → `fast-glob`), sem correção disponível na versão atual; não há dependência de produção afetada. Uma troca forçada de major do Next não foi aplicada.
 
 ## Pendências priorizadas

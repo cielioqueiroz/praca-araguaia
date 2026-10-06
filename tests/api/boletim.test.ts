@@ -26,21 +26,23 @@ import { montarBoletim } from '@/lib/boletim';
 // contra o cache-buster assinado vive em tests/boletim-url.test.ts.
 const req = () => new Request('http://localhost/api/boletim');
 
-// A rota faz 3 consultas: cotacoes (select), cotacoes_uf (select) e reportes
-// (select + eq + eq + gte). O mock encadeia os filtros e responde por tabela.
+// A rota faz 4 consultas. O mock encadeia os filtros e responde por tabela.
 const mockClient = (
   cotacoes: { data: unknown; error: unknown },
   cotacoesUf: unknown[] = [],
   reportes: unknown[] = [],
+  erroTabela?: 'cotacoes_uf' | 'cotacoes_praca' | 'reportes',
 ) => {
   (createPublicClient as ReturnType<typeof vi.fn>).mockReturnValue({
     from: (tabela: string) => ({
       select: () => {
         if (tabela === 'cotacoes') return Promise.resolve(cotacoes);
-        if (tabela === 'cotacoes_uf') return Promise.resolve({ data: cotacoesUf, error: null });
+        if (tabela === 'cotacoes_uf' || tabela === 'cotacoes_praca') {
+          return Promise.resolve({ data: tabela === 'cotacoes_uf' ? cotacoesUf : [], error: tabela === erroTabela ? { message: 'boom' } : null });
+        }
         const filtro = {
           eq: () => filtro,
-          gte: () => Promise.resolve({ data: reportes, error: null }),
+          gte: () => Promise.resolve({ data: reportes, error: erroTabela === 'reportes' ? { message: 'boom' } : null }),
         };
         return filtro;
       },
@@ -68,11 +70,20 @@ describe('GET /api/boletim', () => {
     expect(res.status).toBe(200);
   });
 
-  it('500 quando o Supabase falha', async () => {
+  it('500 quando o banco falha na cotação principal', async () => {
     mockClient({ data: null, error: { message: 'boom' } });
     const res = await GET(req());
     expect(res.status).toBe(500);
   });
+
+  it.each(['cotacoes_uf', 'cotacoes_praca', 'reportes'] as const)(
+    '500 quando a leitura de %s falha, para não enviar card parcial',
+    async (tabela) => {
+      mockClient({ data: [], error: null }, [], [], tabela);
+      const res = await GET(req());
+      expect(res.status).toBe(500);
+    },
+  );
 
   it('leva o preço por UF e as cidades do Termômetro para o card', async () => {
     mockClient(

@@ -6,7 +6,8 @@ const ARQUIVO_ENV = '.env.local';
 const linhas = (await readFile(ARQUIVO_ENV, 'utf8')).split(/\r?\n/);
 const valor = (nome) => linhas.find((linha) => linha.startsWith(`${nome}=`))?.slice(nome.length + 1).replace(/^['"]|['"]$/g, '');
 const url = valor('DATABASE_URL_UNPOOLED');
-if (!url) throw new Error('DATABASE_URL_UNPOOLED ausente em .env.local');
+const urlPooled = valor('DATABASE_URL');
+if (!url || !urlPooled) throw new Error('Conexões Neon ausentes em .env.local');
 
 const banco = new pg.Client({ connectionString: url });
 await banco.connect();
@@ -26,7 +27,9 @@ try {
     throw erro;
   }
 
-  const leitura = new URL(url);
+  // As páginas rodam em funções serverless: o papel de leitura também usa o
+  // pooler, para não esgotar conexões diretas com instâncias simultâneas.
+  const leitura = new URL(urlPooled);
   leitura.username = 'praca_leitura';
   leitura.password = senha;
   const atualizadas = linhas.filter((linha) => !linha.startsWith('DATABASE_URL_READONLY='));
