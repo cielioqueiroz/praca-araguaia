@@ -38,7 +38,10 @@ export async function buscarPrevisao(fetchImpl: typeof fetch = fetch): Promise<P
     '&timezone=America%2FAraguaina&forecast_days=7';
 
   // revalidate: o Next reusa a resposta por 1h entre renders da página.
-  const res = await fetchImpl(url, { next: { revalidate: 3600 } });
+  const res = await fetchImpl(url, {
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(8_000),
+  });
   if (!res.ok) throw new Error(`Open-Meteo respondeu ${res.status}`);
 
   const body = (await res.json()) as RespostaLocal[];
@@ -51,13 +54,34 @@ export async function buscarPrevisao(fetchImpl: typeof fetch = fetch): Promise<P
     if (!d?.time || !d.precipitation_sum || !d.temperature_2m_max || !d.temperature_2m_min) {
       throw new Error(`Resposta da Open-Meteo inválida para ${MUNICIPIOS[i].nome}: daily ausente`);
     }
-    const dias = d.time.map((data, j) => ({
-      data,
-      chuvaMm: Number(d.precipitation_sum?.[j] ?? 0),
-      probMax: d.precipitation_probability_max?.[j] ?? null,
-      tempMin: Number(d.temperature_2m_min?.[j]),
-      tempMax: Number(d.temperature_2m_max?.[j]),
-    }));
+    const dias = d.time.map((data, j) => {
+      const chuvaMm = d.precipitation_sum?.[j];
+      const tempMin = d.temperature_2m_min?.[j];
+      const tempMax = d.temperature_2m_max?.[j];
+      if (chuvaMm === null || chuvaMm === undefined || !Number.isFinite(chuvaMm)) {
+        throw new Error(`Resposta da Open-Meteo inválida: chuva ausente ou inválida em ${MUNICIPIOS[i].nome} em ${data}`);
+      }
+      if (
+        tempMin === null ||
+        tempMin === undefined ||
+        tempMax === null ||
+        tempMax === undefined ||
+        !Number.isFinite(tempMin) ||
+        !Number.isFinite(tempMax)
+      ) {
+        throw new Error(
+          `Resposta da Open-Meteo inválida: temperatura ausente ou inválida em ${MUNICIPIOS[i].nome} em ${data}`,
+        );
+      }
+
+      return {
+        data,
+        chuvaMm: Number(chuvaMm),
+        probMax: d.precipitation_probability_max?.[j] ?? null,
+        tempMin: Number(tempMin),
+        tempMax: Number(tempMax),
+      };
+    });
     return { municipio: MUNICIPIOS[i].nome, uf: MUNICIPIOS[i].uf, dias };
   });
 }

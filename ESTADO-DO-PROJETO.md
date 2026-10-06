@@ -1,7 +1,40 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-08-19.
-> Quando voltar, comece por aqui. Tudo está commitado e no ar.
+> **Documento de retomada.** Última atualização: 2026-10-06.
+> Quando voltar, comece por aqui. O bloco mais recente informa o que ainda não foi
+> commitado ou publicado.
+
+---
+
+## 📬 Retomada organizada do Telegram (06/10/2026)
+
+O dono autorizou retomar os disparos. O plano atual agenda **somente o boletim de
+fechamento**, em dias úteis, após a coleta: `/api/coletar` a partir de 17:30 BRT e
+`/api/enviar-boletim` a partir de 18:00 BRT. Na Vercel Hobby, cada cron pode iniciar
+em qualquer momento da hora agendada. Abertura, alertas e resumo de audiência
+continuam sem cron.
+
+O envio exige atualização no mesmo dia de todas as 12 cotações, das praças de boi e
+vaca e dos estados de novilha, bezerro, soja e milho. Coleta parcial retorna 503 e
+não envia. Uma reserva única por dia e sessão em `envios_boletim` impede repetição,
+inclusive se uma execução cair após mandar parte das mensagens. Esse caso requer
+revisão manual antes de qualquer intervenção. A prévia segue restrita ao dono e não
+reserva a entrega. Ver [spec](docs/superpowers/specs/2026-10-06-retomada-telegram-design.md)
+e [plano](docs/superpowers/plans/2026-10-06-retomada-telegram.md).
+
+## 🌧️ Correções locais da mesma rodada (06/10/2026)
+
+- A leitura da Open-Meteo passa a ter timeout de 8 segundos.
+- Chuva ou temperatura ausente deixa a previsão indisponível; `null` não vira mais
+  0 mm nem 0 °C na tela.
+- README, AGENTS e `.env.local.example` registram as oito envs usadas pelo código e
+  a retomada restrita ao fechamento.
+- Next foi de 15.5.23 para 15.5.24, Sharp para 0.35.5, PostCSS para 8.5.29 e Vitest
+  para 4.1.11. O audit caiu de 42 vulnerabilidades para 5, todas na cadeia de lint que
+  termina em `braces@3.0.3`, ainda sem versão corrigida publicada. `--force` faria
+  downgrade do eslint-config-next para 14 e continua proibido.
+- Verificação anterior: 582 testes, typecheck, lint e build limpos. A verificação
+  final desta rodada inclui as mudanças do Telegram.
 
 ---
 
@@ -48,9 +81,9 @@ o nome da cidade, seria repetir exatamente o erro que a foto da calculadora come
 
 ---
 
-## 🔇 SILÊNCIO TOTAL NO TELEGRAM (19/08/2026) — nada dispara
+## 🔇 Pausa do Telegram (19/08/2026) — histórico, encerrado em 06/10
 
-> **Situação atual e vigente.** O dono: *"não quero que volte a disparar nada no Telegram
+> **Registro histórico.** O dono: *"não quero que volte a disparar nada no Telegram
 > ainda, deixe tudo parado; só volto a mandar as notícias quando o sistema estiver 100%."*
 >
 > O boletim tinha sido religado em 18/08 (só o fechamento) e **foi desligado de novo no
@@ -66,6 +99,9 @@ o nome da cidade, seria repetir exatamente o erro que a foto da calculadora come
 > [`lib/cron.ts`](lib/cron.ts). Recomendação quando voltar: **só o fechamento** (18:00).
 
 ### O registro da primeira pausa (28/07/2026)
+
+> Registro histórico, superado pelo silêncio total de 19/08 descrito acima. As linhas
+> seguintes explicam o estado que existiu entre as duas pausas.
 
 A pedido do dono, "até eu voltar e organizar algumas coisas". Os dois crons de
 `/api/enviar-boletim` saíram do `vercel.json`. **A rota continua de pé** — prévia
@@ -353,7 +389,7 @@ GitHub** daquele dia, não uma configuração quebrada — resolveu sozinho). As
 saíram do 404.
 
 **As env vars estão todas na Vercel** (conferido em 17/07 com `vercel env ls production`):
-`MODERACAO_SENHA`, `TELEGRAM_DONO_CHAT_ID` (= `8896839605`), `CRON_SECRET`,
+`MODERACAO_SENHA`, `TELEGRAM_DONO_CHAT_ID`, `CRON_SECRET`,
 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, as três do Supabase. Nada pendente do
 dono. O resumo diário de audiência já chega no Telegram do dono pelo cron de alertas.
 
@@ -624,13 +660,14 @@ Ordem sugerida — cada uma segue o ciclo `/brainstorming` → spec → plano �
 O usuário só quer **ferramentas grátis** — o que tira OTP/WhatsApp pagos do caminho por ora.
 
 1. ~~**Ligar o bot de Telegram (13A)**~~ ✅ **feito em 2026-07-04** (`@pracaaraguaia_bot` no ar).
-2. **Bot de Telegram B e C** — envio diário do boletim (cron + `sendPhoto` do PNG) e alertas de preço; **agora desbloqueados** (13A ligada).
-3. **Conteúdo da vitrine** — receber do dono os primeiros fornecedores reais e adicioná-los a `lib/fornecedores.ts` num commit (estrutura já no ar).
-4. **Termômetro T3 restante** — OTP + reputação: exigem provedor pago + PII, só se o dono decidir bancar.
+2. **Distribuição e conteúdo real** — medir novamente audiência, reportes e fornecedores; os últimos números registrados, de 18/08, eram 3 assinantes, 30 acessos, 0 reportes e 0 fornecedores.
+3. **Semear Termômetro e vitrine** — o dono liga para produtores e fornecedores; a moderação já permite lançar os preços apurados pela Praça e aprovar cadastros.
+4. **Histórico por praça/UF** — hoje o gráfico da porteira mostra a série regional; a tabela mostra apenas o valor atual de cada lugar.
+5. **Termômetro T3 restante** — OTP + reputação exigem provedor pago e PII; só avançar se o dono decidir bancar.
 
 ### Dívidas técnicas pequenas (anotadas nas reviews)
 - Moderação (`/moderar`): botões Aprovar/Rejeitar sem `aria-label` por card e mensagens de erro sem `role="alert"`/`aria-live` (a11y); casts do mock de `fetch` acusam no `tsc` dos testes (padrão já existente no repo); endurecer o HMAC do cookie (derivar chave de um segredo separado da senha) se um dia houver mais de um moderador.
-- Chuva: `AbortSignal.timeout` no fetch da Open-Meteo; `console.error` no catch da página (hoje a falha não deixa rastro nos logs); reter o último dado bom na revalidação (hoje um blip da API troca dados bons por "indisponível" por até 1h); validar temperaturas por elemento (`Number(null)` vira 0 silencioso); card com grid de colunas fixas.
+- Chuva: reter o último dado bom na revalidação exige armazenamento próprio; card com grid de colunas fixas. Timeout e validação por elemento foram resolvidos na fatia de 06/10/2026; a página já registra a falha com `console.error`.
 - Formatação de valor/variação duplicada entre `lib/boletim.ts`, `CardCotacao.tsx`, `CardPorteira.tsx` e `TabelaMercado.tsx` — consolidar num helper (`lib/formatacao.ts`) numa fatia futura.
 - ~~Recorte **municipal** da CONAB~~ — **descartado de vez** (fatia 15): o arquivo está ~7 meses defasado para o boi. Cidade só pelo Termômetro.
 - Backfill de **ouro** (sem fonte histórica grátis definida ainda).

@@ -29,4 +29,18 @@ describe('enviarEmMassa', () => {
     });
     expect(vistos).toEqual([10, 20, 30]);
   });
+
+  it('continua a entrega quando a rede falha para um inscrito', async () => {
+    const vistos: number[] = [];
+    const resumo = await enviarEmMassa({
+      chatIds: [10, 20, 30],
+      enviar: async (id) => {
+        vistos.push(id);
+        if (id === 20) throw new Error('rede indisponível');
+        return { ok: true };
+      },
+    });
+    expect(vistos).toEqual([10, 20, 30]);
+    expect(resumo).toEqual({ enviados: 2, bloqueados: [], falhas: 1 });
+  });
 });

@@ -23,7 +23,7 @@ Este arquivo é **só o que não está escrito em outro lugar**. Onde a verdade 
 npm run dev              # http://localhost:3000
 npm run build            # build de produção
 npm start                # sobe o build
-npm test                 # Vitest, uma passada (hoje: 578 testes)
+npm test                 # Vitest, uma passada (hoje: 589 testes)
 npm run test:watch       # watch
 npm run lint             # ESLint (next/core-web-vitals + next/typescript)
 npm run typecheck        # tsc --noEmit — tem que dar ZERO
@@ -106,7 +106,7 @@ Feriado nacional é barrado dentro da rota, em [`lib/dia-util.ts`](lib/dia-util.
 
 **`npm audit` tem que dar zero, e o `overrides` do package.json é o motivo.** As vulnerabilidades restantes viviam em dependências TRANSITIVAS (`sharp` e `postcss`, que o Next embute; `esbuild`, do vitest), e o `npm audit fix --force` "resolvia" subindo o Next para a major 16. O `overrides` fixa a versão corrigida de cada uma sem trocar de framework. **Não rode `npm audit fix --force`** — ele desfaz isso e arrasta um major num site que está no ar. Se um override deixar de ser necessário porque o Next passou a trazer a versão boa, aí sim ele sai.
 
-Envs (todas em [`.env.local.example`](.env.local.example)): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`. As cinco últimas são server-only — nunca sob `NEXT_PUBLIC_*`.
+Envs (todas em [`.env.local.example`](.env.local.example)): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_DONO_CHAT_ID`. As seis últimas são server-only — nunca sob `NEXT_PUBLIC_*`.
 
 ---
 
@@ -169,11 +169,11 @@ Os prints saem em DPR 3 (1170px de largura): uma home de 18.000px CSS gera image
 
 ## Operação
 
-**SILÊNCIO TOTAL NO TELEGRAM desde 19/08/2026, a pedido do dono.** Boletim e alertas estão fora do `crons`. O único cron ativo é `/api/coletar` (17:30 BRT), que não envia nada. **Não religue nada sem o dono pedir.** As linhas prontas para voltar estão comentadas em [`lib/cron.ts`](lib/cron.ts); a recomendação é começar só pelo fechamento (18:00).
+**Retomada do Telegram autorizada pelo dono em 06/10/2026.** O único envio automático é o boletim de fechamento em dia útil, depois da coleta. Abertura, alertas e resumo de audiência continuam sem cron. A rota exige coleta completa do dia e reserva única em `envios_boletim` antes de enviar; falha parcial exige revisão manual, pois repetir o disparo duplicaria mensagens. Na Vercel Hobby, o cron pode iniciar a qualquer momento dentro da hora agendada.
 
 As rotas de envio continuam de pé — prévia (`?previa=1`) e disparo manual funcionam. Por isso: **nunca acione uma rota irreversível antes de confirmar que o commit está no ar** (`vercel inspect`). HTTP 200 não distingue código velho de código novo, e não há como desenviar um broadcast.
 
-Deploy é automático no push para `master`. `vercel.json` só carrega o cron.
+Deploy é automático no push para `master`. `vercel.json` carrega os crons de coleta e fechamento.
 
 ---
 

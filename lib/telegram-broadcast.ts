@@ -10,10 +10,16 @@ export async function enviarEmMassa(args: {
 }): Promise<ResumoEnvio> {
   const resumo: ResumoEnvio = { enviados: 0, bloqueados: [], falhas: 0 };
   for (const chatId of args.chatIds) {
-    const r = await args.enviar(chatId);
-    if (r.ok) resumo.enviados++;
-    else if (r.bloqueado) resumo.bloqueados.push(chatId);
-    else resumo.falhas++;
+    try {
+      const r = await args.enviar(chatId);
+      if (r.ok) resumo.enviados++;
+      else if (r.bloqueado) resumo.bloqueados.push(chatId);
+      else resumo.falhas++;
+    } catch (erro) {
+      // Uma queda de rede neste chat não deve impedir os próximos inscritos.
+      console.error('telegram-broadcast: envio falhou', { chatId, erro });
+      resumo.falhas++;
+    }
   }
   return resumo;
 }

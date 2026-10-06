@@ -46,6 +46,17 @@ describe('buscarPrevisao', () => {
     expect(url).toContain('forecast_days=7');
   });
 
+  it('limita a espera da Open-Meteo a oito segundos', async () => {
+    const sinal = new AbortController().signal;
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(sinal);
+    const f = fetchComJson(FIXTURE);
+
+    await buscarPrevisao(f);
+
+    expect(timeout).toHaveBeenCalledWith(8_000);
+    expect(f).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ signal: sinal }));
+  });
+
   it('rejeita quando o HTTP não é ok', async () => {
     await expect(buscarPrevisao(fetchComJson({}, false, 500))).rejects.toThrow(/Open-Meteo/);
   });
@@ -57,5 +68,26 @@ describe('buscarPrevisao', () => {
   it('rejeita quando o daily vem ausente', async () => {
     const quebrado = [...FIXTURE.slice(0, 4), {}];
     await expect(buscarPrevisao(fetchComJson(quebrado))).rejects.toThrow(/São Félix/);
+  });
+
+  it('rejeita temperatura ausente em vez de publicar zero grau', async () => {
+    const quebrado = structuredClone(FIXTURE);
+    quebrado[0].daily.temperature_2m_min[2] = null as unknown as number;
+
+    await expect(buscarPrevisao(fetchComJson(quebrado))).rejects.toThrow(/temperatura.*Redenção.*2026-07-05/i);
+  });
+
+  it('rejeita chuva ausente em vez de publicar dia seco', async () => {
+    const quebrado = structuredClone(FIXTURE);
+    quebrado[1].daily.precipitation_sum[4] = null as unknown as number;
+
+    await expect(buscarPrevisao(fetchComJson(quebrado))).rejects.toThrow(/chuva.*Santana.*2026-07-07/i);
+  });
+
+  it('rejeita valor meteorológico que não seja número finito', async () => {
+    const quebrado = structuredClone(FIXTURE);
+    quebrado[3].daily.temperature_2m_max[1] = Number.NaN;
+
+    await expect(buscarPrevisao(fetchComJson(quebrado))).rejects.toThrow(/temperatura.*Confresa.*2026-07-04/i);
   });
 });

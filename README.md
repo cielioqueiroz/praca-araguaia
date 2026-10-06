@@ -8,7 +8,7 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?logo=tailwindcss&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white">
   <img alt="Vercel" src="https://img.shields.io/badge/Vercel-Cron_+_ISR-000000?logo=vercel&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/testes-578_passando-brightgreen?logo=vitest&logoColor=white">
+  <img alt="Testes" src="https://img.shields.io/badge/testes-589_passando-brightgreen?logo=vitest&logoColor=white">
 </p>
 
 Plataforma de **informação agropecuária** da região do Araguaia. No ar em **[agroapp-bay.vercel.app](https://agroapp-bay.vercel.app)** com **12 cotações** (gado, grão, câmbio, ouro, bolsa e cripto), boletim diário, previsão de chuva e o **Termômetro da Praça** — construída em fatias verticais finas, cada uma com spec, plano, testes e deploy verificado.
@@ -69,8 +69,8 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 <table>
   <tr>
     <td width="34%" valign="top" align="center">
-      <img src="docs/screenshots/boletim.png" alt="Boletim do dia em PNG, enviado no Telegram" width="100%"><br>
-      <sub><b>Boletim</b> — PNG gerado no servidor (Satori) e disparado todo dia no Telegram: gado à esquerda, lavoura e mercado à direita. A URL da foto muda a cada envio, senão o Telegram reentrega o card que já tem em cache.</sub>
+      <img src="docs/screenshots/boletim.png" alt="Boletim do dia em PNG" width="100%"><br>
+      <sub><b>Boletim</b> — PNG gerado no servidor (Satori), pronto para baixar e compartilhar: gado à esquerda, lavoura e mercado à direita. O fechamento é enviado pelo Telegram em dias úteis, depois da coleta completa.</sub>
     </td>
     <td width="33%" valign="top" align="center">
       <img src="docs/screenshots/mobile.png" alt="Painel no celular" width="62%"><br>
@@ -92,7 +92,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 | **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 9 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
 | **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 6 cotações com mini-tendência de 30 dias: **dólar, euro, ouro (R$/g), Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
-| **`/boletim`** | Card-resumo do dia em **PNG 1080×1960** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. Enviado também no **Telegram** todo dia. |
+| **`/boletim`** | Card-resumo do dia em **PNG 1080×1960** (via `next/og`/Satori) pronto para Instagram/WhatsApp, com botão de download. O boletim de fechamento é enviado pelo Telegram após coleta completa em dia útil. |
 | **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
 | **`/termometro`** | **Termômetro da Praça**: o "valor típico" (mediana) dos preços reportados por produtores nos últimos 7 dias, **nas 6 categorias da porteira**, por município, contrastado com a referência oficial. |
 | **`/termometro/reportar`** | Reporte de preço **anônimo** (sem cadastro), com faixa de plausibilidade, honeypot e limite por IP. O convite no card já abre no produto certo (`?produto=`). |
@@ -100,7 +100,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 | **`/calculadora`** | Calculadora do produtor, em quatro contas: **gado na balança** (boi, vaca ou novilha: peso vivo + rendimento → arrobas), **lote de bezerro** (por cabeça), **colheita de grãos** (sacas) e **mercado** (o que você tem em dólar, euro, ouro ou cripto, em reais). O preço da praça já vem preenchido. |
 | **`/moderar`** | Moderação **pelo celular** (senha): abas de **preços** e **fornecedores** — aprovar/rejeitar/remover sem abrir o banco. |
 
-Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos e sem dados pessoais. Alertas e boletim também chegam pelo bot **[@pracaaraguaia_bot](https://t.me/pracaaraguaia_bot)** no Telegram.
+Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos. O bot **[@pracaaraguaia_bot](https://t.me/pracaaraguaia_bot)** recebe inscrições. Os crons ativos são a coleta de preços e o boletim de fechamento; alertas e resumo de audiência seguem sem envio automático.
 
 ### De onde vem cada preço
 
@@ -201,9 +201,9 @@ timeline
 | Gráficos | Sparklines em SVG puro · Recharts (detalhe) |
 | Imagem do boletim / OG | `next/og` (Satori) — PNG gerado no servidor |
 | Geolocalização | Vercel Edge Geo (IP) + Open-Meteo (temperatura) |
-| Coleta / envio agendados | Route Handlers + Vercel Cron (coleta · boletim · alertas) |
-| Bot | Telegram Bot API (inscrição, boletim, alertas) |
-| Testes | Vitest + Testing Library (578 testes) |
+| Coleta agendada | Route Handlers + Vercel Cron (somente `/api/coletar` ativo) |
+| Bot | Telegram Bot API (inscrição e boletim de fechamento ativos; alertas sem cron) |
+| Testes | Vitest + Testing Library (589 testes) |
 | Deploy | Vercel (auto-deploy no push, ISR, cron) |
 
 ---
@@ -246,7 +246,7 @@ agro_app/
 │  └─ supabase/{server,public,repo}.ts
 ├─ components/                     # Só o compartilhado por 2+ rotas (+ ui/ do shadcn)
 ├─ supabase/migrations/            # DDL + RLS versionado
-├─ tests/                          # 578 testes unitários e de componente
+├─ tests/                          # 589 testes unitários e de componente
 ├─ vercel.json                     # Cron diário → /api/coletar
 └─ docs/superpowers/{specs,plans}/ # Spec e plano de cada fatia
 ```
@@ -286,9 +286,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...        # anon / publishable key
 SUPABASE_SERVICE_ROLE_KEY=...            # service role — NUNCA expor no client
 CRON_SECRET=...                          # segredo forte para a coleta agendada
 MODERACAO_SENHA=...                      # senha da moderação em /moderar
+TELEGRAM_BOT_TOKEN=...                   # necessário para webhook e envios manuais
+TELEGRAM_WEBHOOK_SECRET=...              # autentica updates recebidos do Telegram
+TELEGRAM_DONO_CHAT_ID=...                # destino do resumo de audiência, quando ativado
 ```
 
-> ⚠️ `SUPABASE_SERVICE_ROLE_KEY` e `MODERACAO_SENHA` são usadas **apenas no servidor**. Nunca as coloque numa variável `NEXT_PUBLIC_*`.
+> ⚠️ `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MODERACAO_SENHA` e as variáveis do Telegram são usadas **apenas no servidor**. Nunca as coloque numa variável `NEXT_PUBLIC_*`.
 
 ### 5. Rodar
 
@@ -320,7 +323,7 @@ curl -H "authorization: Bearer SEU_CRON_SECRET" http://localhost:3000/api/coleta
 ## Deploy (Vercel)
 
 1. Conecte o repositório à Vercel — cada `git push` na `master` dispara o deploy.
-2. Defina as 5 variáveis de ambiente (as mesmas do `.env.local`) no projeto, marcadas para **Production**.
+2. Defina as variáveis de ambiente necessárias (as mesmas do `.env.local`) no projeto, marcadas para **Production**.
 3. O agendamento em [`vercel.json`](vercel.json) chama `/api/coletar` 1×/dia; a Vercel injeta `Authorization: Bearer ${CRON_SECRET}` automaticamente.
 
 ---
@@ -360,7 +363,7 @@ reportes              -- Termômetro da Praça: preços reportados, moderados
 - [x] Termômetro da Praça: reporte anônimo + moderação pelo celular
 - [x] Mediana + faixa (robustez) e histórico do Termômetro
 - [x] Calculadora do produtor (lote de boi + colheita)
-- [x] Bot de Telegram: inscrição, boletim diário e alertas de movimento (gratuito)
+- [x] Bot de Telegram: inscrição e fechamento diário com coleta completa e reserva única; alertas disponíveis só para uso manual
 - [x] Vitrine de fornecedores com submissão pública + moderação
 - [x] Redesign "fazenda moderna premium" + geolocalização do usuário
 - [x] Menu hambúrguer no celular + marca nova ("broto no sulco") em site, favicon, card e OG

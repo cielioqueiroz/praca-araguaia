@@ -9,21 +9,47 @@ vi.mock('@/lib/telegram', async (orig) => {
 import { GET } from '@/app/api/enviar-boletim/route';
 import { createServerClient } from '@/lib/supabase/server';
 import { enviarFotoArquivo } from '@/lib/telegram';
+import { ORDEM_PAINEL } from '@/lib/tipos-ui';
 
 const SECRET = 'segredo';
 const enviar = enviarFotoArquivo as ReturnType<typeof vi.fn>;
 
-function mockSupabase(chatIds: number[], selectError: unknown = null) {
+function mockSupabase(chatIds: number[], selectError: unknown = null, cotacaoPendente = false) {
   const inFn = vi.fn(async () => ({ error: null }));
   const del = vi.fn(() => ({ in: inFn }));
   const select = vi.fn(async () => ({
     data: selectError ? null : chatIds.map((chat_id) => ({ chat_id })),
     error: selectError,
   }));
-  (createServerClient as ReturnType<typeof vi.fn>).mockReturnValue({
-    from: vi.fn(() => ({ select, delete: del })),
+  const hoje = '2026-07-23T13:00:00.000Z';
+  const ontem = '2026-07-22T13:00:00.000Z';
+  const linhas = (tipos: readonly string[]) => tipos.map((tipo) => ({
+    tipo,
+    atualizado_em: tipo === 'dolar' && cotacaoPendente ? ontem : hoje,
+  }));
+  const dados: Record<string, { tipo: string; atualizado_em: string }[]> = {
+    cotacoes: linhas(ORDEM_PAINEL),
+    cotacoes_praca: linhas(['boi', 'vaca']),
+    cotacoes_uf: linhas(['novilha', 'bezerro', 'soja', 'milho']),
+  };
+  const reservas = new Set<string>();
+  const insert = vi.fn(async ({ dia, sessao }: { dia: string; sessao: string }) => {
+    const chave = `${dia}:${sessao}`;
+    if (reservas.has(chave)) return { error: { code: '23505' } };
+    reservas.add(chave);
+    return { error: null };
   });
-  return { select, del, inFn };
+  const eqFinal = vi.fn(async () => ({ error: null }));
+  const eqInicial = vi.fn(() => ({ eq: eqFinal }));
+  const update = vi.fn(() => ({ eq: eqInicial }));
+  (createServerClient as ReturnType<typeof vi.fn>).mockReturnValue({
+    from: vi.fn((tabela: string) => {
+      if (tabela === 'assinantes_telegram') return { select, delete: del };
+      if (tabela === 'envios_boletim') return { insert, update };
+      return { select: vi.fn(async () => ({ data: dados[tabela], error: null })) };
+    }),
+  });
+  return { select, del, inFn, insert, update };
 }
 
 // A rota agora BAIXA o card e envia os bytes (o Telegram não aguentava esperar o
@@ -54,7 +80,7 @@ beforeEach(() => {
   vi.setSystemTime(QUINTA_UTIL);
   vi.stubEnv('CRON_SECRET', SECRET);
   vi.stubEnv('TELEGRAM_BOT_TOKEN', 'TOKEN123');
-  vi.stubEnv('TELEGRAM_DONO_CHAT_ID', '8896839605');
+  vi.stubEnv('TELEGRAM_DONO_CHAT_ID', '123456789');
   mockCard();
 });
 afterEach(() => {
@@ -105,10 +131,42 @@ describe('GET /api/enviar-boletim', () => {
   });
 
   it('502 quando o card não renderiza — não manda foto quebrada', async () => {
-    mockSupabase([1]);
+    const { insert } = mockSupabase([1]);
     mockCard(false);
     expect((await GET(req())).status).toBe(502);
     expect(enviar).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it('503 e nenhuma reserva quando a coleta do dólar ficou para trás', async () => {
+    const { insert } = mockSupabase([1], null, true);
+    const res = await GET(req());
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ pendencias: ['cotacoes:dolar'] });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+    expect(enviar).not.toHaveBeenCalled();
+  });
+
+  it('a segunda chamada do dia não envia novamente', async () => {
+    const { insert, update } = mockSupabase([1, 2]);
+    expect((await GET(req())).status).toBe(200);
+    const repetida = await GET(req());
+    expect(await repetida.json()).toMatchObject({ pulado: 'envio ja iniciado' });
+    expect(insert).toHaveBeenCalledTimes(2);
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(enviar).toHaveBeenCalledTimes(2);
+  });
+
+  it('não repete os envios bem-sucedidos depois de falha parcial', async () => {
+    mockSupabase([1, 2, 3]);
+    enviar.mockResolvedValueOnce({ ok: true })
+      .mockResolvedValueOnce({ ok: false, bloqueado: false })
+      .mockResolvedValueOnce({ ok: true });
+    const primeira = await GET(req());
+    expect(await primeira.json()).toMatchObject({ enviados: 2, falhas: 1 });
+    expect((await GET(req())).status).toBe(200);
+    expect(enviar).toHaveBeenCalledTimes(3);
   });
 
   it('apaga os bloqueados (403) via .in ao fim', async () => {
@@ -132,7 +190,7 @@ describe('GET /api/enviar-boletim', () => {
     expect(select).not.toHaveBeenCalled();
     // Envia uma vez, para o chat do dono.
     expect(enviar).toHaveBeenCalledTimes(1);
-    expect(enviar.mock.calls[0][1]).toBe(8896839605);
+    expect(enviar.mock.calls[0][1]).toBe(123456789);
     expect(enviar.mock.calls[0][3]).toContain('Prévia');
     expect(del).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ enviados: 1, removidos: 0, falhas: 0 });
