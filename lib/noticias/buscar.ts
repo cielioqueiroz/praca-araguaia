@@ -1,5 +1,5 @@
 import type { Noticia } from '@/types/noticia';
-import { agregar, noticiasDaSemana, type Colhido } from './agregar';
+import { agregar, noticiasDaSemana, resumirFeeds, type Colhido } from './agregar';
 import { FEEDS } from './feeds';
 import { completarImagens } from './og';
 import { parseFeed } from './rss';
@@ -43,7 +43,11 @@ export async function buscarNoticias(fetchImpl: typeof fetch = fetch): Promise<N
     else console.error(`[noticias] ${FEEDS[i].id} falhou:`, r.reason);
   }
 
+  const agora = new Date();
+  const recentes = noticiasDaSemana(colhidos, agora);
+  console.info('[noticias] resumo dos feeds:', JSON.stringify(resumirFeeds(FEEDS, colhidos, agora)));
+
   // Completa depois de agregar, e não antes: assim só busca a og:image das ~40 que
   // vão para a tela, e não das ~350 que os feeds trouxeram.
-  return completarImagens(agregar(noticiasDaSemana(colhidos)), fetchImpl);
+  return completarImagens(agregar(recentes), fetchImpl);
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { parseFeed, decodificar, dataDeFeed, limparResumo } from '@/lib/noticias/rss';
 import { categoria, relevante, internacional } from '@/lib/noticias/classificar';
 import { extrairOgImage, completarImagens } from '@/lib/noticias/og';
-import { agregar, noticiasDaSemana, normalizarLink, normalizarTitulo, LIMITE_POR_VEICULO } from '@/lib/noticias/agregar';
+import { agregar, noticiasDaSemana, normalizarLink, normalizarTitulo, resumirFeeds, LIMITE_POR_VEICULO } from '@/lib/noticias/agregar';
 import { FEEDS } from '@/lib/noticias/feeds';
 import type { Feed, ItemBruto, Noticia } from '@/types/noticia';
 
@@ -366,6 +366,28 @@ describe('noticiasDaSemana', () => {
       .toEqual(['Hoje', 'Há seis dias']);
   });
 
+});
+
+describe('resumirFeeds', () => {
+  it('mede itens recentes e relevantes e distingue falha de uma fonte vazia', () => {
+    const agora = new Date('2026-10-07T15:00:00Z');
+    const fonteViva = feed();
+    const fonteFalha = feed({ id: 'fora', veiculo: 'Fora do ar' });
+    const itens = [
+      item({ titulo: 'Boi gordo sobe', publicadoEm: '2026-10-07T14:00:00Z' }),
+      item({ titulo: 'Novela estreia hoje', publicadoEm: '2026-10-07T13:00:00Z' }),
+      item({ titulo: 'Soja velha', publicadoEm: '2026-09-28T14:00:00Z' }),
+      item({ titulo: 'Milho sem data', publicadoEm: null }),
+    ];
+
+    expect(resumirFeeds([fonteViva, fonteFalha], [{ feed: fonteViva, itens }], agora)).toEqual([
+      { id: 'g1', veiculo: 'G1', estado: 'ok', colhidos: 4, recentes: 2, relevantes: 1 },
+      { id: 'fora', veiculo: 'Fora do ar', estado: 'falhou', colhidos: null, recentes: null, relevantes: null },
+    ]);
+    expect(resumirFeeds([fonteViva], [{ feed: fonteViva, itens: [] }], agora)[0]).toMatchObject({
+      estado: 'ok', colhidos: 0, recentes: 0, relevantes: 0,
+    });
+  });
 });
 
 describe('agregar', () => {

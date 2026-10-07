@@ -66,6 +66,39 @@ function quando(n: Noticia): number {
 
 export type Colhido = { feed: Feed; itens: ItemBruto[] };
 
+export type ResumoFeed = {
+  id: string;
+  veiculo: string;
+  estado: 'ok' | 'falhou';
+  colhidos: number | null;
+  recentes: number | null;
+  relevantes: number | null;
+};
+
+// POR QUE ISTO EXISTE: um RSS pode responder 200 e só trazer notícia velha ou fora
+// do assunto. Contar antes da deduplicação mostra se o veículo ainda contribui;
+// falha usa null para não parecer uma fonte viva que publicou zero itens.
+export function resumirFeeds(feeds: Feed[], colhidos: Colhido[], agora: Date = new Date()): ResumoFeed[] {
+  const porId = new Map(colhidos.map((colhido) => [colhido.feed.id, colhido]));
+  const recentesPorId = new Map(noticiasDaSemana(colhidos, agora).map((colhido) => [colhido.feed.id, colhido.itens]));
+
+  return feeds.map((feed) => {
+    const leitura = porId.get(feed.id);
+    const recentes = recentesPorId.get(feed.id);
+    if (!leitura || !recentes) {
+      return { id: feed.id, veiculo: feed.veiculo, estado: 'falhou', colhidos: null, recentes: null, relevantes: null };
+    }
+    return {
+      id: feed.id,
+      veiculo: feed.veiculo,
+      estado: 'ok',
+      colhidos: leitura.itens.length,
+      recentes: recentes.length,
+      relevantes: recentes.filter(relevante).length,
+    };
+  });
+}
+
 /**
  * Junta os feeds, joga fora o que não é do ramo, tira repetição e ordena do mais
  * novo para o mais velho. Puro: recebe o que já foi buscado, não busca nada.
