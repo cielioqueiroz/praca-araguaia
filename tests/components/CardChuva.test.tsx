@@ -71,4 +71,12 @@ describe('CardChuva', () => {
     render(<CardChuva previsao={previsao} />);
     expect(screen.getAllByText('20°/33°')).toHaveLength(7);
   });
+
+  it('distingue pingos de chuva e declara a escala das barras', () => {
+    render(<CardChuva previsao={{ ...previsao, dias: [dia('2026-07-03', 0.1, 14), dia('2026-07-04', 1.6, 45)] }} />);
+    expect(screen.getByRole('img', { name: 'pingos previstos' })).toHaveTextContent('💧');
+    expect(screen.getByRole('img', { name: 'chuva prevista' })).toHaveTextContent('🌦️');
+    expect(screen.getByText(/Mais água sáb: 1,6 mm/)).toBeInTheDocument();
+    expect(screen.getByText(/Barras proporcionais ao maior dia: 1,6 mm/)).toBeInTheDocument();
+  });
 });

@@ -42,7 +42,7 @@ function Linha({ valores, subiu, ordem }: { valores: number[]; subiu: boolean; o
   );
 }
 
-// Câmbio, ouro e cripto: uma linha por ativo. Antes eram 5 cards grandes com foto,
+// Dólar, ouro e bolsa: uma linha por ativo. Antes eram cards grandes com foto,
 // selo e etiqueta — informação de mercado não precisa desse peso.
 export function TabelaMercado({ itens }: { itens: ItemMercado[] }) {
   return (
@@ -72,8 +72,8 @@ export function TabelaMercado({ itens }: { itens: ItemMercado[] }) {
             {i.variacaoPct === null ? (
               <span className="var-vazia">—</span>
             ) : i.variacaoPct === 0 ? (
-              // Preço parado: traço neutro. Seta verde em 0% afirmava alta que não houve.
-              <span className="var flat"><span className="ar">–</span>0%</span>
+              // Preço parado é um estado, não uma variação de alta.
+              <span className="var flat">Estável</span>
             ) : (
               <span className={`var ${subiu ? 'up' : 'down'}`}>
                 <span className="ar">{subiu ? '▲' : '▼'}</span>

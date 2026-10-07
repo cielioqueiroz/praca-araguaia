@@ -41,16 +41,16 @@ describe('montarBoletim', () => {
       { nome: 'Pará', uf: 'PA', valorFmt: '329,55', variacao: { texto: '3%', direcao: 'baixa' } },
       { nome: 'Mato Grosso', uf: 'MT', valorFmt: '319,20', variacao: { texto: '0,75%', direcao: 'baixa' } },
     ]);
-    expect(b.mercado.map((m) => m.titulo)).toEqual(['Dólar', 'Bitcoin']);
+    expect(b.mercado.map((m) => m.titulo)).toEqual(['Dólar']);
   });
 
-  it('formata o ouro em R$ por grama e a cripto sem centavos perdidos', () => {
+  it('formata o ouro em R$ por grama e não publica cripto no card', () => {
     const b = montarBoletim(
       [linha('ouro', 678.23, 'R$/g', null), linha('ethereum', 9323.33, 'R$', null)],
       [],
     );
     expect(b.mercado[0].valorFmt).toBe('R$ 678,23 /g');
-    expect(b.mercado[1].valorFmt).toBe('R$ 9.323,33');
+    expect(b.mercado).toHaveLength(1);
   });
 
   it('mantém o câmbio com 4 casas', () => {
@@ -63,13 +63,12 @@ describe('montarBoletim', () => {
     // desenhava seta verde para cima num preço que não mexeu — o dono leu como
     // valor inventado, e com razão: a seta afirmava uma subida que não houve.
     const b = montarBoletim(
-      [linha('dolar', 5, 'R$', 0.4), linha('euro', 6, 'R$', -1.54), linha('ouro', 678, 'R$/g', null), linha('bitcoin', 1, 'R$', 0)],
+      [linha('dolar', 5, 'R$', 0.4), linha('ouro', 678, 'R$/g', null), linha('ibovespa', 200000, 'pts', 0), linha('euro', 6, 'R$', -1.54)],
       [],
     );
     expect(b.mercado[0].variacao).toEqual({ texto: '0,4%', direcao: 'alta' });
-    expect(b.mercado[1].variacao).toEqual({ texto: '1,54%', direcao: 'baixa' });
-    expect(b.mercado[2].variacao).toBeUndefined();
-    expect(b.mercado[3].variacao).toEqual({ texto: 'estável', direcao: 'estavel' });
+    expect(b.mercado[1].variacao).toBeUndefined();
+    expect(b.mercado[2].variacao).toEqual({ texto: 'estável', direcao: 'estavel' });
   });
 
   it('a commodity sem preço por estado não entra na porteira (nada de média disfarçada)', () => {

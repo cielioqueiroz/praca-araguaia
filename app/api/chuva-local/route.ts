@@ -1,5 +1,7 @@
 // Previsão da localização aproximada do usuário (Vercel geo + Open-Meteo), para
 // o card "sua região" no topo da página de chuva. Fallback: Vale do Araguaia.
+import { diasDaPrevisao, type DiasOpenMeteo } from '@/lib/chuva-dias';
+
 export const dynamic = 'force-dynamic';
 
 const PADRAO = { cidade: 'Vale do Araguaia', uf: '', lat: -15.89, lon: -52.26 };
@@ -47,23 +49,11 @@ export async function GET(req: Request): Promise<Response> {
     if (!r.ok) return Response.json({ cidade, uf, tempAtual: null, dias: [] });
     const j = (await r.json()) as {
       current?: { temperature_2m?: number };
-      daily?: {
-        time?: string[];
-        precipitation_sum?: (number | null)[];
-        precipitation_probability_max?: (number | null)[];
-        temperature_2m_max?: (number | null)[];
-        temperature_2m_min?: (number | null)[];
-      };
+      daily?: DiasOpenMeteo;
     };
-    const d = j.daily;
-    const dias = (d?.time ?? []).map((data, i) => ({
-      data,
-      chuvaMm: Number(d?.precipitation_sum?.[i] ?? 0),
-      probMax: d?.precipitation_probability_max?.[i] ?? null,
-      tempMin: Number(d?.temperature_2m_min?.[i]),
-      tempMax: Number(d?.temperature_2m_max?.[i]),
-    }));
-    const tempAtual = typeof j.current?.temperature_2m === 'number' ? Math.round(j.current.temperature_2m) : null;
+    const dias = diasDaPrevisao(j.daily) ?? [];
+    const temperatura = j.current?.temperature_2m;
+    const tempAtual = typeof temperatura === 'number' && Number.isFinite(temperatura) ? Math.round(temperatura) : null;
     return Response.json({ cidade, uf, tempAtual, dias });
   } catch {
     return Response.json({ cidade, uf, tempAtual: null, dias: [] });

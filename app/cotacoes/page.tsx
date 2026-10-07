@@ -1,5 +1,5 @@
 import { createPublicClient } from '@/lib/supabase/public';
-import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA } from '@/lib/tipos-ui';
+import { TITULOS, ORDEM_PAINEL, PORTEIRA, UNIDADE_PORTEIRA, NAO_E_MOEDA, MERCADO_VISIVEL } from '@/lib/tipos-ui';
 import { rodapeDaFonte } from '@/lib/boletim';
 import { cidadesDoProduto, origensDoProduto, procedencia, type ReporteAprovado } from '@/lib/termometro';
 import { ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
@@ -24,13 +24,10 @@ type Cotacao = { tipo: string; valor: number; unidade: string; variacao_pct: num
 type LinhaUf = { tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string };
 type LinhaPraca = { tipo: string; praca: string; uf: string; valor: number; variacao_pct: number | null; valor_prazo: number | null; data_referencia: string; variou_em: string | null };
 
-const MERCADO: Record<string, { unLabel: string; casas: number }> = {
+const MERCADO: Record<(typeof MERCADO_VISIVEL)[number], { unLabel: string; casas: number }> = {
   dolar: { unLabel: 'comercial', casas: 4 },
-  euro: { unLabel: 'comercial', casas: 4 },
   ouro: { unLabel: 'por grama', casas: 2 },
   ibovespa: { unLabel: 'índice B3 · pontos', casas: 0 },
-  bitcoin: { unLabel: 'por unidade', casas: 2 },
-  ethereum: { unLabel: 'por unidade', casas: 2 },
 };
 
 const posicao = (tipo: string) => {
@@ -48,7 +45,7 @@ export default async function Home() {
   const [{ data: atuais }, { data: porUf }, { data: porPraca }, { data: hist }, { data: reportes }] = await Promise.all([
     supabase.from('cotacoes').select('tipo, valor, unidade, variacao_pct, data_referencia'),
     supabase.from('cotacoes_uf').select('tipo, uf, valor, variacao_pct, data_referencia'),
-    supabase.from('cotacoes_praca').select('tipo, praca, uf, valor, variacao_pct, valor_prazo, data_referencia'),
+    supabase.from('cotacoes_praca').select('tipo, praca, uf, valor, variacao_pct, valor_prazo, data_referencia, variou_em'),
     supabase
       .from('cotacoes_historico')
       .select('tipo, valor, data_referencia')
@@ -121,13 +118,13 @@ export default async function Home() {
   const cotacoes = ((atuais ?? []) as Cotacao[]).slice().sort((a, b) => posicao(a.tipo) - posicao(b.tipo));
 
   const mercado: ItemMercado[] = cotacoes
-    .filter((c) => c.tipo in MERCADO)
+    .filter((c) => MERCADO_VISIVEL.some((tipo) => tipo === c.tipo))
     .map((c) => ({
       tipo: c.tipo,
       titulo: TITULOS[c.tipo] ?? c.tipo,
       valor: Number(c.valor),
-      casas: MERCADO[c.tipo].casas,
-      unLabel: MERCADO[c.tipo].unLabel,
+      casas: MERCADO[c.tipo as (typeof MERCADO_VISIVEL)[number]].casas,
+      unLabel: MERCADO[c.tipo as (typeof MERCADO_VISIVEL)[number]].unLabel,
       variacaoPct: c.variacao_pct === null ? null : Number(c.variacao_pct),
       historico: historicoPorTipo.get(c.tipo) ?? [],
       moeda: !NAO_E_MOEDA.has(c.tipo),
@@ -153,7 +150,7 @@ export default async function Home() {
             <div className="big">{dataExtensa(agora)}</div>
             <div className="mono">
               Atualizado {horaLocal(agora)} · gado: Scot Consultoria, via Notícias Agrícolas · grão:
-              CONAB · mercado: BCB, B3, CoinGecko
+              CONAB · mercado: BCB, Gold API, B3
             </div>
           </div>
           <SuaPraca />
@@ -211,7 +208,7 @@ export default async function Home() {
             <div className="t">Mercado</div>
             <div className="line" />
             <div className="meta">
-              Câmbio, ouro, bolsa e cripto<span className="pill">BCB · B3 · CoinGecko</span>Diário
+              Dólar, ouro e bolsa<span className="pill">BCB · Gold API · B3</span>Diário
             </div>
           </div>
           <TabelaMercado itens={mercado} />

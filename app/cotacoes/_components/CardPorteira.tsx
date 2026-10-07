@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { IconeCommodity, FOTO_COMMODITY } from '@/components/iconesCommodity';
 import { Numero } from './Numero';
 import { NOME_UF } from '@/lib/praca';
-import { numero } from '@/lib/formato';
+import { numero, diaMesLocal } from '@/lib/formato';
 
 export type PrecoUfUI = { uf: string; valor: number; variacaoPct: number | null };
 export type PrecoCidadeUI = { municipio: string; uf: string; mediana: number | null; contagem: number };
@@ -36,20 +36,17 @@ export type CardPorteiraProps = {
 
 // 0% não é alta: ganha traço e cor neutra. Enquanto `pct >= 0` mandava, preço
 // parado saía com seta verde para cima — uma subida afirmada que não aconteceu.
-const fmtDiaCurto = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina',
-});
-
 function Variacao({ pct, desde }: { pct: number | null; desde?: string | null }) {
   if (pct === null) return <span className="var-vazia">—</span>;
-  // "– 0%" oito vezes no mesmo card lê como sistema travado, ainda que esteja certo:
+  // "0%" oito vezes no mesmo card lê como sistema travado, ainda que esteja certo:
   // gado tem preço grudento. Sabendo desde quando, a linha informa em vez de assustar.
   if (pct === 0) {
-    if (!desde) return <span className="var flat"><span className="ar">–</span>0%</span>;
-    const dia = fmtDiaCurto.format(new Date(desde));
+    if (!desde) return <span className="var flat">Estável</span>;
+    const dia = diaMesLocal(new Date(desde));
     return (
       <span className="var flat parado" title={`Preço estável desde ${dia}`}>
-        <span className="ar">–</span>desde {dia}
+        <span>Estável</span>
+        <span>desde {dia}</span>
       </span>
     );
   }

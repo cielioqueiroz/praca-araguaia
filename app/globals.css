@@ -519,10 +519,11 @@ a.mrow:hover{background:var(--paper-warm)}
 }
 .var{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;justify-self:end}
 .var.up{color:var(--moss)}.var.down{color:var(--rust)}
-/* 0% é preço parado, não alta: traço e cor neutra, nunca a seta verde. */
+/* Preço parado é estado, não alta: cor neutra e data quando conhecida. */
 .var.flat{color:var(--muted)}
-/* "desde 14/08" é mais largo que "0%" e não pode empurrar o valor: encolhe um ponto. */
-.var.flat.parado{font-size:10.5px;letter-spacing:.01em}
+.pcard .var.flat.parado{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:9.5px;
+  line-height:1.05;letter-spacing:.03em;text-transform:uppercase}
+.pcard .var.flat.parado span:last-child{font-size:9px;letter-spacing:0;text-transform:none}
 .var .ar{font-size:8.5px;transform:translateY(-1px)}
 .var-vazia{font-family:var(--mono);font-size:11.5px;color:var(--rule-strong);justify-self:end}
 
@@ -650,6 +651,9 @@ a.mrow:hover{background:var(--paper-warm)}
 .chsechead h2{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-2)}
 .chsechead .regra{height:1px;background:var(--rule)}
 .chlegenda{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.chdeslize{display:none}
+.chestado{background:var(--paper);border:1px solid var(--rule);border-radius:16px;padding:18px 20px;
+  font-family:var(--sans);font-size:14px;color:var(--ink-2)}
 
 /* ——— A semana em uma linha ——— */
 .fsemana{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;
@@ -680,8 +684,10 @@ a.mrow:hover{background:var(--paper-warm)}
 .chrecado-frase{margin-top:10px;font-family:var(--serif);font-size:26px;line-height:1.18;color:var(--ink)}
 /* As três leituras: rótulo em mono à esquerda, a frase ao lado. */
 .chrecado-linhas{margin-top:18px;display:flex;flex-direction:column;gap:13px}
-.chrecado-linha{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:baseline}
-.chrecado-rot{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--agua);padding-top:2px}
+.chrecado-linha{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start}
+.chrecado-ico{font-size:18px;line-height:1.2}
+.chrecado-conteudo{display:flex;flex-direction:column;gap:3px}
+.chrecado-rot{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--agua)}
 .chrecado-txt{font-family:var(--sans);font-size:14.5px;line-height:1.45;color:var(--ink-2)}
 /* Os números sobem para o pé do card, separados por um filete. */
 .chrecado-nums{margin-top:auto;padding-top:16px;display:flex;flex-wrap:wrap;gap:6px 22px;
@@ -708,14 +714,17 @@ a.mrow:hover{background:var(--paper-warm)}
 .chtotal b{font-size:20px;font-weight:700;color:var(--agua);font-variant-numeric:tabular-nums}
 .chtotal i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .chtotal .seco{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--rule-strong)}
+.chalerta{display:flex;align-items:center;gap:8px;margin-top:11px;padding:9px 11px;border-radius:9px;
+  background:color-mix(in srgb,var(--agua) 9%,var(--paper));font-family:var(--sans);font-size:13px;font-weight:600;color:var(--agua)}
+.chalerta span:first-child{font-size:18px;line-height:1}
+.chescala{margin-top:10px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--muted)}
 
-.chdias{margin-top:12px}
-.chdias li{display:grid;grid-template-columns:2.1rem 1rem 1fr 4.1rem 2.4rem 3.6rem;align-items:center;gap:9px;
+.chdias{margin-top:14px}
+.chdias li{display:grid;grid-template-columns:2.1rem 1.35rem 1fr 4.1rem 2.4rem 3.6rem;align-items:center;gap:9px;
   padding:8px 0;border-top:1px dashed var(--rule);font-variant-numeric:tabular-nums}
 .chdias li:first-child{border-top:1px solid var(--rule)}
 .chdia{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;color:var(--muted)}
-.chicone{width:15px;height:15px;color:var(--rule-strong)}
-.chdias li.molhado .chicone{color:var(--agua)}
+.chicone{display:inline-flex;align-items:center;justify-content:center;width:20px;height:22px;font-size:17px;line-height:1}
 .chtrilho{position:relative;display:block;height:8px;border-radius:6px;background:#ece3d1;overflow:hidden}
 .chbarra{position:absolute;inset:0 auto 0 0;width:var(--larg,0%);border-radius:6px;transform-origin:left center;
   background:linear-gradient(90deg,#9fbdc6,#5b8b97)}
@@ -743,12 +752,22 @@ a.mrow:hover{background:var(--paper-warm)}
 }
 
 @media (max-width:760px){
-  /* Sete colunas não cabem num celular: viram duas linhas de scroll horizontal,
-     que é como o dedo lê uma semana. */
-  .fsemana{grid-template-columns:repeat(7,minmax(64px,1fr));overflow-x:auto;gap:6px;padding:16px 12px 12px}
+  .chhero .text{padding:25px 20px 22px}
+  .chhero h1{font-size:39px;line-height:.94;margin-top:16px}
+  .chhero .lede{margin-top:15px;font-size:15px}
+  .chhero .meta{margin-top:17px}
+  .chfoto{min-height:158px}
+  .chleitura{left:20px;bottom:16px}
+  .chleitura b{font-size:39px}
+  /* Sete colunas não cabem num celular: o dedo percorre a semana na horizontal. */
+  .fsemana{grid-template-columns:repeat(7,minmax(64px,1fr));overflow-x:auto;scroll-snap-type:x proximity;
+    gap:6px;padding:16px 12px 12px}
+  .fdia{scroll-snap-align:start}
+  .chdeslize{display:block;margin:-5px 0 10px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--agua)}
   .fcol{height:64px}
   .chgrade{grid-template-columns:1fr}
-  .chdias li{grid-template-columns:2rem .9rem 1fr 3.6rem 2.2rem 3.2rem;gap:7px}
+  .chdias li{grid-template-columns:2rem 1.25rem 1fr 3.6rem 2.2rem 3.2rem;gap:6px}
   .chsechead{grid-template-columns:auto 1fr;gap:12px}
   .chlegenda{display:none}
 }

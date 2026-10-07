@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { numero, numeroEnxuto, dataExtensa, dataLonga, horaLocal } from '@/lib/formato';
+import { numero, numeroEnxuto, dataExtensa, dataLonga, diaMesLocal, horaLocal } from '@/lib/formato';
 
 describe('numero', () => {
   it('fecha o centavo do preço', () => {
@@ -58,5 +58,9 @@ describe('datas no fuso do Araguaia', () => {
   it('lê a hora no relógio do Araguaia, não no do servidor', () => {
     expect(horaLocal(noiteUtc)).toBe('20:30');
     expect(horaLocal(new Date('2026-08-25T20:30:00Z'))).toBe('17:30');
+  });
+
+  it('mostra dia e mês da fonte sem adiantar a data', () => {
+    expect(diaMesLocal(noiteUtc)).toBe('25/08');
   });
 });

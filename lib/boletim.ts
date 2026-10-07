@@ -5,11 +5,12 @@ import {
   UNIDADE_PORTEIRA,
   FONTE_PORTEIRA,
   NAO_E_MOEDA,
+  MERCADO_VISIVEL,
   prazoDesatualizadoMs,
 } from '@/lib/tipos-ui';
 import { NOME_UF, ordenarPorPraca, ordenarPorUf } from '@/lib/praca';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
-import { numero, dataExtensa } from '@/lib/formato';
+import { numero, dataExtensa, diaMesLocal } from '@/lib/formato';
 
 // Linha crua vinda de `cotacoes` (tipos já convertidos pelo chamador).
 export type LinhaCotacao = { tipo: string; valor: number; unidade: string; variacao_pct: number | null };
@@ -73,7 +74,7 @@ export function compactarBoletim(boletim: Boletim): Boletim {
       const rodape = item.rodape.replace(/^Scot Consultoria · /, 'Scot · ');
       return { ...item, rodape, ufs, totalLugares: item.ufs.length, cidades: [] };
     }),
-    mercado: boletim.mercado.filter((item) => ['dolar', 'euro', 'ouro', 'ibovespa'].includes(item.tipo)),
+    mercado: boletim.mercado.filter((item) => MERCADO_VISIVEL.some((tipo) => tipo === item.tipo)),
     semReportes: false,
   };
 }
@@ -88,12 +89,10 @@ export type ReporteCidade = {
 
 // Sufixo compacto depois do número, para o valor não ficar poluído.
 const SUFIXO: Record<string, string> = { ouro: '/g' };
-const CASAS: Record<string, number> = { dolar: 4, euro: 4, ibovespa: 0 };
+const CASAS: Record<string, number> = { dolar: 4, ibovespa: 0 };
 
 // Araguaia fica no fuso -03:00 sem horário de verão; fixar o fuso torna a data
 // determinística no serverless (relógio UTC) e nos testes.
-const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Araguaina' });
-
 function variacaoDe(pct: number | null): Variacao | undefined {
   if (pct === null) return undefined;
   return {
@@ -112,15 +111,15 @@ function variacaoDe(pct: number | null): Variacao | undefined {
 export function rodapeDaFonte(tipo: string, iso: string, agora: Date = new Date()): string {
   const fonte = FONTE_PORTEIRA[tipo];
   const fim = new Date(iso);
-  if (!fonte) return fmtDia.format(fim);
+  if (!fonte) return diaMesLocal(fim);
 
   const atrasado = agora.getTime() - fim.getTime() > prazoDesatualizadoMs(tipo);
   const aviso = atrasado ? ' · desatualizado' : '';
 
-  if (!fonte.semanal) return `${fonte.nome} · ${fmtDia.format(fim)}${aviso}`;
+  if (!fonte.semanal) return `${fonte.nome} · ${diaMesLocal(fim)}${aviso}`;
 
   const inicio = new Date(fim.getTime() - 4 * 24 * 60 * 60 * 1000);
-  return `${fonte.nome} · semana de ${fmtDia.format(inicio)} a ${fmtDia.format(fim)}${aviso}`;
+  return `${fonte.nome} · semana de ${diaMesLocal(inicio)} a ${diaMesLocal(fim)}${aviso}`;
 }
 
 const posicao = (tipo: string) => {
@@ -187,7 +186,7 @@ export function montarBoletim(
   });
 
   const mercado: ItemMercado[] = linhas
-    .filter((l) => !PORTEIRA.includes(l.tipo))
+    .filter((l) => MERCADO_VISIVEL.some((tipo) => tipo === l.tipo))
     .sort((a, b) => posicao(a.tipo) - posicao(b.tipo))
     .map((l) => {
       const n = numero(l.valor, CASAS[l.tipo] ?? 2);

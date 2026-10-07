@@ -17,7 +17,10 @@ describe('compactarBoletim', () => {
       }],
       mercado: [
         { tipo: 'dolar', titulo: 'Dólar', valorFmt: 'R$ 5,20' },
+        { tipo: 'euro', titulo: 'Euro', valorFmt: 'R$ 6,20' },
         { tipo: 'bitcoin', titulo: 'Bitcoin', valorFmt: 'R$ 600.000' },
+        { tipo: 'ouro', titulo: 'Ouro', valorFmt: 'R$ 600,00 /g' },
+        { tipo: 'ibovespa', titulo: 'Ibovespa', valorFmt: '200.000 pts' },
       ],
     };
 
@@ -27,7 +30,7 @@ describe('compactarBoletim', () => {
       ufs: [{ nome: 'Redenção · PA', valorFmt: '310,00' }, { nome: 'Mato Grosso', valorFmt: '290,00' }],
       cidades: [],
     });
-    expect(compacto.mercado.map((item) => item.tipo)).toEqual(['dolar']);
+    expect(compacto.mercado.map((item) => item.tipo)).toEqual(['dolar', 'ouro', 'ibovespa']);
     expect(boletim.porteira[0].ufs).toHaveLength(3);
     expect(boletim.porteira[0].rodape).toBe('Scot Consultoria · 05/10');
   });

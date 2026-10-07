@@ -63,6 +63,7 @@ export function numeroEnxuto(valor: number): string {
 
 const fmtDataExtensa = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: FUSO });
 const fmtDataLonga = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: FUSO });
+const fmtDiaMes = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: FUSO });
 const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO });
 
 /** Com o dia da semana: `'terça-feira, 25 de agosto de 2026'`. */
@@ -73,6 +74,11 @@ export function dataExtensa(quando: Date): string {
 /** Sem o dia da semana: `'25 de agosto de 2026'`. */
 export function dataLonga(quando: Date): string {
   return fmtDataLonga.format(quando);
+}
+
+/** Dia e mês da fonte ou do último movimento: `'05/10'`. */
+export function diaMesLocal(quando: Date): string {
+  return fmtDiaMes.format(quando);
 }
 
 /** A hora no relógio do Araguaia: `'17:30'`. */

@@ -23,6 +23,10 @@ export const PECUARIA = ['boi', 'vaca', 'novilha', 'bezerro'];
 export const LAVOURA = ['soja', 'milho'];
 export const PORTEIRA = [...PECUARIA, ...LAVOURA];
 
+// O Mercado publicado fica no contexto direto da porteira. As demais séries
+// históricas continuam guardadas, mas não ocupam o painel nem o boletim.
+export const MERCADO_VISIVEL = ['dolar', 'ouro', 'ibovespa'] as const;
+
 export const ORDEM_PAINEL = [
   ...PORTEIRA,
   'dolar',

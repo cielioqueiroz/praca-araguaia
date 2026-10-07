@@ -5,7 +5,6 @@ import { compactarBoletim, montarBoletim, type Boletim, type ItemPorteira, type 
 import { PECUARIA, PORTEIRA } from '@/lib/tipos-ui';
 import { imagemDoAtivo } from '@/lib/imagens-card';
 import { marcaDataUri } from '@/lib/marca';
-import { programadorDataUri } from '@/lib/autor';
 import { cidadesDoProduto, origensDoProduto, procedencia, type ReporteAprovado } from '@/lib/termometro';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
@@ -102,14 +101,14 @@ function Secao({ titulo }: { titulo: string }) {
 
 // Um item da porteira: a ilustração (quando existe), a unidade, o preço de CADA
 // estado e o rodapé com quem apurou — CONAB fecha semana, Datagro/Scot fecham dia.
-function ItemDaPorteira({ item }: { item: ItemPorteira }) {
+function ItemDaPorteira({ item, compacto }: { item: ItemPorteira; compacto: boolean }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginBottom: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, marginBottom: compacto ? 10 : 17 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-        <Arte tipo={item.tipo} tamanho={44} />
+        <Arte tipo={item.tipo} tamanho={compacto ? 42 : 48} />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 27, fontWeight: 700, color: TINTA }}>{item.titulo}</div>
-          <div style={{ display: 'flex', fontSize: 14, color: MUTED }}>{item.unidade}</div>
+          <div style={{ fontSize: 29, fontWeight: 700, color: TINTA }}>{item.titulo}</div>
+          <div style={{ display: 'flex', fontSize: 15, color: MUTED }}>{item.unidade}</div>
         </div>
       </div>
 
@@ -120,22 +119,22 @@ function ItemDaPorteira({ item }: { item: ItemPorteira }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: 6,
-            paddingBottom: 6,
+            paddingTop: compacto ? 4 : 6,
+            paddingBottom: compacto ? 4 : 6,
             borderTop: i === 0 ? `1px solid ${LINHA}` : `1px dashed ${LINHA}`,
           }}
         >
-          <div style={{ display: 'flex', fontSize: 20, color: '#3a3428' }}>{u.nome}</div>
+          <div style={{ display: 'flex', fontSize: 21, color: '#3a3428' }}>{u.nome}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ fontSize: 25, fontWeight: 700, color: TINTA }}>{u.valorFmt}</div>
-            <Variacao v={u.variacao} tamanho={17} />
+            <div style={{ display: 'flex', fontSize: 27, fontWeight: 700, color: TINTA }}>{u.valorFmt}</div>
+            <Variacao v={u.variacao} tamanho={18} />
           </div>
         </div>
       ))}
 
-      <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 4 }}>{item.rodape}</div>
+      <div style={{ display: 'flex', fontSize: 15, color: MUTED, marginTop: 4 }}>{item.rodape}</div>
       {item.totalLugares !== undefined && item.totalLugares > item.ufs.length && (
-        <div style={{ display: 'flex', fontSize: 13, color: MUTED, marginTop: 2 }}>
+        <div style={{ display: 'flex', fontSize: 14, color: MUTED, marginTop: 2 }}>
           + {item.totalLugares - item.ufs.length} locais no site
         </div>
       )}
@@ -200,16 +199,24 @@ function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto
         padding: compacto ? '38px 46px' : '56px 60px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={marcaDataUri()} width={82} height={82} alt="" />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: compacto ? 46 : 50, fontWeight: 700, color: TINTA }}>Praça Araguaia</div>
-          <div style={{ fontSize: 24, color: '#6e3e1e' }}>{boletim.dataExtenso}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={marcaDataUri()} width={74} height={74} alt="" />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: compacto ? 45 : 50, fontWeight: 700, color: TINTA }}>Praça Araguaia</div>
+            <div style={{ fontSize: 17, letterSpacing: 2, color: MUTED }}>PREÇOS DA PORTEIRA</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+          <div style={{ display: 'flex', padding: '7px 12px', borderRadius: 6, backgroundColor: '#3f4a24', color: '#f6efd8', fontSize: 16, letterSpacing: 2 }}>
+            FECHAMENTO
+          </div>
+          <div style={{ display: 'flex', fontSize: 19, color: '#6e3e1e' }}>{boletim.dataExtenso}</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', height: 2, backgroundColor: '#c9a86a', marginTop: 16, marginBottom: 18 }} />
+      <div style={{ display: 'flex', height: 2, backgroundColor: '#c9a86a', marginTop: 18, marginBottom: 20 }} />
 
       {vazio ? (
         <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', fontSize: 36, color: MUTED }}>
@@ -220,7 +227,7 @@ function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto
           {/* ---------- Gado: boi, vaca, novilha e bezerro, preço de cada estado ---------- */}
           <Coluna titulo="NA PORTEIRA · GADO">
             {gado.map((item) => (
-              <ItemDaPorteira key={item.tipo} item={item} />
+              <ItemDaPorteira key={item.tipo} item={item} compacto={compacto} />
             ))}
 
           </Coluna>
@@ -230,7 +237,7 @@ function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto
           {/* ---------- Lavoura + mercado ---------- */}
           <Coluna titulo="NA PORTEIRA · LAVOURA">
             {lavoura.map((item) => (
-              <ItemDaPorteira key={item.tipo} item={item} />
+              <ItemDaPorteira key={item.tipo} item={item} compacto={compacto} />
             ))}
 
             <Secao titulo="MERCADO" />
@@ -241,21 +248,28 @@ function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingTop: 11,
-                  paddingBottom: 11,
+                  paddingTop: 15,
+                  paddingBottom: 15,
                   borderTop: i === 0 ? `1px solid ${LINHA}` : `1px solid ${LINHA}`,
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Arte tipo={item.tipo} tamanho={40} />
-                  <div style={{ display: 'flex', fontSize: 25, fontWeight: 600, color: TINTA }}>{item.titulo}</div>
+                  <Arte tipo={item.tipo} tamanho={42} />
+                  <div style={{ display: 'flex', fontSize: 27, fontWeight: 600, color: TINTA }}>{item.titulo}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', fontSize: 27, fontWeight: 700, color: TINTA }}>{item.valorFmt}</div>
+                  <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: TINTA }}>{item.valorFmt}</div>
                   <Variacao v={item.variacao} tamanho={18} />
                 </div>
               </div>
             ))}
+
+            <div style={{ display: 'flex', flexDirection: 'column', marginTop: compacto ? 14 : 23, padding: '17px 18px', borderRadius: 10, backgroundColor: '#e8e0ce', gap: 7 }}>
+              <div style={{ display: 'flex', fontSize: 15, letterSpacing: 2, color: '#3f4a24' }}>COMO LER</div>
+              <div style={{ display: 'flex', fontSize: 18, lineHeight: 1.35, color: '#3a3428' }}>
+                O gado é fechamento do dia útil anterior. Scot Consultoria, via Notícias Agrícolas.
+              </div>
+            </div>
 
           </Coluna>
         </div>
@@ -271,18 +285,14 @@ function CardBoletim({ boletim, compacto = false }: { boletim: Boletim; compacto
       )}
 
       <div style={{ display: 'flex', height: 1, backgroundColor: LINHA, marginBottom: 14 }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: compacto ? 16 : 19, letterSpacing: compacto ? 1 : 2, color: MUTED }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: compacto ? 17 : 19, letterSpacing: compacto ? 1 : 2, color: MUTED }}>
         {/* Datagro saiu na fatia 17: não é mais fonte de nada. Creditar quem não
             apurou o preço é atribuição falsa, ainda que em letra miúda. */}
-        <div style={{ display: 'flex' }}>{compacto ? 'SCOT · CONAB · BCB · B3 · GOLD-API' : 'SCOT · CONAB · BCB · B3 · GOLD-API · COINGECKO'}</div>
+        <div style={{ display: 'flex' }}>SCOT · CONAB · BCB · GOLD API · B3</div>
         <div style={{ display: 'flex' }}>AGROAPP-BAY.VERCEL.APP</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={programadorDataUri()} width={36} height={36} alt="" />
-        <div style={{ display: 'flex', fontSize: 21, color: '#6e3e1e' }}>
-          Criado por Cielio Queiroz
-        </div>
+      <div style={{ display: 'flex', fontSize: 17, color: '#6e3e1e', marginTop: 12 }}>
+        Criado por Cielio Queiroz
       </div>
     </div>
   );
@@ -374,7 +384,7 @@ export async function GET(req: Request) {
     procedenciaPorProduto,
   );
 
-  // Retrato alto: 6 categorias na porteira, 6 de mercado e as cidades do Termômetro.
+  // Retrato alto: 6 categorias na porteira, 3 de mercado e as cidades do Termômetro.
   //
   // A altura é MEDIDA no render, não calculada: o Satori não rola nem corta — o que
   // não cabe escreve por cima do rodapé. 1960 servia quando os produtos por UF

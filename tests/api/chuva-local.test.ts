@@ -80,6 +80,18 @@ describe('GET /api/chuva-local', () => {
     expect((await res.json()).dias).toEqual([]);
   });
 
+  it('chuva ou temperatura ausente não vira zero na previsão local', async () => {
+    const chuvaAusente = structuredClone(RESPOSTA_OK);
+    chuvaAusente.daily.precipitation_sum[0] = null as unknown as number;
+    mockOpenMeteo(chuvaAusente);
+    expect((await (await GET(req())).json()).dias).toEqual([]);
+
+    const temperaturaAusente = structuredClone(RESPOSTA_OK);
+    temperaturaAusente.daily.temperature_2m_min[1] = null as unknown as number;
+    mockOpenMeteo(temperaturaAusente);
+    expect((await (await GET(req())).json()).dias).toEqual([]);
+  });
+
   it('fetch que rejeita vira resposta vazia, não exceção', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('rede fora'); }));
     const res = await GET(req());

@@ -5,7 +5,7 @@ import { CardChuva } from './_components/CardChuva';
 import { SuaRegiaoChuva } from './_components/SuaRegiaoChuva';
 import { FaixaSemana } from './_components/FaixaSemana';
 import { AnimarBarrasChuva } from './_components/AnimarBarrasChuva';
-import { horaLocal } from '@/lib/formato';
+import { numeroEnxuto } from '@/lib/formato';
 
 export const metadata = {
   title: 'Chuva na região',
@@ -72,10 +72,10 @@ export default async function Chuva() {
   const lede = semDados
     ? 'A Open-Meteo não respondeu agora. A previsão volta sozinha na próxima visita — nada aqui foi estimado.'
     : chegada
-      ? `${resumo.totalMm.toLocaleString('pt-BR')} mm previstos para a semana, na média dos municípios da praça.`
+      ? `${numeroEnxuto(resumo.totalMm)} mm previstos para a semana, na média dos municípios da praça.`
       : resumo.semanaSeca
         ? 'Nenhum município da praça tem chuva prevista para os próximos sete dias.'
-        : `Só garoa: ${resumo.totalMm.toLocaleString('pt-BR')} mm em sete dias, na média da praça. Nenhum dia passa de 1 mm.`;
+        : `Só garoa: ${numeroEnxuto(resumo.totalMm)} mm em sete dias, na média da praça. Nenhum dia passa de 1 mm.`;
 
   return (
     <div className="wrap">
@@ -90,13 +90,13 @@ export default async function Chuva() {
               <div className="big">
                 Dia mais molhado: {fmtDiaLongo.format(emUtc(resumo.diaMaisMolhado.data))},{' '}
                 {fmtDiaMes.format(emUtc(resumo.diaMaisMolhado.data))} —{' '}
-                {resumo.diaMaisMolhado.chuvaMm.toLocaleString('pt-BR')} mm.
+                {numeroEnxuto(resumo.diaMaisMolhado.chuvaMm)} mm na média da região.
               </div>
             )}
             <div className="mono">
               {semDados
                 ? 'Fonte: Open-Meteo · sem resposta agora'
-                : `Atualizado ${horaLocal(new Date())} · Open-Meteo · ${MUNICIPIOS.length} municípios`}
+                : `Open-Meteo · previsão de 7 dias · ${MUNICIPIOS.length} municípios`}
             </div>
           </div>
         </div>
@@ -109,8 +109,8 @@ export default async function Chuva() {
           <div className="chfoto-tinta" />
           <span className="tag">Vale do Araguaia</span>
           <div className="chleitura">
-            <b>{semDados ? '—' : resumo.totalMm.toLocaleString('pt-BR')}</b>
-            <span>{semDados ? 'sem leitura' : 'mm previstos em 7 dias'}</span>
+            <b>{semDados ? '—' : numeroEnxuto(resumo.totalMm)}</b>
+            <span>{semDados ? 'sem leitura' : 'mm em 7 dias · média por município'}</span>
           </div>
         </div>
       </section>
@@ -124,6 +124,8 @@ export default async function Chuva() {
         </section>
       ) : (
         <AnimarBarrasChuva>
+          <SuaRegiaoChuva />
+
           {resumo.dias.length > 0 && (
             <section className="chsec">
               <div className="chsechead">
@@ -134,9 +136,10 @@ export default async function Chuva() {
                     pareceria a barra cheia de um temporal. */}
                 <span className="chlegenda">
                   média dos {MUNICIPIOS.length} municípios · escala até{' '}
-                  {Math.max(resumo.maiorDiaMm, 1).toLocaleString('pt-BR')} mm
+                  {numeroEnxuto(Math.max(resumo.maiorDiaMm, 0.1))} mm
                 </span>
               </div>
+              <p className="chdeslize">Deslize para ver os sete dias →</p>
               <div data-grupo-barras>
                 <FaixaSemana
                   dias={resumo.dias}
@@ -146,8 +149,6 @@ export default async function Chuva() {
               </div>
             </section>
           )}
-
-          <SuaRegiaoChuva />
 
           <section className="chsec">
             <div className="chsechead">
