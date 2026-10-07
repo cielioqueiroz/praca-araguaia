@@ -1,20 +1,20 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-10-06.
+> **Documento de retomada.** Última atualização: 2026-10-07.
 > Quando voltar, comece por aqui. O bloco mais recente informa o que ainda não foi
 > commitado ou publicado.
 
 ---
 
-## Migração Neon, mobile e revisão de segurança (06/10/2026, em andamento)
+## Corte para Neon concluído (07/10/2026)
 
-Projeto Neon `praca-araguaia` (`long-wave-06178084`, região `aws-us-east-1`) criado. O esquema em [`neon/migrations/0001_schema_inicial.sql`](neon/migrations/0001_schema_inicial.sql) contém as 11 tabelas públicas, papel de leitura e RLS. O adaptador em `lib/neon/cliente.ts` permite manter as rotas enquanto o banco muda. A cópia do Supabase confere **contagem e conteúdo** e remove somente linhas de teste do destino antes do corte. Última conferência completa: 12 cotações, 1.285 pontos de histórico, 16 praças, 30 preços por UF, 3 assinantes e as demais tabelas íntegros. Os endereços de conexão estão só em `.env.local` e nas envs sensíveis de produção da Vercel.
+Projeto Neon `praca-araguaia` (`long-wave-06178084`, região `aws-us-east-1`) em produção. O esquema em [`neon/migrations/0001_schema_inicial.sql`](neon/migrations/0001_schema_inicial.sql) contém as 11 tabelas públicas, papel de leitura e RLS. O adaptador em `lib/neon/cliente.ts` mantém as rotas existentes até a migração por domínio. Os endereços de conexão ficam só em `.env.local` e nas envs sensíveis da Vercel.
 
-**Ainda não cortado:** o deploy atual no domínio principal continua no commit `29edc68`, lendo Supabase. A nova env `DATABASE_PROVIDER=neon` será lida apenas pelo próximo deploy. A janela do cron de fechamento de hoje é 18:00–18:59 BRT; esperar ela terminar, conferir `envios_boletim`, sincronizar novamente e então publicar evita dividir uma reserva de envio entre dois bancos. Não repetir broadcast em caso de falha parcial.
+**Corte conferido:** o primeiro fechamento automático de 06/10 ficou concluído no Supabase com 3 envios e 0 falhas. Antes da cópia final, a comparação somente leitura mostrou zero linhas a remover no Neon. `scripts/copiar-dados-neon.mjs` conferiu contagem e conteúdo das 11 tabelas: 12 cotações, 1.297 pontos de histórico, 16 praças, 30 preços por UF, 3 assinantes e 1 registro de envio. O commit `5ae7ab6` foi publicado em 07/10 às 09:47 BRT; `vercel inspect` confirmou `READY` e o domínio principal no novo deployment. A env de produção `DATABASE_PROVIDER=neon` e as duas conexões estavam configuradas antes desse deploy. Home, cotações, praça de Redenção, boletim e ticker responderam 200 sem erro de aplicação. `vercel crons ls` mostrou só coleta (17:30 BRT) e fechamento (18:00 BRT), de segunda a sexta. O próximo fechamento automático em Neon ainda precisa de conferência após a janela de 07/10; não repetir broadcast em caso de falha parcial.
 
 O card para Telegram agora mede 1080×1200, com dois lugares de UFs diferentes por produto, variação parada como “estável” e crédito curto “Scot · data”. A home põe preços primeiro no iPhone; ticker nomeia a praça/UF e omite preço vencido. Notícias antigas saem da home, a busca da imagem OG recusa endereços fora dos veículos cadastrados. Login recusa acesso se a tentativa não puder ser registrada. [Auditoria e pendências](docs/auditoria-2026-10-06.md), [spec](docs/superpowers/specs/2026-10-06-neon-mobile-fontes-seguranca-design.md) e [plano](docs/superpowers/plans/2026-10-06-neon-mobile-fontes-seguranca.md).
 
-**Verificação local:** 596 testes, typecheck, lint, build, leitura e coleta no Neon. iPhone 13 nas rotas principais sem rolagem horizontal nem alvo de toque pequeno; card PNG conferido visualmente. `npm audit --omit=dev` zero; cinco alertas remanescentes só na cadeia de lint, sem correção compatível disponível. Strix não rodou neste ambiente (Docker/credenciais ausentes).
+**Verificação local:** 599 testes, typecheck, lint e build limpos em 07/10. Na rodada anterior, iPhone 13 nas rotas principais sem rolagem horizontal nem alvo de toque pequeno; card PNG conferido visualmente. `npm audit --omit=dev` zero; cinco alertas remanescentes só na cadeia de lint, sem correção compatível disponível. Strix não rodou neste ambiente (Docker/credenciais ausentes).
 
 ---
 
@@ -37,8 +37,9 @@ e [plano](docs/superpowers/plans/2026-10-06-retomada-telegram.md).
 **Em produção:** a migration 0016 foi aplicada; o commit funcional `95d1a9b` ficou
 `READY` no domínio principal. A prévia retornou 1 envio ao dono. Uma coleta manual
 na versão publicada concluiu sem erros: 12 cotações, 16 praças e 30 linhas de estado
-atualizadas em 06/10. A primeira entrega automática aos inscritos ainda aguarda a
-janela das 18:00–18:59 BRT e deve ser conferida em `envios_boletim`.
+atualizadas em 06/10. A entrega automática aos inscritos ocorreu nessa janela:
+`envios_boletim` registrou 3 envios e 0 falhas. O registro foi copiado para o Neon
+antes do corte de 07/10.
 
 ## 🌧️ Correções locais da mesma rodada (06/10/2026)
 

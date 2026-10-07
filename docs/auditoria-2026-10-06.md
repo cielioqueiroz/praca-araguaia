@@ -25,7 +25,7 @@ Fonte por arquivo no registry, regras puras em `lib/`, UI perto de seus consumid
 
 ## Pendências priorizadas
 
-1. Verificar o primeiro boletim automático em `envios_boletim` e o deploy em Neon antes de considerar o corte concluído.
+1. Conferir o primeiro fechamento automático já em Neon, após a janela de 07/10, sem repetir o envio se houver falha parcial. O fechamento de 06/10 e o deploy do corte foram verificados.
 2. Ampliar a observabilidade dos feeds com número de itens recentes e relevantes por veículo. A coleta e o envio já registram totais finais sem chat IDs ou valores de preço.
 3. Registrar histórico por praça/UF para substituir a série regional agregada no gráfico.
 4. Migrar o adaptador temporário para repositórios SQL por domínio e reduzir a dependência do SDK Supabase.
