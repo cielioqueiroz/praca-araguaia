@@ -56,7 +56,7 @@ A região atendida. É o fallback quando não se sabe a cidade de quem está len
 O que sai da fazenda: boi, vaca, novilha, bezerro, soja, milho. É a seção principal e a razão do site existir.
 
 **Mercado**:
-O que cerca a fazenda: dólar, euro, ouro, Ibovespa, bitcoin, ethereum. Contexto, nunca o assunto principal.
+O que cerca a fazenda. A aba Mercado e o boletim mostram dólar, ouro e Ibovespa; euro, bitcoin e ethereum continuam coletados e disponíveis no histórico, nas páginas próprias e na calculadora. Contexto, nunca o assunto principal.
 
 **Gordo**:
 Animal de abate, negociado **por arroba** (R$/@) — boi gordo, vaca gorda.

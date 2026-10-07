@@ -4,7 +4,7 @@
 
 O eixo do site é a porteira: gado por praça da Scot (via Notícias Agrícolas), grãos por UF da CONAB e reportes moderados. Dólar, euro, ouro e bolsa ajudam a entender o contexto; cripto deve permanecer secundária. Oito praças de gado e os estados vizinhos continuam nomeados, sem converter referência regional em preço de uma cidade. O ticker agora seleciona o boi de Redenção/PA (ou nomeia a praça do PA usada), soja e milho do PA e dólar, com validade do dado.
 
-As oito fontes RSS ativas têm filtro de relevância, deduplicação e limite por veículo. O feed do Compre Rural saiu após erro 403 registrado no runtime da Vercel em 06/10. A home passa a rejeitar notícia sem data ou com mais de sete dias. A presença de uma fonte no cadastro não garante que ela responda hoje; os erros são registrados e a página mostra um estado vazio se todas falharem. A melhoria seguinte é medir, por veículo, quantas matérias recentes e relevantes chegam de fato antes de acrescentar novos feeds.
+As oito fontes RSS ativas têm filtro de relevância, deduplicação e limite por veículo. O feed do Compre Rural saiu após erro 403 registrado no runtime da Vercel em 06/10. A home passa a rejeitar notícia sem data ou com mais de sete dias. A presença de uma fonte no cadastro não garante que ela responda hoje; os erros são registrados e a página mostra um estado vazio se todas falharem. Desde 07/10, cada atualização registra por veículo o estado da leitura e as contagens de itens colhidos, recentes e relevantes, antes da deduplicação. Uma leitura real mostrou os oito feeds respondendo, mas contribuição desigual: BeefPoint 9 relevantes recentes e Globo Rural 1. Acompanhar mais atualizações antes de alterar o cadastro.
 
 ## Interface e design system
 
@@ -26,9 +26,8 @@ Fonte por arquivo no registry, regras puras em `lib/`, UI perto de seus consumid
 ## Pendências priorizadas
 
 1. Conferir o primeiro fechamento automático já em Neon, após a janela de 07/10, sem repetir o envio se houver falha parcial. O fechamento de 06/10 e o deploy do corte foram verificados.
-2. Ampliar a observabilidade dos feeds com número de itens recentes e relevantes por veículo. A coleta e o envio já registram totais finais sem chat IDs ou valores de preço.
-3. Registrar histórico por praça/UF para substituir a série regional agregada no gráfico.
-4. Migrar o adaptador temporário para repositórios SQL por domínio e reduzir a dependência do SDK Supabase.
-5. Avaliar uma política CSP compatível com Next, imagens externas e o card gerado; testar em modo report-only antes de impor bloqueios.
+2. Registrar histórico por praça/UF para substituir a série regional agregada no gráfico.
+3. Migrar o adaptador temporário para repositórios SQL por domínio e reduzir a dependência do SDK Supabase.
+4. Avaliar uma política CSP compatível com Next, imagens externas e o card gerado; testar em modo report-only antes de impor bloqueios.
 
 **Limite da auditoria:** análise manual do código, testes, build, comparação de dados e varredura de dependências. O Strix não rodou neste ambiente por falta de Docker ativo e credenciais da ferramenta; nenhum pentest automatizado foi alegado.

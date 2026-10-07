@@ -6,6 +6,14 @@
 
 ---
 
+## Contribuição dos feeds medida (07/10/2026)
+
+O commit `7c54fe0` registra uma linha estruturada por atualização da home: para cada um dos oito feeds, estado da leitura e contagens de itens colhidos, recentes (até sete dias) e relevantes. Falha tem contagens nulas; uma fonte que respondeu sem material útil tem zero. Os números vêm antes da deduplicação e do limite de 40 cards. Nenhum título, link de matéria ou dado de visitante entra nesse log, e a seleção das notícias não mudou. [Spec](docs/superpowers/specs/2026-10-07-observabilidade-feeds-design.md) e [plano](docs/superpowers/plans/2026-10-07-observabilidade-feeds.md).
+
+**Verificado:** 605 testes, typecheck, lint e build. Numa leitura real em 07/10, os oito feeds responderam; BeefPoint trouxe 9 itens recentes e relevantes, Globo Rural 1. Essa amostra não basta para excluir fonte: acompanhar as próximas atualizações. O deployment de `7c54fe0` ficou `Ready` em `agroapp-bay.vercel.app`, e a home respondeu 200. A primeira coleta e o fechamento automáticos no Neon continuam pendentes das janelas de 17h30 e 18h de 07/10.
+
+---
+
 ## Mercado, cards e chuva publicados (07/10/2026)
 
 O commit `b3b94cb` retirou euro, Bitcoin e Ethereum da aba Mercado e das duas versões do card do boletim. Dólar, ouro e Ibovespa seguem visíveis; coleta, histórico, páginas próprias e calculadora desses outros ativos foram preservados. O card de preços da porteira passou a informar “Estável desde DD/MM” com a data de `variou_em`, que a página não consultava. O card do Telegram ganhou hierarquia de leitura, números maiores e nota sobre o fechamento D-1 do gado e a origem Scot Consultoria, via Notícias Agrícolas.

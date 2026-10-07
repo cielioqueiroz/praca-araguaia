@@ -33,10 +33,10 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 
 <sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg) — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. **Boi e vaca** trazem as três cidades do Pará (Marabá, Paragominas, Redenção) e **uma linha por estado** (Mato Grosso, Tocantins, Goiás, Bahia, Maranhão), com o valor da praça de referência da **Scot** mais próxima do Araguaia. Cada card credita **quem apurou e quando**: a CONAB fecha a semana, a Scot fecha o dia. O **Termômetro** traz o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
 
-### Mercado — câmbio, ouro, bolsa e cripto
+### Mercado — dólar, ouro e bolsa
 
 <p align="center">
-  <img src="docs/screenshots/mercado.jpg" alt="Tabela de mercado: dólar, euro, ouro, Ibovespa, bitcoin e ethereum" width="100%">
+  <img src="docs/screenshots/mercado.jpg" alt="Tabela de mercado: dólar, ouro e Ibovespa" width="100%">
 </p>
 
 <sub>O **Ouro** aparece em **R$ por grama** (metal fino, 999) — a cotação de mercado. O **Ibovespa** aparece em **pontos**, sem `R$` na frente: índice não é dinheiro. Cada linha traz a mini-tendência de 30 dias.</sub>
@@ -89,8 +89,8 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 
 | Página | O que oferece |
 |---|---|
-| **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 9 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
-| **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 6 cotações com mini-tendência de 30 dias: **dólar, euro, ouro (R$/g), Ibovespa, bitcoin e ethereum**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
+| **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 8 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
+| **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 3 cotações com mini-tendência de 30 dias: **dólar, ouro (R$/g) e Ibovespa**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
 | **`/boletim`** | Card-resumo em **PNG 1080×1200** para Telegram/WhatsApp e versão completa 1080×2300 (via `next/og`/Satori). O fechamento é enviado após coleta completa em dia útil. |
 | **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
@@ -369,7 +369,7 @@ reportes              -- Termômetro da Praça: preços reportados, moderados
 - [x] Menu hambúrguer no celular + marca nova ("broto no sulco") em site, favicon, card e OG
 - [x] Porteira completa: **vaca gorda, novilha e bezerro** (Scot), além do boi
 - [x] **Boi e vaca praça a praça** (Scot): cidades do PA + uma praça de referência por estado
-- [x] Notícias do Mercado como home (9 veículos, RSS) + busca funcional
+- [x] Notícias do Mercado como home (8 veículos, RSS) + busca funcional
 - [x] **Ouro** (R$/g) e **Ibovespa** no mercado
 - [x] Termômetro nas **6 categorias** da porteira (antes só o boi)
 - [x] Calculadora com gado, bezerro, colheita e mercado (ouro, câmbio, cripto)
