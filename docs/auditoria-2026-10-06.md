@@ -26,7 +26,7 @@ Fonte por arquivo no registry, regras puras em `lib/`, UI perto de seus consumid
 ## Pendências priorizadas
 
 1. Verificar o primeiro boletim automático em `envios_boletim` e o deploy em Neon antes de considerar o corte concluído.
-2. Acrescentar observabilidade de saúde da coleta e dos feeds, com número de itens válidos por fonte, sem expor dados sensíveis.
+2. Ampliar a observabilidade dos feeds com número de itens recentes e relevantes por veículo. A coleta e o envio já registram totais finais sem chat IDs ou valores de preço.
 3. Registrar histórico por praça/UF para substituir a série regional agregada no gráfico.
 4. Migrar o adaptador temporário para repositórios SQL por domínio e reduzir a dependência do SDK Supabase.
 5. Avaliar uma política CSP compatível com Next, imagens externas e o card gerado; testar em modo report-only antes de impor bloqueios.

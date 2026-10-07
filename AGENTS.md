@@ -23,7 +23,7 @@ Este arquivo é **só o que não está escrito em outro lugar**. Onde a verdade 
 npm run dev              # http://localhost:3000
 npm run build            # build de produção
 npm start                # sobe o build
-npm test                 # Vitest, uma passada (hoje: 589 testes)
+npm test                 # Vitest, uma passada (hoje: 599 testes)
 npm run test:watch       # watch
 npm run lint             # ESLint (next/core-web-vitals + next/typescript)
 npm run typecheck        # tsc --noEmit — tem que dar ZERO
@@ -75,7 +75,7 @@ Não existe `middleware.ts`. Os headers de segurança são aplicados via `header
 
 **Comentário explica POR QUE, nunca O QUE.** O padrão da casa é registrar a decisão e o defeito que ela evita, com o dado concreto quando existe. Exemplo real de [`lib/cron.ts`](lib/cron.ts):
 
-> `POR QUE ISTO EXISTE: a comparação era auth !== \`Bearer ${process.env.CRON_SECRET}\`. Com a env ausente, o segredo vira a string literal "Bearer undefined" — e a rota FALHA ABERTA.`
+> `POR QUE ISTO EXISTE: comparar o header com um segredo ausente aceitava a string literal "Bearer undefined". As rotas protegidas incluem broadcast irreversível; sem CRON_SECRET, a autorização falha fechada.`
 
 Se o comentário some e ninguém sente falta, ele não devia existir. Se alguém reintroduziria o bug sem ele, ele é obrigatório.
 

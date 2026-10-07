@@ -141,6 +141,7 @@ export async function GET(req: Request): Promise<Response> {
       .update({ concluido_em: new Date().toISOString(), enviados, removidos: bloqueados.length, falhas })
       .eq('dia', dia).eq('sessao', sessao);
     if (error) console.error('enviar-boletim: resultado não registrado', error);
+    console.info('enviar-boletim: resultado', { dia, sessao, enviados, removidos: bloqueados.length, falhas });
   }
 
   return Response.json({ enviados, removidos: bloqueados.length, falhas });

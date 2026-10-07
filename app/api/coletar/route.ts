@@ -6,6 +6,7 @@ import { buscarPorUfPecuaria, type TipoPecuaria } from '@/lib/fontes/pecuaria';
 import { buscarPorPracaScot, type TipoScot } from '@/lib/fontes/scot';
 import { createServerClient } from '@/lib/supabase/server';
 import { supabaseRepo } from '@/lib/supabase/repo';
+import { dataLocal } from '@/lib/dia-util';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
 export const dynamic = 'force-dynamic';
@@ -71,5 +72,10 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const status = coletadas.length === 0 ? 502 : 200;
+  // Sem resumo, uma execução vazia do cron só aparece quando alguém nota preço velho.
+  console.info('coletar: resultado', {
+    dia: dataLocal(new Date()), cotacoes: coletadas.length, ufs: porUf.reduce((total, item) => total + item.ufs, 0),
+    pracas: porPraca.reduce((total, item) => total + item.pracas, 0), erros: erros.map((item) => item.tipo),
+  });
   return Response.json({ coletadas, porUf, porPraca, erros }, { status });
 }

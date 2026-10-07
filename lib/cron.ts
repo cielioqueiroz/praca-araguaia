@@ -1,78 +1,16 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 
-// Quem pode disparar as rotas de cron (/api/coletar, /api/backfill,
-// /api/enviar-boletim, /api/alertas).
+// POR QUE ISTO EXISTE: comparar o header com um segredo ausente aceitava a string
+// literal "Bearer undefined". As rotas protegidas incluem broadcast irreversível;
+// sem CRON_SECRET, a autorização falha fechada.
 //
-// POR QUE ISTO EXISTE: a comparação era `auth !== \`Bearer ${process.env.CRON_SECRET}\``.
-// Com a env ausente, o segredo vira a string literal "Bearer undefined" — e a rota
-// FALHA ABERTA. Duas dessas rotas fazem broadcast irreversível para os inscritos:
-// um deploy sem a env (hoje, Preview não tem CRON_SECRET) seria um megafone aberto.
-// Guarda explícita: sem segredo, ninguém entra.
-//
-// ---------------------------------------------------------------------------
-// OS HORÁRIOS (o vercel.json é JSON e não aceita comentário — a razão mora aqui)
-//
-// SEGUNDA A SEXTA, sempre (`1-5` no cron). Feriado nacional é barrado dentro das
-// rotas, em lib/dia-util.ts: o cron da Vercel sabe que dia da semana é hoje, mas
-// não sabe que hoje é Natal.
-//
-// O plano aceita QUATRO crons — conferido com `vercel crons ls` depois do deploy de
-// 23/07/2026. (Havia aqui a anotação de que "o plano grátis só dá três"; era chute, e
-// estava errado.)
-//
-//   /api/coletar                           20:30 UTC = 17:30 BRT
-//   /api/alertas                           21:15 UTC = 18:15 BRT
-//
-// SILÊNCIO TOTAL NO TELEGRAM desde 19/08/2026, a pedido do dono: "não quero que volte
-// a disparar nada no Telegram ainda; só volto a mandar quando o sistema estiver 100%".
-//
-// O boletim já estava pausado desde 28/07; nesta rodada saiu TAMBÉM o /api/alertas,
-// que era o último cron capaz de mandar mensagem — o alerta de movimento forte para os
-// inscritos e o resumo diário de audiência para o dono. Foi ele que, na primeira pausa,
-// fez o dono continuar recebendo mensagem de tarde achando que tudo estava parado.
-//
-// O ÚNICO cron ativo é /api/coletar (17:30 BRT), que não envia nada: só grava preço
-// fresco para o site não congelar e para a retomada não começar de banco velho.
-//
-// As ROTAS continuam de pé — prévia (?previa=1) e disparo manual funcionam. Para
-// RETOMAR, devolver ao array de `crons` do vercel.json a linha que quiser:
-//
-//   { "path": "/api/enviar-boletim?sessao=abertura",   "schedule": "30 10 * * 1-5" }
-//   { "path": "/api/enviar-boletim?sessao=fechamento", "schedule": "0 21 * * 1-5" }
-//   { "path": "/api/alertas",                          "schedule": "15 21 * * 1-5" }
-//
-// A recomendação de 18/08 continua valendo para quando ele quiser voltar: começar só
-// pelo fechamento (18:00). Duas entregas por dia para uma lista pequena é ruído.
-//
-// DUAS ENTREGAS POR DIA (23/07/2026, a pedido do dono):
-//
-//   ABERTURA, 07:30 — o preço com que o dia COMEÇA. À essa hora não existe dado
-//   novo: a B3 abre às 10h e a Scot publica à tarde. Então o card leva o
-//   fechamento do pregão anterior, que é literalmente o número com que o mercado
-//   abre. A legenda diz isso com todas as letras, para ninguém achar que é o
-//   preço de agora.
-//
-//   FECHAMENTO, 18:00 — depois que tudo fechou. A coleta roda 30 min antes, às
-//   17:30: a B3 encerra às 17:00 e a Scot já publicou. É o card com o número do
-//   dia apurado, e é ele que vale.
-//
-// A COLETA SAIU DE 09:00 PARA 17:30 BRT, e este é o motivo:
-//
-// As páginas da Scot publicam o fechamento do dia à tarde. Coletando às 09:00 BRT,
-// o app pegava a página ANTES da atualização e gravava o fechamento retrasado.
-// Medido em 23/07/2026: a coleta das 09:40 gravou boi com fechamento de 21/07; às
-// 20:27 do mesmo dia a página já mostrava 22/07 (e o bezerro, 23/07). Cada página
-// estava exatamente uma publicação à frente do que o banco tinha.
-//
-// Efeito para quem recebe o card: o boletim de quinta trazia "Scot · 21/07" — dois
-// dias atrás. Somado ao fim de semana, em que a Scot não publica, boi e vaca
-// repetiam o mesmo número de sexta a terça. Foi o que o dono descreveu como "o gado
-// congelou num preço antigo".
-//
-// Coletando às 17:30, o card do fechamento sai com o número do próprio dia, e o da
-// manhã seguinte carrega o fechamento mais novo que existe. De quebra, o Ibovespa
-// passa a entrar com o fechamento real do pregão em vez do número da véspera.
-// ---------------------------------------------------------------------------
+// Em 06/10/2026, vercel.json agenda só a coleta (20:30 UTC) e o fechamento
+// (21:00 UTC), de segunda a sexta. A rota barra feriados em dia-util.ts.
+// Na Vercel Hobby, cada cron pode iniciar em qualquer momento da hora agendada;
+// a reserva em envios_boletim evita duplicar o fechamento. Abertura, alertas e
+// resumo de audiência permanecem sem cron. A Scot divulga o gado D-1; o card
+// traz a data da fonte mesmo quando a coleta foi feita hoje. O histórico da
+// pausa e retomada está em ESTADO-DO-PROJETO.md.
 
 /** SHA-256 dos dois lados iguala o comprimento, exigência do timingSafeEqual. */
 function iguais(a: string, b: string): boolean {
@@ -84,8 +22,7 @@ function iguais(a: string, b: string): boolean {
 export function autorizadoPorCron(req: Request): boolean {
   const segredo = process.env.CRON_SECRET;
   if (!segredo) {
-    // Não é 500 na cara do chamador: quem bate na rota não precisa saber se a env
-    // existe. O rastro fica no log, que é onde o dono procura.
+    // Não revela a configuração ao chamador; o rastro fica no log do servidor.
     console.error('CRON_SECRET ausente: rota de cron negada a todos');
     return false;
   }
