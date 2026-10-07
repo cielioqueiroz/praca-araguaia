@@ -6,6 +6,16 @@
 
 ---
 
+## Mercado, cards e chuva publicados (07/10/2026)
+
+O commit `b3b94cb` retirou euro, Bitcoin e Ethereum da aba Mercado e das duas versões do card do boletim. Dólar, ouro e Ibovespa seguem visíveis; coleta, histórico, páginas próprias e calculadora desses outros ativos foram preservados. O card de preços da porteira passou a informar “Estável desde DD/MM” com a data de `variou_em`, que a página não consultava. O card do Telegram ganhou hierarquia de leitura, números maiores e nota sobre o fechamento D-1 do gado e a origem Scot Consultoria, via Notícias Agrícolas.
+
+Na chuva, a previsão da localização do visitante aparece antes da semana regional, com símbolos de tempo, barras proporcionais ao maior dia e leitura da concentração da chuva. A foto explica que o total regional é uma média por município; o recado da lida ficou mais claro. Resposta incompleta da Open-Meteo não vira 0 mm ou 0 °C. [Spec](docs/superpowers/specs/2026-10-07-mercado-card-chuva-design.md) e [plano](docs/superpowers/plans/2026-10-07-mercado-card-chuva.md).
+
+**Verificado:** 603 testes, typecheck, lint, build, `npm audit --omit=dev` sem vulnerabilidades; iPhone 13 nas três páginas sem rolagem horizontal nem alvo de toque pequeno. As imagens compacta e completa do boletim foram conferidas até o rodapé. `vercel inspect` mostrou o deployment de `b3b94cb` como `Ready` no domínio `agroapp-bay.vercel.app`; `/cotacoes`, `/chuva`, `/boletim` e `/api/boletim?f=telegram` responderam 200 em produção. Nenhuma rota de envio do Telegram foi acionada. A conferência do primeiro fechamento automático no Neon após a janela de 07/10 continua pendente.
+
+---
+
 ## Corte para Neon concluído (07/10/2026)
 
 Projeto Neon `praca-araguaia` (`long-wave-06178084`, região `aws-us-east-1`) em produção. O esquema em [`neon/migrations/0001_schema_inicial.sql`](neon/migrations/0001_schema_inicial.sql) contém as 11 tabelas públicas, papel de leitura e RLS. O adaptador em `lib/neon/cliente.ts` mantém as rotas existentes até a migração por domínio. Os endereços de conexão ficam só em `.env.local` e nas envs sensíveis da Vercel.
