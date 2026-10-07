@@ -4,7 +4,9 @@ import type {
   Cotacao,
   CotacaoRepo,
   HistoricoRepo,
+  HistoricoLugarRepo,
   PontoHistorico,
+  PontoLugar,
   PrecoPraca,
   PrecoPracaRepo,
   PrecoUf,
@@ -28,7 +30,7 @@ function lugarSalvo(r: {
 
 export function supabaseRepo(
   client: SupabaseClient,
-): CotacaoRepo & HistoricoRepo & PrecoUfRepo & PrecoPracaRepo {
+): CotacaoRepo & HistoricoRepo & HistoricoLugarRepo & PrecoUfRepo & PrecoPracaRepo {
   return {
     async ultimoValor(tipo, antesDe) {
       const { data, error } = await client
@@ -88,6 +90,20 @@ export function supabaseRepo(
         (antes ?? []).map((r) => [`${r.tipo}|${r.uf}`, lugarSalvo(r)]),
       );
 
+      // A reserva do fechamento olha atualizado_em do retrato atual. Se a gravação
+      // histórica falhar, ele não pode parecer uma coleta completa.
+      if (process.env.DATABASE_PROVIDER === 'neon') {
+        const historico = await client.from('cotacoes_lugar_historico').upsert(
+          precos.map((p) => ({
+            tipo: p.tipo, recorte: 'uf', uf: p.uf, praca: '', valor: p.valor,
+            unidade: p.unidade, fonte: ['boi', 'soja', 'milho'].includes(p.tipo) ? 'conab' : 'scot',
+            data_referencia: p.dataReferencia,
+          })),
+          { onConflict: 'tipo,recorte,uf,praca,data_referencia', ignoreDuplicates: true },
+        );
+        if (historico.error) throw new Error(historico.error.message);
+      }
+
       const { error } = await client.from('cotacoes_uf').upsert(
         precos.map((p) => ({
           tipo: p.tipo,
@@ -122,6 +138,17 @@ export function supabaseRepo(
       const anterior = new Map<string, LugarSalvo>(
         (antes ?? []).map((r) => [`${r.tipo}|${r.praca}|${r.uf}`, lugarSalvo(r)]),
       );
+
+      if (process.env.DATABASE_PROVIDER === 'neon') {
+        const historico = await client.from('cotacoes_lugar_historico').upsert(
+          precos.map((p) => ({
+            tipo: p.tipo, recorte: 'praca', uf: p.uf, praca: p.praca, valor: p.valor,
+            unidade: p.unidade, fonte: 'scot', data_referencia: p.dataReferencia,
+          })),
+          { onConflict: 'tipo,recorte,uf,praca,data_referencia', ignoreDuplicates: true },
+        );
+        if (historico.error) throw new Error(historico.error.message);
+      }
 
       const { error } = await client.from('cotacoes_praca').upsert(
         precos.map((p) => ({
@@ -194,6 +221,35 @@ export function supabaseRepo(
         .order('data_referencia', { ascending: true });
       if (error) throw new Error(error.message);
       return (data ?? []).map((r) => ({ data: r.data_referencia as string, valor: Number(r.valor) }));
+    },
+
+    async historicoPorLugar(tipo: string, desde: string): Promise<PontoLugar[]> {
+      const { data, error } = await client.from('cotacoes_lugar_historico')
+        .select('tipo, recorte, uf, praca, valor, data_referencia')
+        .eq('tipo', tipo)
+        .gte('data_referencia', desde)
+        .order('data_referencia', { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => ({
+        tipo: r.tipo as string,
+        recorte: r.recorte as 'praca' | 'uf',
+        uf: r.uf as string,
+        praca: r.praca as string,
+        valor: Number(r.valor),
+        data: r.data_referencia as string,
+      }));
+    },
+
+    async salvarHistoricoUfEmLote(tipo, fonte, linhas) {
+      if (linhas.length === 0) return;
+      const { error } = await client.from('cotacoes_lugar_historico').upsert(
+        linhas.map(({ uf, ponto, unidade }) => ({
+          tipo, recorte: 'uf', uf, praca: '', valor: ponto.valor,
+          unidade, fonte, data_referencia: ponto.data,
+        })),
+        { onConflict: 'tipo,recorte,uf,praca,data_referencia', ignoreDuplicates: true },
+      );
+      if (error) throw new Error(error.message);
     },
   };
 }

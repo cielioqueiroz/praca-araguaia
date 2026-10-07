@@ -3,11 +3,13 @@ import { notFound } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase/public';
 import { supabaseRepo } from '@/lib/supabase/repo';
 import { GraficoCotacao } from '@/components/GraficoCotacao';
+import { GraficoPorLugar } from './_components/GraficoPorLugar';
 import { TITULOS, LEGENDAS, UNIDADE_PORTEIRA, PORTEIRA, creditoFonte, prazoDesatualizadoMs } from '@/lib/tipos-ui';
 import { ConviteDistribuicao } from '@/components/ConviteDistribuicao';
 import { faixasDaPorteira } from '@/lib/faixa-porteira';
 import { FOTO_COMMODITY } from '@/components/iconesCommodity';
 import { numero, dataLonga } from '@/lib/formato';
+import { seriesPorLugar } from '@/lib/historico-lugares';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,12 +42,17 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
   if (!atual) notFound();
 
   const desde = new Date(Date.now() - JANELA_DIAS * 24 * 60 * 60 * 1000).toISOString();
-  const pontos = await supabaseRepo(supabase).historicoRecente(tipo, desde);
+  const daPorteira = PORTEIRA.includes(tipo);
+  const historicoLocal = daPorteira && process.env.DATABASE_PROVIDER === 'neon';
+  const repo = supabaseRepo(supabase);
+  const [pontos, pontosLugar] = await Promise.all([
+    historicoLocal ? Promise.resolve([]) : repo.historicoRecente(tipo, desde),
+    historicoLocal ? repo.historicoPorLugar(tipo, desde) : Promise.resolve([]),
+  ]);
   const titulo = TITULOS[tipo] ?? tipo;
   const valor = Number(atual.valor);
   const pct = atual.variacao_pct === null ? null : Number(atual.variacao_pct);
   const velho = Date.now() - new Date(atual.data_referencia).getTime() > prazoDesatualizadoMs(tipo);
-  const daPorteira = PORTEIRA.includes(tipo);
 
   /**
    * Na porteira, o número grande é a FAIXA entre os lugares — nunca o valor de
@@ -57,13 +64,19 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
    */
   const [{ data: pracas }, { data: ufs }] = daPorteira
     ? await Promise.all([
-        supabase.from('cotacoes_praca').select('tipo, valor').eq('tipo', tipo),
-        supabase.from('cotacoes_uf').select('tipo, valor').eq('tipo', tipo),
+        supabase.from('cotacoes_praca').select('tipo, praca, uf, valor').eq('tipo', tipo),
+        supabase.from('cotacoes_uf').select('tipo, uf, valor').eq('tipo', tipo),
       ])
     : [{ data: [] }, { data: [] }];
   const lugares = ((pracas ?? []).length > 0 ? pracas : ufs) ?? [];
   const faixa = faixasDaPorteira(lugares.map((l) => ({ tipo: l.tipo as string, valor: Number(l.valor) })))[0];
   const porPraca = (pracas ?? []).length > 0;
+  const series = historicoLocal ? seriesPorLugar(
+    tipo,
+    (pracas ?? []).map((p) => ({ praca: p.praca as string, uf: p.uf as string })),
+    (ufs ?? []).map((u) => ({ uf: u.uf as string })),
+    pontosLugar,
+  ) : [];
 
   return (
     <div className="wrap">
@@ -102,8 +115,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
           <div className="line" />
           {daPorteira && (
             <div className="meta">
-              {/* Aqui é a série regional: o preço de CADA praça está no painel. */}
-              Preço de cada praça em<span className="pill">a praça hoje</span>
+              Preço de cada {porPraca ? 'praça' : 'estado'} em<span className="pill">a praça hoje</span>
             </div>
           )}
         </div>
@@ -162,11 +174,13 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
           <div className="t">Tendência</div>
           <div className="line" />
           <div className="meta">
-            Últimos dias<span className="pill">7 · 30 · 90</span>
+            {historicoLocal ? 'Por praça ou estado' : 'Últimos dias'}<span className="pill">7 · 30 · 90</span>
           </div>
         </div>
         <div className="pgcard">
-          {pontos.length === 0 ? (
+          {historicoLocal ? (
+            <GraficoPorLugar tipo={tipo} titulo={titulo} unidade={atual.unidade} series={series} />
+          ) : pontos.length === 0 ? (
             <p className="cidnota" style={{ marginTop: 0 }}>
               Sem histórico ainda para desenhar a linha.
             </p>
@@ -174,7 +188,7 @@ export default async function DetalheCotacao({ params }: { params: Promise<{ tip
             <GraficoCotacao pontos={pontos} titulo={titulo} unidade={atual.unidade} tipoCotacao={tipo} />
           )}
         </div>
-        {daPorteira && (
+        {daPorteira && !historicoLocal && (
           <p className="cidnota">
             A linha acompanha uma referência regional agregada, sem representar o preço de uma praça específica.
             Para negociar, confira o valor de cada lugar em <Link href="/cotacoes">a praça hoje</Link>.

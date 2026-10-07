@@ -149,3 +149,23 @@ export async function buscarHistoricoConab(
   if (pontos.length === 0) throw new Error(`CONAB sem histórico de ${tipo}`);
   return pontos;
 }
+
+/** Semanas publicadas para CADA UF, sem formar um preço regional. */
+export async function buscarHistoricoPorUfConab(
+  tipo: TipoCommodity,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Array<{ uf: string; pontos: PontoHistorico[] }>> {
+  const linhas = (await carregar(fetchImpl)).filter((linha) => linha.tipo === tipo);
+  const fator = FATOR[tipo];
+  return ORDEM_UF.flatMap((uf) => {
+    const porSemana = new Map<string, number>();
+    for (const linha of linhas) {
+      if (linha.uf === uf) porSemana.set(linha.fimSemana, Math.round(linha.valorKg * fator * 100) / 100);
+    }
+    if (porSemana.size === 0) return [];
+    const pontos = [...porSemana.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([data, valor]) => ({ data, valor }));
+    return [{ uf, pontos }];
+  });
+}

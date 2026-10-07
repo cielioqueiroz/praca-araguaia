@@ -167,9 +167,8 @@ export async function buscarPorPracaScot(tipo: TipoScot, fetchImpl: typeof fetch
       praca: l.praca,
       valor,
       unidade: 'R$/@',
-      // A Scot não publica variação por praça, e não guardamos histórico por praça
-      // para calcular — então o card mostra '—'. Inventar a variação comparando com
-      // a média regional seria pior que não mostrar.
+      // A Scot não publica variação por praça. O repositório compara com o último
+      // fechamento DA MESMA praça; a média regional nunca entra nessa conta.
       variacaoPct: null,
       dataReferencia,
       ...(tipo === 'boi' && l.boiPrazo !== null ? { valorPrazo: l.boiPrazo } : {}),

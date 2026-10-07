@@ -54,6 +54,20 @@ export interface PrecoPracaRepo {
 
 export type PontoHistorico = { data: string; valor: number }; // data ISO 8601, ordem asc
 
+export type PontoLugar = PontoHistorico & {
+  tipo: string;
+  recorte: 'praca' | 'uf';
+  uf: string;
+  praca: string;
+};
+
+export interface HistoricoLugarRepo {
+  /** Série por praça/UF dos últimos dias, com a data verdadeira de cada fonte. */
+  historicoPorLugar(tipo: string, desde: string): Promise<PontoLugar[]>;
+  /** Backfill semanal por UF, sem substituir pontos que já foram coletados. */
+  salvarHistoricoUfEmLote(tipo: string, fonte: string, linhas: Array<{ uf: string; ponto: PontoHistorico; unidade: string }>): Promise<void>;
+}
+
 export interface HistoricoRepo {
   /** Insere pontos em lote para o tipo/fonte, ignorando duplicados (tipo, data_referencia). */
   salvarHistoricoEmLote(tipo: string, fonte: string, pontos: PontoHistorico[]): Promise<void>;

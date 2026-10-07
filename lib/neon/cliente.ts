@@ -6,7 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // não mistura uma reescrita de 76 chamadas com a migração dos dados; a interface
 // interna pode ser substituída por repositórios SQL por domínio em fatias menores.
 const TABELAS = new Set([
-  'cotacoes', 'cotacoes_historico', 'cotacoes_uf', 'cotacoes_praca', 'reportes',
+  'cotacoes', 'cotacoes_historico', 'cotacoes_uf', 'cotacoes_praca', 'cotacoes_lugar_historico', 'reportes',
   'fornecedores', 'assinantes_telegram', 'visitas', 'tentativas_login',
   'alertas_enviados', 'envios_boletim',
 ]);

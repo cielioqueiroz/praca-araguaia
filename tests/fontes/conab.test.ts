@@ -5,6 +5,7 @@ import {
   buscarMilho,
   resetCacheConab,
   buscarHistoricoConab,
+  buscarHistoricoPorUfConab,
   buscarPorUf,
 } from '@/lib/fontes/conab';
 
@@ -130,5 +131,18 @@ describe('buscarHistoricoConab', () => {
 
   it('rejeita quando não há nenhuma semana para o tipo', async () => {
     await expect(buscarHistoricoConab('soja', fetchConab(HEADER))).rejects.toThrow(/soja/);
+  });
+});
+
+describe('buscarHistoricoPorUfConab', () => {
+  it('preserva o valor de cada UF em cada semana, sem média regional', async () => {
+    const series = await buscarHistoricoPorUfConab('boi', fetchConab());
+    expect(series).toEqual([
+      { uf: 'PA', pontos: [{ data: new Date('2026-06-26T00:00:00-03:00').toISOString(), valor: 345 }] },
+      { uf: 'MT', pontos: [
+        { data: new Date('2026-06-19T00:00:00-03:00').toISOString(), valor: 315 },
+        { data: new Date('2026-06-26T00:00:00-03:00').toISOString(), valor: 330 },
+      ] },
+    ]);
   });
 });
