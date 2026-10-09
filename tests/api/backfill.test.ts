@@ -5,6 +5,7 @@ const repositorio = vi.hoisted(() => ({ salvarHistoricoUfEmLote: vi.fn() }));
 vi.mock('@/lib/backfill', () => ({ backfillHistorico: vi.fn() }));
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn(() => ({})) }));
 vi.mock('@/lib/supabase/repo', () => ({ supabaseRepo: vi.fn(() => repositorio) }));
+vi.mock('@/lib/neon/repositorio-cotacoes', () => ({ repositorioCotacoesNeon: vi.fn(() => repositorio) }));
 vi.mock('@/lib/fontes/conab', () => ({ buscarHistoricoPorUfConab: vi.fn() }));
 vi.mock('@/lib/fontes/registry', () => ({
   FONTES_HISTORICO: [

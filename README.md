@@ -31,7 +31,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
   <img src="docs/screenshots/cards.jpg" alt="Cards da porteira: boi gordo, vaca gorda, novilha, bezerro, soja e milho" width="100%">
 </p>
 
-<sub>Seis categorias — **boi gordo, vaca gorda, novilha, bezerro** (arroba; o bezerro por cabeça) e **soja, milho** (saca de 60 kg) — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. **Boi e vaca** trazem as três cidades do Pará (Marabá, Paragominas, Redenção) e **uma linha por estado** (Mato Grosso, Tocantins, Goiás, Bahia, Maranhão), com o valor da praça de referência da **Scot** mais próxima do Araguaia. Cada card credita **quem apurou e quando**: a CONAB fecha a semana, a Scot fecha o dia. O **Termômetro** traz o que os produtores reportaram nas cidades, com o convite a reportar já no produto certo.</sub>
+<sub>Seis categorias — **boi gordo e vaca gorda** por arroba, **novilha e bezerro** por cabeça, e **soja e milho** por saca de 60 kg — em cards de mesmo tamanho, lado a lado: preços em cima, Termômetro embaixo. **Boi e vaca** trazem as três cidades do Pará (Marabá, Paragominas, Redenção) e **uma linha por estado** (Mato Grosso, Tocantins, Goiás, Bahia, Maranhão), com o valor da praça de referência da **Scot** mais próxima do Araguaia. Cada card credita **quem apurou e quando**: a CONAB fecha a semana, a Scot fecha o dia. O **Termômetro** traz os reportes de produtores e os apurados pela Praça, sempre com a origem identificada.</sub>
 
 ### Mercado — dólar, ouro e bolsa
 
@@ -49,7 +49,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
     </td>
     <td width="50%" valign="top">
       <img src="docs/screenshots/termometro.jpg" alt="Termômetro da Praça"><br>
-      <sub><b>Termômetro</b> — o preço na voz de quem está na lida: mediana dos reportes de produtores.</sub>
+      <sub><b>Termômetro</b> — valor típico dos reportes de produtores e dos apurados pela Praça, com origem identificada.</sub>
     </td>
   </tr>
   <tr>
@@ -90,7 +90,7 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 | Página | O que oferece |
 |---|---|
 | **`/`** — Notícias do Mercado | Home com as **notícias** do agro/pecuária/mercado, agregadas de 8 veículos (RSS), com foto e seção por assunto. O ticker de preços fica no topo de todas as páginas. |
-| **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra o que os produtores reportaram nas cidades. **No mercado**, 3 cotações com mini-tendência de 30 dias: **dólar, ouro (R$/g) e Ibovespa**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
+| **`/cotacoes`** — a praça hoje | **Na porteira**, 6 categorias: **boi e vaca** pela **Scot** (3 cidades do PA + uma praça de referência por estado — MT, TO, GO, BA, MA), **novilha e bezerro** (Scot, reposição por estado) e **soja e milho** (CONAB, por estado) — cada card também mostra reportes de produtores e os apurados pela Praça, com a origem identificada. **No mercado**, 3 cotações com mini-tendência de 30 dias: **dólar, ouro (R$/g) e Ibovespa**. Topo com **ticker** e a **cidade/UF + temperatura do usuário** (geolocalização). |
 | **`/cotacao/[tipo]`** | Gráfico de tendência de cada cotação, com toggle **7 / 30 / 90 dias**. |
 | **`/boletim`** | Card-resumo em **PNG 1080×1200** para Telegram/WhatsApp e versão completa 1080×2300 (via `next/og`/Satori). O fechamento é enviado após coleta completa em dia útil. |
 | **`/chuva`** | **Sua região primeiro** (previsão da localização do usuário) e depois os 5 municípios da praça — chuva, probabilidade e temperatura de 7 dias (Open-Meteo). O card da sua região é **o mesmo componente** dos municípios: uma linha de dia lida do mesmo jeito em todos. |
@@ -114,7 +114,7 @@ Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos. O bot
 | Ibovespa | B3, via Yahoo Finance (`^BVSP`) | pontos | diário |
 | Bitcoin, ethereum | CoinGecko | R$ | diário |
 | Chuva | INMET · CEMADEN · Open-Meteo | mm | diário |
-| Termômetro | reportes dos próprios produtores | R$/@ | contínuo |
+| Termômetro | reportes dos próprios produtores e apurados pela Praça | R$/@, R$/cabeça ou R$/sc 60 kg, conforme o produto | contínuo |
 
 > **A CONAB só publica boi/soja/milho por estado** (`BOI|GORDO`, sem vaca/novilha/bezerro), e por estado a granularidade some — o produtor negocia na praça, não no "preço do Pará". Por isso **boi e vaca vêm da Scot, praça a praça**: as três cidades do Pará e uma linha de referência por estado vizinho. **Novilha e bezerro** são reposição (também Scot). Cada card diz na cara quem apurou o preço e em que dia.
 

@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { repositorioModeracaoNeon } from '@/lib/neon/repositorio-moderacao';
 import { lerTokenDoCookie, verificarToken, validarDecisao } from '@/lib/moderacao';
 
 export const dynamic = 'force-dynamic';
@@ -22,17 +23,20 @@ export async function POST(req: Request) {
   }
 
   // Só pendente pode ser decidido; as linhas afetadas dizem se algo mudou (sem TOCTOU).
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from('reportes')
-    .update({ status: validacao.decisao })
-    .eq('id', validacao.id)
-    .eq('status', 'pendente')
-    .select('id');
-  if (error) {
+  let alterado: boolean;
+  try {
+    if (process.env.DATABASE_PROVIDER === 'neon') {
+      alterado = await repositorioModeracaoNeon().decidirReporte(validacao.id, validacao.decisao);
+    } else {
+      const { data, error } = await createServerClient().from('reportes')
+        .update({ status: validacao.decisao }).eq('id', validacao.id).eq('status', 'pendente').select('id');
+      if (error) throw new Error(error.message);
+      alterado = (data ?? []).length > 0;
+    }
+  } catch {
     return Response.json({ erro: 'Erro ao salvar. Tente de novo.' }, { status: 500 });
   }
-  if (!data || data.length === 0) {
+  if (!alterado) {
     return Response.json({ erro: 'Reporte não encontrado ou já moderado.' }, { status: 404 });
   }
   return Response.json({ ok: true });

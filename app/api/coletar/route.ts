@@ -6,6 +6,7 @@ import { buscarPorUfPecuaria, type TipoPecuaria } from '@/lib/fontes/pecuaria';
 import { buscarPorPracaScot, type TipoScot } from '@/lib/fontes/scot';
 import { createServerClient } from '@/lib/supabase/server';
 import { supabaseRepo } from '@/lib/supabase/repo';
+import { repositorioCotacoesNeon } from '@/lib/neon/repositorio-cotacoes';
 import { dataLocal } from '@/lib/dia-util';
 import type { PrecoPraca, PrecoUf } from '@/types/cotacao';
 
@@ -17,7 +18,8 @@ export async function GET(req: Request): Promise<Response> {
     return new Response('unauthorized', { status: 401 });
   }
 
-  const repo = supabaseRepo(createServerClient());
+  const repo = process.env.DATABASE_PROVIDER === 'neon'
+    ? repositorioCotacoesNeon() : supabaseRepo(createServerClient());
   const coletadas: Array<{ tipo: string; valor: number }> = [];
   const porUf: Array<{ tipo: string; ufs: number }> = [];
   const porPraca: Array<{ tipo: string; pracas: number }> = [];

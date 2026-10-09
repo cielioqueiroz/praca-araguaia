@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const salvarPrecosUf = vi.fn();
 const salvarPrecosPraca = vi.fn();
@@ -9,12 +9,18 @@ vi.mock('@/lib/fontes/registry', () => ({ FONTES: { dolar: vi.fn(), euro: vi.fn(
 vi.mock('@/lib/fontes/conab', () => ({ buscarPorUf: vi.fn() }));
 vi.mock('@/lib/fontes/pecuaria', () => ({ buscarPorUfPecuaria: vi.fn() }));
 vi.mock('@/lib/fontes/scot', () => ({ buscarPorPracaScot: vi.fn() }));
+vi.mock('@/lib/neon/repositorio-cotacoes', () => ({
+  repositorioCotacoesNeon: vi.fn(() => ({ salvarPrecosUf, salvarPrecosPraca })),
+}));
 
 import { GET } from '@/app/api/coletar/route';
 import { coletarCotacao } from '@/lib/coleta';
 import { buscarPorUf } from '@/lib/fontes/conab';
 import { buscarPorUfPecuaria } from '@/lib/fontes/pecuaria';
 import { buscarPorPracaScot } from '@/lib/fontes/scot';
+import { repositorioCotacoesNeon } from '@/lib/neon/repositorio-cotacoes';
+import { createServerClient } from '@/lib/supabase/server';
+import { supabaseRepo } from '@/lib/supabase/repo';
 
 vi.mock('@/lib/supabase/repo', () => ({
   supabaseRepo: vi.fn(() => ({ salvarPrecosUf, salvarPrecosPraca })),
@@ -37,11 +43,13 @@ const PRECOS_PRACA = [
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv('DATABASE_PROVIDER', 'supabase');
   process.env.CRON_SECRET = 'segredo';
   mockUf.mockResolvedValue(PRECOS_UF);
   mockUfPec.mockResolvedValue(PRECOS_UF);
   mockPraca.mockResolvedValue(PRECOS_PRACA);
 });
+afterEach(() => vi.unstubAllEnvs());
 
 function req(auth?: string) {
   return new Request('http://localhost/api/coletar', { headers: auth ? { authorization: auth } : {} });
@@ -79,6 +87,20 @@ describe('GET /api/coletar', () => {
       { tipo: 'boi', pracas: 2 },
       { tipo: 'vaca', pracas: 2 },
     ]);
+  });
+
+  it('usa a escrita SQL no Neon sem construir o cliente de retorno', async () => {
+    vi.stubEnv('DATABASE_PROVIDER', 'neon');
+    mock.mockResolvedValue({ valor: 5.1 });
+
+    const resposta = await GET(req('Bearer segredo'));
+
+    expect(resposta.status).toBe(200);
+    expect(repositorioCotacoesNeon).toHaveBeenCalledOnce();
+    expect(createServerClient).not.toHaveBeenCalled();
+    expect(supabaseRepo).not.toHaveBeenCalled();
+    expect(salvarPrecosUf).toHaveBeenCalledTimes(5);
+    expect(salvarPrecosPraca).toHaveBeenCalledTimes(2);
   });
 
   it('falha da CONAB não derruba a reposição (nem as cotações)', async () => {

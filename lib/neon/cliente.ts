@@ -24,7 +24,7 @@ pg.types.setTypeParser(20, (valor) => {
 let poolLeitura: Pool | undefined;
 let poolEscrita: Pool | undefined;
 
-function obterPool(escrita: boolean): Pool {
+export function obterPool(escrita: boolean): Pool {
   const atual = escrita ? poolEscrita : poolLeitura;
   if (atual) return atual;
   const conexao = escrita ? process.env.DATABASE_URL : process.env.DATABASE_URL_READONLY;

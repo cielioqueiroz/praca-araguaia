@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { repositorioModeracaoNeon } from '@/lib/neon/repositorio-moderacao';
 import { lerTokenDoCookie, verificarToken } from '@/lib/moderacao';
 import { validarReporte } from '@/lib/termometro';
 
@@ -34,13 +35,16 @@ export async function POST(req: Request) {
     return Response.json({ erro }, { status: 400 });
   }
 
-  const supabase = createServerClient();
-  const { error } = await supabase.from('reportes').insert({
-    ...validacao.reporte,
-    status: 'aprovado',
-    origem: 'praca',
-  });
-  if (error) {
+  try {
+    if (process.env.DATABASE_PROVIDER === 'neon') {
+      await repositorioModeracaoNeon().registrarReporteDaPraca(validacao.reporte);
+    } else {
+      const { error } = await createServerClient().from('reportes').insert({
+        ...validacao.reporte, status: 'aprovado', origem: 'praca',
+      });
+      if (error) throw new Error(error.message);
+    }
+  } catch {
     return Response.json({ erro: 'Erro ao salvar. Tente de novo.' }, { status: 500 });
   }
   return Response.json({ ok: true });

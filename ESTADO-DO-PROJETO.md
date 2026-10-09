@@ -1,8 +1,28 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-10-07.
+> **Documento de retomada.** Última atualização: 2026-10-09.
 > Quando voltar, comece por aqui. O bloco mais recente informa o que ainda não foi
 > commitado ou publicado.
+
+---
+
+## Fechamentos no Neon conferidos no banco (09/10/2026)
+
+Consulta somente leitura no banco de produção confirmou que os fechamentos de **07 e
+08/10** terminaram com **3 envios e 0 falhas cada**. A última atualização em `cotacoes`
+foi em 08/10 às 18:18 BRT. Nenhuma rota de envio foi acionada nesta conferência.
+As **12 cotações, 16 praças e 30 preços por UF** tinham `atualizado_em` em 08/10
+no fuso de São Paulo; a coleta daquele dia estava completa no retrato do banco.
+O registro no banco não distingue cron de disparo manual. Os logs de 07/08 já estavam
+fora da retenção da Vercel Hobby nesta consulta, então a origem automática não foi
+confirmada pelos logs.
+
+O mesmo retrato mostrou **3 assinantes, 0 reportes aprovados e 0 fornecedores aprovados**.
+A operação do boletim registrou os primeiros fechamentos no Neon; a próxima prioridade
+de produto é obter preços negociados e fornecedores reais para preencher o Termômetro
+e a vitrine. A fatia de repositórios SQL de escrita foi concluída localmente, com
+**625 testes, typecheck, lint e build**; ainda não foi publicada. O build local
+compilou, mas o sandbox bloqueou DNS das fontes e do banco durante a geração estática.
 
 ---
 

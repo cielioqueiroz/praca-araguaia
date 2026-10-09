@@ -3,6 +3,7 @@ import { backfillHistorico } from '@/lib/backfill';
 import { FONTES_HISTORICO } from '@/lib/fontes/registry';
 import { createServerClient } from '@/lib/supabase/server';
 import { supabaseRepo } from '@/lib/supabase/repo';
+import { repositorioCotacoesNeon } from '@/lib/neon/repositorio-cotacoes';
 import { buscarHistoricoPorUfConab, type TipoCommodity } from '@/lib/fontes/conab';
 
 export const dynamic = 'force-dynamic';
@@ -12,11 +13,9 @@ export async function GET(req: Request): Promise<Response> {
   if (!autorizadoPorCron(req)) {
     return new Response('unauthorized', { status: 401 });
   }
-
-
   if (new URL(req.url).searchParams.get('lugares') === '1') {
     if (process.env.DATABASE_PROVIDER !== 'neon') return new Response('historico local exige Neon', { status: 400 });
-    const repoLugares = supabaseRepo(createServerClient());
+    const repoLugares = repositorioCotacoesNeon();
     const tipos: TipoCommodity[] = ['boi', 'soja', 'milho'];
     const desde = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
     const resultados: Array<{ tipo: string; pontos: number }> = [];
@@ -37,7 +36,8 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json({ resultados, erros }, { status: erros.length > 0 ? 502 : 200 });
   }
 
-  const repo = supabaseRepo(createServerClient());
+  const repo = process.env.DATABASE_PROVIDER === 'neon'
+    ? repositorioCotacoesNeon() : supabaseRepo(createServerClient());
   const resultados: Array<{ tipo: string; pontos: number }> = [];
   const erros: Array<{ tipo: string; erro: string }> = [];
 

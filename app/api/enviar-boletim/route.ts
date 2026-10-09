@@ -1,10 +1,10 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { persistenciaBoletim } from '@/lib/persistencia-boletim';
 import { autorizadoPorCron } from '@/lib/cron';
 import { dataLocal, diaUtil } from '@/lib/dia-util';
 import { enviarFotoArquivo } from '@/lib/telegram';
 import { legendaBoletim, urlFotoBoletim, type Sessao } from '@/lib/telegram-boletim';
 import { enviarEmMassa } from '@/lib/telegram-broadcast';
-import { pendenciasDaColeta, type LinhaAtualizada } from '@/lib/boletim-envio';
+import { pendenciasDaColeta } from '@/lib/boletim-envio';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -48,7 +48,7 @@ export async function GET(req: Request): Promise<Response> {
   const segredo = process.env.CRON_SECRET;
   if (!token || !segredo) return new Response('config', { status: 500 });
 
-  const supabase = createServerClient();
+  const persistencia = persistenciaBoletim();
 
   let chatIds: number[];
   if (previa) {
@@ -60,12 +60,12 @@ export async function GET(req: Request): Promise<Response> {
     }
     chatIds = [dono];
   } else {
-    const { data, error } = await supabase.from('assinantes_telegram').select('chat_id');
-    if (error) {
-      console.error('enviar-boletim: leitura dos inscritos falhou', error);
+    try {
+      chatIds = await persistencia.listarInscritos();
+    } catch (erro) {
+      console.error('enviar-boletim: leitura dos inscritos falhou', erro);
       return new Response('erro', { status: 500 });
     }
-    chatIds = (data ?? []).map((r) => r.chat_id as number);
   }
 
   if (chatIds.length === 0) {
@@ -75,22 +75,14 @@ export async function GET(req: Request): Promise<Response> {
   const agora = new Date();
   const dia = dataLocal(agora);
   if (!previa) {
-    const [cotacoes, pracas, ufs] = await Promise.all([
-      supabase.from('cotacoes').select('tipo,atualizado_em'),
-      supabase.from('cotacoes_praca').select('tipo,atualizado_em'),
-      supabase.from('cotacoes_uf').select('tipo,atualizado_em'),
-    ]);
-    if (cotacoes.error || pracas.error || ufs.error) {
-      console.error('enviar-boletim: leitura da coleta falhou', {
-        cotacoes: cotacoes.error, pracas: pracas.error, ufs: ufs.error,
-      });
+    let estado;
+    try {
+      estado = await persistencia.estadoColeta();
+    } catch (erro) {
+      console.error('enviar-boletim: leitura da coleta falhou', erro);
       return new Response('erro na coleta', { status: 500 });
     }
-    const pendencias = pendenciasDaColeta(dia, {
-      cotacoes: (cotacoes.data ?? []) as LinhaAtualizada[],
-      pracas: (pracas.data ?? []) as LinhaAtualizada[],
-      ufs: (ufs.data ?? []) as LinhaAtualizada[],
-    });
+    const pendencias = pendenciasDaColeta(dia, estado);
     if (pendencias.length > 0) {
       console.error('enviar-boletim: coleta incompleta', { dia, pendencias });
       return Response.json({ dia, pendencias }, { status: 503 });
@@ -114,12 +106,12 @@ export async function GET(req: Request): Promise<Response> {
   // Depois da primeira mensagem, porém, uma nova tentativa poderia duplicá-la;
   // por isso a reserva permanece mesmo se o processo parar no meio do envio.
   if (!previa) {
-    const { error } = await supabase.from('envios_boletim').insert({ dia, sessao });
-    if (error?.code === '23505') {
-      return Response.json({ dia, sessao, pulado: 'envio ja iniciado' });
-    }
-    if (error) {
-      console.error('enviar-boletim: reserva falhou', error);
+    try {
+      if (!await persistencia.reservar(dia, sessao)) {
+        return Response.json({ dia, sessao, pulado: 'envio ja iniciado' });
+      }
+    } catch (erro) {
+      console.error('enviar-boletim: reserva falhou', erro);
       return new Response('erro na reserva', { status: 500 });
     }
   }
@@ -132,15 +124,19 @@ export async function GET(req: Request): Promise<Response> {
   // Só o broadcast poda inscrito que bloqueou o bot. Na prévia, o "chat" é o dono —
   // um bloqueio dele não é motivo para apagar ninguém da lista de inscritos.
   if (!previa && bloqueados.length > 0) {
-    const { error: delErro } = await supabase.from('assinantes_telegram').delete().in('chat_id', bloqueados);
-    if (delErro) console.error('enviar-boletim: remoção de bloqueados falhou', delErro);
+    try {
+      await persistencia.removerBloqueados(bloqueados);
+    } catch (erro) {
+      console.error('enviar-boletim: remoção de bloqueados falhou', erro);
+    }
   }
 
   if (!previa) {
-    const { error } = await supabase.from('envios_boletim')
-      .update({ concluido_em: new Date().toISOString(), enviados, removidos: bloqueados.length, falhas })
-      .eq('dia', dia).eq('sessao', sessao);
-    if (error) console.error('enviar-boletim: resultado não registrado', error);
+    try {
+      await persistencia.concluir(dia, sessao, enviados, bloqueados.length, falhas);
+    } catch (erro) {
+      console.error('enviar-boletim: resultado não registrado', erro);
+    }
     console.info('enviar-boletim: resultado', { dia, sessao, enviados, removidos: bloqueados.length, falhas });
   }
 
