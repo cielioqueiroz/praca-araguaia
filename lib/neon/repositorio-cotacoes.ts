@@ -38,14 +38,22 @@ function valoresEmLote(linhas: unknown[][]): { marcas: string; parametros: unkno
   return { marcas, parametros };
 }
 
+type NumeroDoBanco = number | string;
+type DataDoBanco = Date | string;
+
+function dataIso(valor: DataDoBanco): string {
+  return valor instanceof Date ? valor.toISOString() : new Date(valor).toISOString();
+}
+
 function lugarSalvo(linha: {
-  valor: number; variacao_pct: number | null; data_referencia: string; variou_em?: string | null;
+  valor: NumeroDoBanco; variacao_pct: NumeroDoBanco | null;
+  data_referencia: DataDoBanco; variou_em?: DataDoBanco | null;
 }): LugarSalvo {
   return {
-    valor: linha.valor,
-    variacaoPct: linha.variacao_pct,
-    dataReferencia: linha.data_referencia,
-    variouEm: linha.variou_em,
+    valor: Number(linha.valor),
+    variacaoPct: linha.variacao_pct === null ? null : Number(linha.variacao_pct),
+    dataReferencia: dataIso(linha.data_referencia),
+    variouEm: linha.variou_em ? dataIso(linha.variou_em) : linha.variou_em,
   };
 }
 
@@ -54,11 +62,11 @@ function lugarSalvo(linha: {
 export function repositorioCotacoesNeon(): RepositorioCotacoes {
   return {
     async ultimoValor(tipo, antesDe) {
-      const resultado = await obterPool(false).query<{ valor: number }>(
+      const resultado = await obterPool(false).query<{ valor: NumeroDoBanco }>(
         'select valor from cotacoes_historico where tipo = $1 and data_referencia < $2 order by data_referencia desc limit 1',
         [tipo, antesDe],
       );
-      return resultado.rows[0]?.valor ?? null;
+      return resultado.rows[0] ? Number(resultado.rows[0].valor) : null;
     },
 
     async salvar(cotacao, variacaoPct) {
@@ -85,7 +93,8 @@ export function repositorioCotacoesNeon(): RepositorioCotacoes {
       await emTransacao(async (cliente) => {
         const tipos = [...new Set(precos.map((preco) => preco.tipo))];
         const consulta = await cliente.query<{
-          tipo: string; uf: string; valor: number; variacao_pct: number | null; data_referencia: string;
+          tipo: string; uf: string; valor: NumeroDoBanco;
+          variacao_pct: NumeroDoBanco | null; data_referencia: DataDoBanco;
         }>('select tipo, uf, valor, variacao_pct, data_referencia from cotacoes_uf where tipo = any($1::text[]) for update', [tipos]);
         const anteriores = new Map(consulta.rows.map((linha) => [`${linha.tipo}|${linha.uf}`, lugarSalvo(linha)]));
         const historico = valoresEmLote(precos.map((preco) => [
@@ -121,8 +130,9 @@ export function repositorioCotacoesNeon(): RepositorioCotacoes {
       if (precos.some((preco) => preco.tipo !== tipo)) throw new Error('Lote de praças mistura produtos');
       await emTransacao(async (cliente) => {
         const consulta = await cliente.query<{
-          id: number; tipo: string; praca: string; uf: string; valor: number;
-          variacao_pct: number | null; data_referencia: string; variou_em: string | null;
+          id: number; tipo: string; praca: string; uf: string; valor: NumeroDoBanco;
+          variacao_pct: NumeroDoBanco | null; data_referencia: DataDoBanco;
+          variou_em: DataDoBanco | null;
         }>(
           `select id, tipo, praca, uf, valor, variacao_pct, data_referencia, variou_em
            from cotacoes_praca where tipo = $1 for update`, [tipo],
@@ -178,17 +188,17 @@ export function repositorioCotacoesNeon(): RepositorioCotacoes {
     },
 
     async historicoRecente(tipo, desde) {
-      const resultado = await obterPool(false).query<{ valor: number; data_referencia: string }>(
+      const resultado = await obterPool(false).query<{ valor: NumeroDoBanco; data_referencia: DataDoBanco }>(
         `select valor, data_referencia from cotacoes_historico
          where tipo = $1 and data_referencia >= $2 order by data_referencia asc`, [tipo, desde],
       );
-      return resultado.rows.map((linha) => ({ valor: linha.valor, data: linha.data_referencia }));
+      return resultado.rows.map((linha) => ({ valor: Number(linha.valor), data: dataIso(linha.data_referencia) }));
     },
 
     async historicoPorLugar(tipo, desde): Promise<PontoLugar[]> {
       const resultado = await obterPool(false).query<{
         tipo: string; recorte: 'praca' | 'uf'; uf: string; praca: string;
-        valor: number; data_referencia: string;
+        valor: NumeroDoBanco; data_referencia: DataDoBanco;
       }>(
         `select tipo, recorte, uf, praca, valor, data_referencia
          from cotacoes_lugar_historico where tipo = $1 and data_referencia >= $2
@@ -196,7 +206,7 @@ export function repositorioCotacoesNeon(): RepositorioCotacoes {
       );
       return resultado.rows.map((linha) => ({
         tipo: linha.tipo, recorte: linha.recorte, uf: linha.uf, praca: linha.praca,
-        valor: linha.valor, data: linha.data_referencia,
+        valor: Number(linha.valor), data: dataIso(linha.data_referencia),
       }));
     },
 

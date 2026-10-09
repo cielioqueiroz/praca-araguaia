@@ -61,7 +61,7 @@ describe('repositório de cotações no Neon', () => {
 
   it('mantém a variação de um fechamento repetido por UF na mesma transação do histórico', async () => {
     banco.transacao.mockImplementation(async (sql: string) => sql.includes('select tipo, uf')
-      ? { rows: [{ tipo: 'novilha', uf: 'PA', valor: 3000, variacao_pct: 2.5, data_referencia: '2026-10-08T03:00:00Z' }], rowCount: 1 }
+      ? { rows: [{ tipo: 'novilha', uf: 'PA', valor: '3000.00', variacao_pct: '2.50', data_referencia: new Date('2026-10-08T03:00:00Z') }], rowCount: 1 }
       : { rows: [], rowCount: 1 });
 
     await repositorioCotacoesNeon().salvarPrecosUf([{
@@ -81,8 +81,8 @@ describe('repositório de cotações no Neon', () => {
     banco.transacao.mockImplementation(async (sql: string) => {
       if (sql.includes('from cotacoes_praca where tipo')) return {
         rows: [
-          { id: 1, tipo: 'boi', praca: 'Redenção', uf: 'PA', valor: 340, variacao_pct: 1.2,
-            data_referencia: '2026-10-07T03:00:00Z', variou_em: '2026-10-05T03:00:00Z' },
+          { id: 1, tipo: 'boi', praca: 'Redenção', uf: 'PA', valor: '340.00', variacao_pct: '1.20',
+            data_referencia: new Date('2026-10-07T03:00:00Z'), variou_em: new Date('2026-10-05T03:00:00Z') },
           { id: 2, tipo: 'boi', praca: 'Cuiabá', uf: 'MT', valor: 330, variacao_pct: 0,
             data_referencia: '2026-10-07T03:00:00Z', variou_em: '2026-10-07T03:00:00Z' },
         ], rowCount: 2,
@@ -99,13 +99,57 @@ describe('repositório de cotações no Neon', () => {
     const consultas = banco.transacao.mock.calls;
     const atual = consultas.find(([sql]) => sql.includes('insert into cotacoes_praca'));
     expect(atual?.[1]?.[5]).toBe(0);
-    expect(atual?.[1]?.[8]).toBe('2026-10-05T03:00:00Z');
+    expect(atual?.[1]?.[8]).toBe('2026-10-05T03:00:00.000Z');
     expect(consultas.find(([sql]) => sql.includes('delete from cotacoes_praca'))?.[1]).toEqual([[2]]);
     expect(consultas.at(-1)?.[0]).toBe('rollback');
+  });
+
+  it('devolve número e datas ISO nas leituras do driver pg', async () => {
+    banco.leitura.mockImplementation(async (sql: string) => {
+      if (sql.includes('select valor from cotacoes_historico')) {
+        return { rows: [{ valor: '353.0000' }], rowCount: 1 };
+      }
+      if (sql.includes('from cotacoes_lugar_historico')) {
+        return { rows: [{ tipo: 'boi', recorte: 'praca', uf: 'PA', praca: 'Redenção',
+          valor: '353.0000', data_referencia: new Date('2026-10-08T03:00:00Z') }], rowCount: 1 };
+      }
+      return { rows: [{ valor: '353.0000', data_referencia: new Date('2026-10-08T03:00:00Z') }], rowCount: 1 };
+    });
+
+    const repo = repositorioCotacoesNeon();
+    expect(await repo.ultimoValor('boi', '2026-10-09T03:00:00Z')).toBe(353);
+    expect(await repo.historicoRecente('boi', '2026-10-01T03:00:00Z')).toEqual([
+      { valor: 353, data: '2026-10-08T03:00:00.000Z' },
+    ]);
+    expect(await repo.historicoPorLugar('boi', '2026-10-01T03:00:00Z')).toEqual([
+      { tipo: 'boi', recorte: 'praca', uf: 'PA', praca: 'Redenção', valor: 353,
+        data: '2026-10-08T03:00:00.000Z' },
+    ]);
   });
 });
 
 describe('repositório de boletim no Neon', () => {
+  it('entrega datas ISO no estado da coleta', async () => {
+    banco.escrita.mockResolvedValue({
+      rows: [{ tipo: 'boi', atualizado_em: new Date('2026-10-09T20:30:00Z') }], rowCount: 1,
+    });
+    expect(await repositorioBoletimNeon().estadoColeta()).toEqual({
+      cotacoes: [{ tipo: 'boi', atualizado_em: '2026-10-09T20:30:00.000Z' }],
+      pracas: [{ tipo: 'boi', atualizado_em: '2026-10-09T20:30:00.000Z' }],
+      ufs: [{ tipo: 'boi', atualizado_em: '2026-10-09T20:30:00.000Z' }],
+    });
+  });
+
+  it('converte IDs bigint do pg antes de enviar ao Telegram', async () => {
+    banco.escrita.mockResolvedValue({ rows: [{ chat_id: '-1001234567890' }], rowCount: 1 });
+    expect(await repositorioBoletimNeon().listarInscritos()).toEqual([-1001234567890]);
+  });
+
+  it('recusa ID bigint que perderia precisão antes do envio', async () => {
+    banco.escrita.mockResolvedValue({ rows: [{ chat_id: '9007199254740993' }], rowCount: 1 });
+    await expect(repositorioBoletimNeon().listarInscritos()).rejects.toThrow('intervalo seguro');
+  });
+
   it('reserva um fechamento uma só vez pela chave do banco', async () => {
     banco.escrita.mockResolvedValueOnce({ rows: [], rowCount: 1 })
       .mockResolvedValueOnce({ rows: [], rowCount: 0 });

@@ -8,21 +8,40 @@ export type EstadoColeta = {
   ufs: LinhaAtualizada[];
 };
 
+type LinhaAtualizadaPg = { tipo: string; atualizado_em: Date | string };
+
+function linhasAtualizadas(linhas: LinhaAtualizadaPg[]): LinhaAtualizada[] {
+  return linhas.map((linha) => ({
+    tipo: linha.tipo,
+    atualizado_em: linha.atualizado_em instanceof Date
+      ? linha.atualizado_em.toISOString() : new Date(linha.atualizado_em).toISOString(),
+  }));
+}
+
 export function repositorioBoletimNeon() {
   return {
     async listarInscritos(): Promise<number[]> {
-      const resultado = await obterPool(true).query<{ chat_id: number }>('select chat_id from assinantes_telegram');
-      return resultado.rows.map((linha) => linha.chat_id);
+      const resultado = await obterPool(true).query<{ chat_id: string | number }>('select chat_id from assinantes_telegram');
+      return resultado.rows.map((linha) => {
+        const chatId = Number(linha.chat_id);
+        // bigint chega como texto; arredondar aqui poderia enviar para outro chat.
+        if (!Number.isSafeInteger(chatId)) throw new Error('ID de assinante fora do intervalo seguro');
+        return chatId;
+      });
     },
 
     async estadoColeta(): Promise<EstadoColeta> {
       const pool = obterPool(true);
       const [cotacoes, pracas, ufs] = await Promise.all([
-        pool.query<LinhaAtualizada>('select tipo, atualizado_em from cotacoes'),
-        pool.query<LinhaAtualizada>('select tipo, atualizado_em from cotacoes_praca'),
-        pool.query<LinhaAtualizada>('select tipo, atualizado_em from cotacoes_uf'),
+        pool.query<LinhaAtualizadaPg>('select tipo, atualizado_em from cotacoes'),
+        pool.query<LinhaAtualizadaPg>('select tipo, atualizado_em from cotacoes_praca'),
+        pool.query<LinhaAtualizadaPg>('select tipo, atualizado_em from cotacoes_uf'),
       ]);
-      return { cotacoes: cotacoes.rows, pracas: pracas.rows, ufs: ufs.rows };
+      return {
+        cotacoes: linhasAtualizadas(cotacoes.rows),
+        pracas: linhasAtualizadas(pracas.rows),
+        ufs: linhasAtualizadas(ufs.rows),
+      };
     },
 
     async reservar(dia: string, sessao: Sessao): Promise<boolean> {

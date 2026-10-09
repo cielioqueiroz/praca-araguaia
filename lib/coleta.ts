@@ -38,7 +38,9 @@ export function variacaoDoLugar(
 
   // Mesmo fechamento (ou um mais antigo, se a página republicar): nada de novo
   // aconteceu, então o que se sabia continua valendo.
-  if (anterior.dataReferencia >= dataReferencia) return anterior.variacaoPct;
+  // O banco devolve milissegundos (.000Z), enquanto algumas fontes usam só Z.
+  // Comparar as strings classificaria o mesmo instante como um fechamento novo.
+  if (Date.parse(anterior.dataReferencia) >= Date.parse(dataReferencia)) return anterior.variacaoPct;
 
   if (anterior.valor <= 0) return null;
   return Math.round(((valor - anterior.valor) / anterior.valor) * 100 * 100) / 100;
@@ -64,7 +66,9 @@ export function dataDaUltimaMudanca(
 ): string {
   if (!anterior) return dataReferencia;
   // Fechamento repetido (ou republicação de um mais antigo): nada aconteceu hoje.
-  if (anterior.dataReferencia >= dataReferencia) return anterior.variouEm ?? anterior.dataReferencia;
+  if (Date.parse(anterior.dataReferencia) >= Date.parse(dataReferencia)) {
+    return anterior.variouEm ?? anterior.dataReferencia;
+  }
   if (anterior.valor !== valor) return dataReferencia;
   return anterior.variouEm ?? anterior.dataReferencia;
 }

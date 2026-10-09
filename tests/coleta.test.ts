@@ -95,6 +95,12 @@ describe('variacaoDoLugar', () => {
     expect(variacaoDoLugar(316.5, '2026-07-22', anterior(316.5, '2026-07-22', null), null)).toBeNull();
   });
 
+  it('reconhece o mesmo instante com formatos ISO diferentes', () => {
+    expect(variacaoDoLugar(
+      316.5, '2026-07-22T03:00:00Z', anterior(316.5, '2026-07-22T03:00:00.000Z', 2.1), null,
+    )).toBe(2.1);
+  });
+
   it('fonte que volta no tempo não vira variação ao contrário', () => {
     // Se a página republicar um fechamento antigo, o certo é manter o que se sabia,
     // não anunciar uma queda que só existe porque a data andou para trás.
@@ -139,5 +145,11 @@ describe('dataDaUltimaMudanca', () => {
     // O cron roda todo dia; a Scot publica em dia útil. Sem esta guarda, o sábado
     // zerava o "estável desde" que a sexta tinha construído.
     expect(dataDaUltimaMudanca(338, '2026-08-17', anterior(338, '2026-08-17', '2026-08-10'))).toBe('2026-08-10');
+  });
+
+  it('mantém a data anterior quando o mesmo instante muda só de formato ISO', () => {
+    expect(dataDaUltimaMudanca(
+      338, '2026-08-17T03:00:00Z', anterior(338, '2026-08-17T03:00:00.000Z', '2026-08-10'),
+    )).toBe('2026-08-10');
   });
 });
