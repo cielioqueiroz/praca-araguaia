@@ -49,6 +49,8 @@ export async function GET(req: Request): Promise<Response> {
   for (const { tipo, buscar } of porUfDe) {
     try {
       const precos = await buscar();
+      // Lista vazia não atualiza o banco e não pode aparecer como coleta concluída.
+      if (precos.length === 0) throw new Error(`Nenhum preço por UF para ${tipo}`);
       await repo.salvarPrecosUf(precos);
       porUf.push({ tipo, ufs: precos.length });
     } catch (e) {
@@ -65,6 +67,7 @@ export async function GET(req: Request): Promise<Response> {
   for (const { tipo, buscar } of porPracaDe) {
     try {
       const precos = await buscar();
+      if (precos.length === 0) throw new Error(`Nenhuma praça para ${tipo}`);
       await repo.salvarPrecosPraca(precos);
       porPraca.push({ tipo, pracas: precos.length });
     } catch (e) {
@@ -73,11 +76,12 @@ export async function GET(req: Request): Promise<Response> {
     }
   }
 
-  const status = coletadas.length === 0 ? 502 : 200;
+  const status = coletadas.length === 0 ? 502 : erros.length > 0 ? 503 : 200;
   // Sem resumo, uma execução vazia do cron só aparece quando alguém nota preço velho.
   console.info('coletar: resultado', {
     dia: dataLocal(new Date()), cotacoes: coletadas.length, ufs: porUf.reduce((total, item) => total + item.ufs, 0),
-    pracas: porPraca.reduce((total, item) => total + item.pracas, 0), erros: erros.map((item) => item.tipo),
+    pracas: porPraca.reduce((total, item) => total + item.pracas, 0),
+    erros: erros.map((item) => item.tipo), status,
   });
   return Response.json({ coletadas, porUf, porPraca, erros }, { status });
 }

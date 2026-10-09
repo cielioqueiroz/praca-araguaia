@@ -304,6 +304,10 @@ A primeira coleta popula o painel (a tela começa vazia):
 curl -H "authorization: Bearer SEU_CRON_SECRET" http://localhost:3000/api/coletar
 ```
 
+A rota devolve 200 quando todos os tipos entram, 503 quando parte da coleta falha e
+502 quando nenhuma cotação principal entra. O corpo lista os tipos concluídos e os
+erros; uma resposta parcial não desfaz os preços já gravados.
+
 ---
 
 ## Scripts

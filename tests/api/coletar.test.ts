@@ -103,11 +103,11 @@ describe('GET /api/coletar', () => {
     expect(salvarPrecosPraca).toHaveBeenCalledTimes(2);
   });
 
-  it('falha da CONAB não derruba a reposição (nem as cotações)', async () => {
+  it('503 na falha da CONAB sem derrubar a reposição nem as cotações', async () => {
     mock.mockResolvedValue({ valor: 5.1 });
     mockUf.mockRejectedValue(new Error('CONAB fora'));
     const res = await GET(req('Bearer segredo'));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.coletadas).toHaveLength(2);
     expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['boi_uf', 'soja_uf', 'milho_uf']);
@@ -118,6 +118,7 @@ describe('GET /api/coletar', () => {
     mock.mockResolvedValue({ valor: 5.1 });
     mockUfPec.mockRejectedValue(new Error('Notícias Agrícolas fora'));
     const res = await GET(req('Bearer segredo'));
+    expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.porUf.map((p: { tipo: string }) => p.tipo)).toEqual(['boi', 'soja', 'milho']);
     expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['novilha_uf', 'bezerro_uf']);
@@ -129,17 +130,17 @@ describe('GET /api/coletar', () => {
     mock.mockResolvedValue({ valor: 5.1 });
     mockPraca.mockRejectedValue(new Error('Scot fora'));
     const res = await GET(req('Bearer segredo'));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.porPraca).toEqual([]);
     expect(body.porUf).toHaveLength(5);
     expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['boi_praca', 'vaca_praca']);
   });
 
-  it('falha de uma fonte não derruba as outras (200 com erro parcial)', async () => {
+  it('falha de uma fonte não derruba as outras, mas sinaliza coleta parcial', async () => {
     mock.mockResolvedValueOnce({ valor: 5.1 }).mockRejectedValueOnce(new Error('fonte fora'));
     const res = await GET(req('Bearer segredo'));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.coletadas).toHaveLength(1);
     expect(body.erros).toHaveLength(1);
@@ -152,5 +153,29 @@ describe('GET /api/coletar', () => {
     const body = await res.json();
     expect(body.coletadas).toHaveLength(0);
     expect(body.erros).toHaveLength(2);
+  });
+
+  it('trata resposta vazia por UF como falha sem gravar lote vazio', async () => {
+    mock.mockResolvedValue({ valor: 5.1 });
+    mockUf.mockResolvedValue([]);
+
+    const res = await GET(req('Bearer segredo'));
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['boi_uf', 'soja_uf', 'milho_uf']);
+    expect(salvarPrecosUf).toHaveBeenCalledTimes(2);
+  });
+
+  it('trata resposta vazia por praça como falha sem gravar lote vazio', async () => {
+    mock.mockResolvedValue({ valor: 5.1 });
+    mockPraca.mockResolvedValue([]);
+
+    const res = await GET(req('Bearer segredo'));
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.erros.map((e: { tipo: string }) => e.tipo)).toEqual(['boi_praca', 'vaca_praca']);
+    expect(salvarPrecosPraca).not.toHaveBeenCalled();
   });
 });
