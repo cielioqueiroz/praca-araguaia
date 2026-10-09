@@ -1,7 +1,7 @@
-# Plano: normalizar a leitura do PostgreSQL
+# Plano: contrato SQL e datas equivalentes
 
-1. Adicionar testes de contrato com `numeric` em texto e `timestamptz` em `Date`.
-2. Normalizar as leituras em cotações, histórico e assinantes na fronteira SQL.
-3. Rodar a suíte, typecheck, lint e build.
-4. Publicar, conferir SHA e páginas públicas; observar a coleta e o boletim
-   agendados sem dispará-los manualmente.
+1. Verificar os conversores globais já registrados em `lib/neon/cliente.ts`.
+2. Testar o contrato do parser e comparar instantes nas funções puras.
+3. Retirar as conversões duplicadas dos repositórios SQL.
+4. Rodar testes, typecheck, lint e build; publicar depois da janela do boletim
+   e verificar o SHA e as rotas públicas.

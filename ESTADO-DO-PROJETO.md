@@ -6,6 +6,39 @@
 
 ---
 
+## Coleta verificável e contrato de tipos SQL revisado (09/10/2026)
+
+O commit `02f9543` faz `/api/coletar` responder 503 quando só parte das fontes entra,
+502 quando nenhuma cotação principal entra e 200 apenas com coleta completa. Lista
+vazia por UF ou praça passa a ser falha daquele tipo, sem apagar os demais dados.
+
+O commit `3b09cda` adicionou conversões aos repositórios SQL após uma leitura do
+parser padrão do `pg`. A revisão seguinte encontrou os conversores globais que **já
+existiam** em `lib/neon/cliente.ts`: eles entregam `numeric` como número,
+`timestamptz` como ISO e recusam `bigint` fora da precisão segura. Portanto, a
+hipótese de erro de cálculo em produção por tipos brutos **não foi confirmada**.
+As conversões duplicadas foram retiradas localmente e aguardam publicação depois
+da janela do boletim. Continua válida a comparação de datas por instante em
+`lib/coleta.ts`, que cobre formatos ISO equivalentes. O contrato global ganhou
+um teste direto.
+
+**Verificação do commit publicado:** 633 testes, typecheck, lint e build completos
+passaram. `3b09cda` ficou `READY` em produção no deployment
+`dpl_ANGr8zFFvAZegPchiMQ9C3MPXjGZ`, com o alias principal. Home, cotações e
+ticker responderam 200, sem erro de execução na janela consultada.
+Na revisão local seguinte, **631 testes, typecheck, lint e build** passaram.
+
+A coleta agendada de 09/10 não apareceu nos logs de requisição nem atualizou o
+banco até 18h01 BRT. A coleta foi acionada manualmente pelo comando
+`vercel crons run /api/coletar` às 18h03, no deployment acima, e terminou com
+HTTP 200, **12 cotações, 16 praças, 30 preços por UF e zero erros**. No banco,
+Paragominas manteve “Estável desde 06/10” após repetir o preço. Esse resultado
+confirma o cálculo esperado, mas não atribui mérito às conversões duplicadas.
+O fechamento automático de 09/10 ainda
+aguarda a janela do cron; a rota de envio não foi acionada manualmente.
+
+---
+
 ## Fechamentos no Neon conferidos no banco (09/10/2026)
 
 Consulta somente leitura no banco de produção confirmou que os fechamentos de **07 e
