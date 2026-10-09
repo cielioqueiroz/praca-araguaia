@@ -20,9 +20,17 @@ confirmada pelos logs.
 O mesmo retrato mostrou **3 assinantes, 0 reportes aprovados e 0 fornecedores aprovados**.
 A operação do boletim registrou os primeiros fechamentos no Neon; a próxima prioridade
 de produto é obter preços negociados e fornecedores reais para preencher o Termômetro
-e a vitrine. A fatia de repositórios SQL de escrita foi concluída localmente, com
-**625 testes, typecheck, lint e build**; ainda não foi publicada. O build local
-compilou, mas o sandbox bloqueou DNS das fontes e do banco durante a geração estática.
+e a vitrine. A fatia de repositórios SQL de escrita saiu no commit `b05df7a`:
+**625 testes, typecheck, lint e build** passaram. O build local compilou, mas o sandbox
+bloqueou DNS das fontes e do banco durante a geração estática.
+
+**Deploy verificado:** a Vercel marcou o deployment
+`dpl_5kMwg2w3LsZmWrnadF9HV8QvcZKF` como `READY` em produção, com o SHA exato de
+`b05df7a` e o alias principal `agroapp-bay.vercel.app`. Home, `/cotacoes`, praça de
+Redenção, detalhe do boi, `/boletim`, ticker e o PNG compacto público responderam 200.
+O ticker mostrou valores; a consulta de erros de execução da janela recente não trouxe
+ocorrências. Nenhuma rota de coleta ou envio foi acionada manualmente. A execução
+agendada de 09/10 ainda precisa ser conferida depois da janela dos crons.
 
 ---
 
