@@ -1,10 +1,25 @@
 # Estado do Projeto — agro_app (Praça Araguaia)
 
-> **Documento de retomada.** Última atualização: 2026-10-09.
+> **Documento de retomada.** Última atualização: 2026-10-13.
 > Quando voltar, comece por aqui. O bloco mais recente informa o que ainda não foi
 > commitado ou publicado.
 
 ---
+
+## Janelas de cron aprovadas e coleta verificável (13/10/2026)
+
+O dono aprovou coleta entre **18h e 18h59 BRT** e boletim entre **19h e 19h59
+BRT** nos dias úteis. `vercel.json`, o comentário da rota e a documentação já
+refletem os horários UTC correspondentes (`21:00` e `22:00`). A Vercel ainda
+serve o commit `3b09cda`; a publicação desta alteração está pendente. A Hobby
+escolhe o minuto de início dentro de cada hora: o intervalo reduz a disputa,
+mas não impede coleta às 18h59 seguida de boletim às 19h00. A rota do boletim
+continua recusando coleta incompleta. [Spec](docs/superpowers/specs/2026-10-09-janelas-cron-hobby-design.md)
+e [plano](docs/superpowers/plans/2026-10-09-janelas-cron-hobby.md).
+
+Não consegui reconfirmar no Neon o registro de fechamento de 09/10: a integração
+disponível não reconheceu o identificador de projeto do Vercel. O envio não foi
+acionado manualmente. Não repetir o boletim sem antes consultar `envios_boletim`.
 
 ## Coleta verificável e contrato de tipos SQL revisado (09/10/2026)
 
@@ -99,11 +114,13 @@ O card para Telegram agora mede 1080×1200, com dois lugares de UFs diferentes p
 
 ## 📬 Retomada organizada do Telegram (06/10/2026)
 
+> Registro do horário vigente em 06/10. A mudança aprovada em 09/10 está no
+> bloco mais recente deste documento.
+
 O dono autorizou retomar os disparos. O plano atual agenda **somente o boletim de
-fechamento**, em dias úteis, após a coleta: `/api/coletar` a partir de 17:30 BRT e
-`/api/enviar-boletim` a partir de 18:00 BRT. Na Vercel Hobby, cada cron pode iniciar
-em qualquer momento da hora agendada. Abertura, alertas e resumo de audiência
-continuam sem cron.
+fechamento**, em dias úteis, após a coleta. Os horários aprovados em 13/10 estão
+no bloco mais recente; a configuração ainda precisa ser publicada e conferida.
+Abertura, alertas e resumo de audiência continuam sem cron.
 
 O envio exige atualização no mesmo dia de todas as 12 cotações, das praças de boi e
 vaca e dos estados de novilha, bezerro, soja e milho. Coleta parcial retorna 503 e

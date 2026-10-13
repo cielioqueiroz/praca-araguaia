@@ -94,7 +94,7 @@ A lista pública de fornecedores aprovados, com contato direto por WhatsApp.
 ## Como o dado entra
 
 **Coleta**:
-A leitura diária das fontes que grava cotação e histórico. Roda 17:30 BRT, depois de a B3 fechar e de a Scot publicar.
+A leitura diária das fontes que grava cotação e histórico. Na Vercel Hobby, está agendada na hora das 18h BRT e pode iniciar até 18h59, depois de a B3 fechar e de a Scot publicar.
 
 **Moderação**:
 A conferência do que veio de fora (reporte ou fornecedor) antes de ficar público. Sem ela, nada de terceiro aparece.

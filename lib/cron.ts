@@ -4,8 +4,8 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 // literal "Bearer undefined". As rotas protegidas incluem broadcast irreversível;
 // sem CRON_SECRET, a autorização falha fechada.
 //
-// Em 06/10/2026, vercel.json agenda só a coleta (20:30 UTC) e o fechamento
-// (21:00 UTC), de segunda a sexta. A rota barra feriados em dia-util.ts.
+// A partir de 09/10/2026, vercel.json agenda só a coleta (21:00 UTC) e o
+// fechamento (22:00 UTC), de segunda a sexta. A rota barra feriados em dia-util.ts.
 // Na Vercel Hobby, cada cron pode iniciar em qualquer momento da hora agendada;
 // a reserva em envios_boletim evita duplicar o fechamento. Abertura, alertas e
 // resumo de audiência permanecem sem cron. A Scot divulga o gado D-1; o card

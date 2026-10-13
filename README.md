@@ -102,6 +102,10 @@ Plataforma de **informação agropecuária** da região do Araguaia. No ar em **
 
 Tudo apoiado em **fontes públicas e gratuitas** — sem provedores pagos. O bot **[@pracaaraguaia_bot](https://t.me/pracaaraguaia_bot)** recebe inscrições. Os crons ativos são a coleta de preços e o boletim de fechamento; alertas e resumo de audiência seguem sem envio automático.
 
+Na Vercel Hobby, a coleta pode iniciar entre 18h e 18h59 BRT e o fechamento entre
+19h e 19h59 BRT, de segunda a sexta. Uma coleta incompleta impede o envio; a
+Vercel não repete automaticamente uma execução que falhou.
+
 ### De onde vem cada preço
 
 | Categoria | Fonte | Unidade | Ritmo |
