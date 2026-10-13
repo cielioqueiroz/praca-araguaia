@@ -9,13 +9,23 @@
 ## Janelas de cron aprovadas e coleta verificável (13/10/2026)
 
 O dono aprovou coleta entre **18h e 18h59 BRT** e boletim entre **19h e 19h59
-BRT** nos dias úteis. `vercel.json`, o comentário da rota e a documentação já
-refletem os horários UTC correspondentes (`21:00` e `22:00`). A Vercel ainda
-serve o commit `3b09cda`; a publicação desta alteração está pendente. A Hobby
-escolhe o minuto de início dentro de cada hora: o intervalo reduz a disputa,
-mas não impede coleta às 18h59 seguida de boletim às 19h00. A rota do boletim
-continua recusando coleta incompleta. [Spec](docs/superpowers/specs/2026-10-09-janelas-cron-hobby-design.md)
+BRT** nos dias úteis. `vercel.json`, o comentário da rota e a documentação
+refletem os horários UTC correspondentes (`21:00` e `22:00`). O commit
+`ade05ab` está `READY` em produção no deployment
+`dpl_4p98PsR2sVeiV1nkn2rPn3R188Zj`, SHA `ade05ab7fb0442f17ce6697647c2585053d49d38`,
+com o alias principal `agroapp-bay.vercel.app`. Home e ticker responderam 200.
+A Hobby escolhe o minuto de início dentro de cada hora: o intervalo reduz a
+disputa, mas não impede coleta às 18h59 seguida de boletim às 19h00. A rota do
+boletim continua recusando coleta incompleta. A listagem de crons pela CLI não
+foi possível neste ambiente por falha de DNS; o deployment de produção confirma
+o SHA que contém as duas expressões. [Spec](docs/superpowers/specs/2026-10-09-janelas-cron-hobby-design.md)
 e [plano](docs/superpowers/plans/2026-10-09-janelas-cron-hobby.md).
+
+**Verificação em 13/10:** build, typecheck e lint passaram; o teste isolado de
+autorização de cron passou (3 testes). A suíte completa não iniciou os testes na
+primeira tentativa: o cache compilado do Node gerou `EPERM` ao renomear arquivos
+temporários fora do workspace. Uma execução com poucos workers foi interrompida
+sem resultado, então não registrar a suíte completa como aprovada nesta rodada.
 
 Não consegui reconfirmar no Neon o registro de fechamento de 09/10: a integração
 disponível não reconheceu o identificador de projeto do Vercel. O envio não foi
